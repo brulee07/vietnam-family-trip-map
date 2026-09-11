@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vietnam-family-trip-pwa-v1';
+const CACHE_NAME = 'vietnam-family-trip-pwa-v2';
 const APP_SHELL = [
   './',
   './index.html',
@@ -25,10 +25,25 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
+  const req = event.request;
+  const accept = req.headers.get('accept') || '';
+
+  // HTML 문서는 최신 배포가 바로 반영되도록 network-first로 처리합니다.
+  if (req.mode === 'navigate' || accept.includes('text/html')) {
+    event.respondWith(
+      fetch(req).then(response => {
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(req, copy));
+        return response;
+      }).catch(() => caches.match(req).then(cached => cached || caches.match('./index.html')))
+    );
+    return;
+  }
+
   event.respondWith(
-    caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
+    caches.match(req).then(cached => cached || fetch(req).then(response => {
       const copy = response.clone();
-      caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+      caches.open(CACHE_NAME).then(cache => cache.put(req, copy));
       return response;
     }).catch(() => caches.match('./index.html')))
   );

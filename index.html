@@ -11,35 +11,70 @@
   <link rel="apple-touch-icon" href="icons/icon-192.png" />
   <title>2027 베트남 가족여행 지도</title>
   <style>
-    :root{--bg:#07111f;--card:#0f1d31;--card2:#13243b;--text:#eef7ff;--muted:#9bb0c8;--line:rgba(255,255,255,.12);--accent:#2dd4bf;--accent2:#facc15;--danger:#f97316}
-    *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:radial-gradient(circle at top left,#123b55 0,#07111f 45%,#050a12 100%);color:var(--text);min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
-    .wrap{max-width:1080px;margin:0 auto;padding:26px 18px 40px}.hero{padding:26px 0 20px}.badge{display:inline-flex;gap:8px;align-items:center;background:rgba(45,212,191,.12);border:1px solid rgba(45,212,191,.35);color:#bffef5;border-radius:999px;padding:8px 12px;font-size:13px}h1{font-size:clamp(30px,6vw,56px);line-height:1.05;margin:18px 0 12px;letter-spacing:-.05em}.lead{color:var(--muted);font-size:16px;line-height:1.65;max-width:760px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:24px 0}.card{background:linear-gradient(180deg,rgba(19,36,59,.92),rgba(8,18,33,.92));border:1px solid var(--line);border-radius:22px;padding:18px;box-shadow:0 18px 50px rgba(0,0,0,.25)}.city{display:flex;flex-direction:column;min-height:250px}.city .emoji{font-size:34px}.city h2{margin:12px 0 6px;font-size:22px}.meta{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:14px}.tags{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 16px}.tag{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:5px 8px;color:#d8e8f8;background:rgba(255,255,255,.05)}.btn{display:flex;align-items:center;justify-content:center;text-decoration:none;color:#06221f;background:linear-gradient(135deg,#5eead4,#facc15);font-weight:800;border-radius:14px;padding:12px 14px;margin-top:auto}.btn.secondary{background:#0b1527;color:#eaf8ff;border:1px solid var(--line);margin-top:10px}.section{margin-top:24px}.timeline{display:grid;grid-template-columns:1fr;gap:10px}.row{display:grid;grid-template-columns:90px 1fr;gap:14px;padding:14px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.045)}.date{color:#fde68a;font-weight:800}.desc{color:#d6e4f4;line-height:1.5}.notice{border-left:4px solid var(--accent2);padding:14px 16px;background:rgba(250,204,21,.08);border-radius:14px;color:#f8fafc;line-height:1.6}.install{display:grid;grid-template-columns:1fr 1fr;gap:14px}.install h3{margin:0 0 8px}.install p{margin:0;color:var(--muted);line-height:1.55}.small{font-size:12px;color:#90a4bc;margin-top:12px;line-height:1.5}@media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:560px){.wrap{padding:20px 14px 30px}.grid,.install{grid-template-columns:1fr}.row{grid-template-columns:70px 1fr}.city{min-height:220px}}
+    :root{
+      --bg:#07111f;--panel:#0f1d31;--panel2:#13243b;--text:#eef7ff;--muted:#9bb0c8;--line:rgba(255,255,255,.13);
+      --accent:#2dd4bf;--accent2:#facc15;--soft:rgba(45,212,191,.12);--orange:#fb923c;--blue:#38bdf8;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:radial-gradient(circle at top left,#123b55 0,#07111f 45%,#050a12 100%);color:var(--text);min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+    a{color:inherit}.wrap{max-width:1180px;margin:0 auto;padding:24px 18px 40px}.hero{display:grid;grid-template-columns:1.2fr .8fr;gap:18px;align-items:stretch;margin-bottom:18px}.card{background:linear-gradient(180deg,rgba(19,36,59,.94),rgba(8,18,33,.94));border:1px solid var(--line);border-radius:24px;padding:20px;box-shadow:0 18px 50px rgba(0,0,0,.24)}.badge{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(45,212,191,.35);background:var(--soft);color:#bffef5;border-radius:999px;padding:8px 12px;font-size:13px;font-weight:700}h1{font-size:clamp(30px,6vw,54px);line-height:1.06;letter-spacing:-.055em;margin:16px 0 10px}h2{font-size:22px;margin:0 0 12px;letter-spacing:-.02em}h3{margin:0 0 6px;font-size:17px}.lead{color:var(--muted);font-size:16px;line-height:1.65;max-width:780px}.quick{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:18px}.btn{display:flex;align-items:center;justify-content:center;text-decoration:none;color:#06221f;background:linear-gradient(135deg,#5eead4,#facc15);font-weight:900;border-radius:15px;padding:12px 14px;border:0;cursor:pointer}.btn.dark{background:#0b1527;color:#eaf8ff;border:1px solid var(--line)}.btn.small{font-size:13px;padding:9px 10px;border-radius:12px}.status{display:flex;flex-direction:column;gap:10px;height:100%}.statusBox{border:1px solid var(--line);border-radius:18px;padding:14px;background:rgba(255,255,255,.05)}.statusBox .label{font-size:12px;color:var(--muted);font-weight:800}.statusBox .value{font-size:22px;font-weight:950;margin-top:4px;color:#fff}.statusBox .sub{font-size:13px;line-height:1.45;color:#bdd0e7;margin-top:6px}.section{margin-top:18px}.cityGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.city{min-height:190px;display:flex;flex-direction:column}.emoji{font-size:31px}.meta{font-size:13px;color:var(--muted);line-height:1.45;margin:4px 0 12px}.tags{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 14px}.tag{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:5px 8px;color:#d8e8f8;background:rgba(255,255,255,.05)}.city .btn{margin-top:auto}.filters{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 14px}.chip{border:1px solid var(--line);background:#0b1527;color:#eaf8ff;border-radius:999px;padding:9px 12px;font-size:13px;font-weight:800;cursor:pointer}.chip.active{background:#fff;color:#0b1527}.timeline{display:grid;gap:10px}.day{display:grid;grid-template-columns:110px 1fr auto;gap:14px;align-items:center;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.045);padding:14px}.day.today{border-color:rgba(250,204,21,.8);box-shadow:0 0 0 2px rgba(250,204,21,.12) inset}.date{font-weight:950;color:#fde68a}.cityName{font-size:12px;color:#a9c2de;margin-top:3px}.desc{line-height:1.5;color:#dbeafe}.desc b{color:#fff}.actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.mini{display:inline-flex;align-items:center;text-decoration:none;border-radius:12px;padding:9px 11px;background:#0b1527;border:1px solid var(--line);font-weight:800;font-size:13px;color:#eaf8ff}.mini.primary{background:linear-gradient(135deg,#5eead4,#facc15);color:#06221f;border:0}.notice{border-left:4px solid var(--accent2);padding:14px 16px;background:rgba(250,204,21,.08);border-radius:14px;color:#f8fafc;line-height:1.6}.install{display:grid;grid-template-columns:1fr 1fr;gap:12px}.install p{margin:0;color:var(--muted);line-height:1.55}.small{font-size:12px;color:#90a4bc;margin-top:12px;line-height:1.5}.hidden{display:none!important}@media(max-width:920px){.hero{grid-template-columns:1fr}.cityGrid{grid-template-columns:repeat(2,1fr)}.day{grid-template-columns:86px 1fr}.actions{grid-column:1/-1;justify-content:flex-start}}@media(max-width:560px){.wrap{padding:18px 12px 30px}.quick,.cityGrid,.install{grid-template-columns:1fr}.card{border-radius:20px;padding:16px}.day{grid-template-columns:74px 1fr;padding:12px}.desc{font-size:14px}.mini{font-size:12px;padding:8px 9px}.filters{gap:6px}.chip{font-size:12px;padding:8px 10px}}
   </style>
 </head>
 <body>
   <main class="wrap">
     <section class="hero">
-      <div class="badge">📱 Galaxy · iPhone 겸용 PWA</div>
-      <h1>2027 베트남 가족여행 지도</h1>
-      <p class="lead">다낭, 꾸이년, 뚜이호아, 나트랑 도시별 지도를 한 곳에서 여는 가족 공유용 웹앱입니다. 홈 화면에 추가하면 앱처럼 실행됩니다.</p>
+      <div class="card">
+        <div class="badge">📱 Galaxy · iPhone 겸용 여행 지도 앱</div>
+        <h1>2027 베트남 가족여행<br>전체 일정 지도</h1>
+        <p class="lead">도시별 지도보다 먼저 날짜별 일정을 확인하도록 홈 화면을 개편했습니다. 오늘 날짜가 여행 기간에 들어오면 해당 일정이 자동으로 강조됩니다.</p>
+        <div class="quick">
+          <a class="btn" href="#schedule">날짜별 전체 일정 보기</a>
+          <a class="btn dark" href="#maps">도시별 지도 열기</a>
+        </div>
+      </div>
+      <aside class="card status">
+        <div class="statusBox"><div class="label">현재 상태</div><div id="tripStatus" class="value">일정 준비 중</div><div id="tripStatusSub" class="sub">2027.01.11 출발 기준으로 표시됩니다.</div></div>
+        <div class="statusBox"><div class="label">여행 기간</div><div class="value">1/11–1/25</div><div class="sub">다낭 → 꾸이년 → 뚜이호아 → 나트랑 → 인천</div></div>
+      </aside>
     </section>
 
-    <section class="grid" aria-label="도시별 지도">
-      <article class="card city"><div class="emoji">🌉</div><h2>다낭</h2><div class="meta">1/11~1/13 · New Orient Hotel Da Nang</div><div class="tags"><span class="tag">시내 여유</span><span class="tag">가족 후보지</span><span class="tag">지도 v15</span></div><a class="btn" href="da_nang.html">다낭 지도 열기</a></article>
-      <article class="card city"><div class="emoji">🏖️</div><h2>꾸이년</h2><div class="meta">1/13~1/17 · Sala Quy Nhon Beach Hotel</div><div class="tags"><span class="tag">프리셋 확정</span><span class="tag">생활 POI</span><span class="tag">지도 v4.3</span></div><a class="btn" href="quy_nhon.html">꾸이년 지도 열기</a></article>
-      <article class="card city"><div class="emoji">🌊</div><h2>뚜이호아</h2><div class="meta">1/17~1/21 · APEC + Rosa Alba</div><div class="tags"><span class="tag">지역음식</span><span class="tag">남부 해안</span><span class="tag">지도 v3.6</span></div><a class="btn" href="tuy_hoa.html">뚜이호아 지도 열기</a></article>
-      <article class="card city"><div class="emoji">♨️</div><h2>나트랑</h2><div class="meta">1/21~1/25 · The Costa 후보</div><div class="tags"><span class="tag">I-Resort 1순위</span><span class="tag">9명 가족</span><span class="tag">지도 v3.5</span></div><a class="btn" href="nha_trang.html">나트랑 지도 열기</a></article>
+    <section id="schedule" class="section card">
+      <h2>날짜별 전체 일정표</h2>
+      <div class="filters" aria-label="일정 필터">
+        <button class="chip active" data-filter="all">전체</button>
+        <button class="chip" data-filter="da_nang">다낭</button>
+        <button class="chip" data-filter="quy_nhon">꾸이년</button>
+        <button class="chip" data-filter="tuy_hoa">뚜이호아</button>
+        <button class="chip" data-filter="nha_trang">나트랑</button>
+        <button class="chip" data-filter="move">이동일</button>
+      </div>
+      <div class="timeline" id="timeline">
+        <article class="day" data-date="2027-01-11" data-city="da_nang move"><div><div class="date">1/11</div><div class="cityName">다낭 · 도착</div></div><div class="desc"><b>인천 → 다낭</b> · 21:40 도착 후 New Orient Hotel 체크인과 휴식.</div><div class="actions"><a class="mini primary" href="da_nang.html">다낭 지도</a></div></article>
+        <article class="day" data-date="2027-01-12" data-city="da_nang"><div><div class="date">1/12</div><div class="cityName">다낭 · 여유일</div></div><div class="desc"><b>시내 중심 여유 일정</b> · 대형 쇼핑몰/가족 식사/미카즈키 워터파크 B안 검토.</div><div class="actions"><a class="mini primary" href="da_nang.html">다낭 지도</a></div></article>
+        <article class="day" data-date="2027-01-13" data-city="quy_nhon move"><div><div class="date">1/13</div><div class="cityName">꾸이년 · 이동</div></div><div class="desc"><b>다낭역 → Diêu Trì역</b> 침대열차 이동 · Sala Quy Nhon Beach Hotel 체크인.</div><div class="actions"><a class="mini primary" href="quy_nhon.html">꾸이년 지도</a></div></article>
+        <article class="day" data-date="2027-01-14" data-city="quy_nhon"><div><div class="date">1/14</div><div class="cityName">꾸이년 · 시내</div></div><div class="desc"><b>Tháp Đôi → Phượng Tèo → ExploraScience → Surf Bar → Cá Khói</b> · 시내·실내·해변 카페 조합.</div><div class="actions"><a class="mini primary" href="quy_nhon.html">꾸이년 지도</a></div></article>
+        <article class="day" data-date="2027-01-15" data-city="quy_nhon"><div><div class="date">1/15</div><div class="cityName">꾸이년 · 해안</div></div><div class="desc"><b>Eo Gió → Kỳ Co → Phương Mai 선택 → Gia Vy 2</b> · 북동부 해안권 대표 일정.</div><div class="actions"><a class="mini primary" href="quy_nhon.html">꾸이년 지도</a></div></article>
+        <article class="day" data-date="2027-01-16" data-city="quy_nhon"><div><div class="date">1/16</div><div class="cityName">꾸이년 · 여유</div></div><div class="desc"><b>Bánh Ít 또는 Hòn Khô 또는 휴식</b> · 쇼핑·마사지, Hương Vi Spa 우선 후보.</div><div class="actions"><a class="mini primary" href="quy_nhon.html">꾸이년 지도</a></div></article>
+        <article class="day" data-date="2027-01-17" data-city="tuy_hoa move"><div><div class="date">1/17</div><div class="cityName">뚜이호아 · 이동</div></div><div class="desc"><b>Sala 체크아웃 → Gành Đá Đĩa → Ô Loan Seafood Lunch Zone → APEC → Nghinh Phong</b> · 남쪽 관광지를 이동 동선에 배치.</div><div class="actions"><a class="mini primary" href="tuy_hoa.html">뚜이호아 지도</a></div></article>
+        <article class="day" data-date="2027-01-18" data-city="tuy_hoa"><div><div class="date">1/18</div><div class="cityName">뚜이호아 · 시내</div></div><div class="desc"><b>Thảo Vy → Hiệp Yến → Nhạn Tower → Tuy Hòa Market → Nghinh Phong → SANDY VIBES → Cô Ba Diệp</b>.</div><div class="actions"><a class="mini primary" href="tuy_hoa.html">뚜이호아 지도</a></div></article>
+        <article class="day" data-date="2027-01-19" data-city="tuy_hoa move"><div><div class="date">1/19</div><div class="cityName">Rosa Alba 이동</div></div><div class="desc"><b>APEC → 조식 → Co.opmart 장보기 → Tuyết Nhung → Rosa Alba 체크인 → Roseli Spa/해변</b>.</div><div class="actions"><a class="mini primary" href="tuy_hoa.html">뚜이호아 지도</a></div></article>
+        <article class="day" data-date="2027-01-20" data-city="tuy_hoa"><div><div class="date">1/20</div><div class="cityName">뚜이호아 · 남부</div></div><div class="desc"><b>Rosa Alba → Mũi Điện · Bãi Môn → Vũng Rô Bay → Rosa Alba</b> · 남부 해안권 일정.</div><div class="actions"><a class="mini primary" href="tuy_hoa.html">뚜이호아 지도</a></div></article>
+        <article class="day" data-date="2027-01-21" data-city="nha_trang move"><div><div class="date">1/21</div><div class="cityName">나트랑 · 이동</div></div><div class="desc"><b>Rosa Alba 체크아웃 → 나트랑 이동 → The Costa → Nha Trang Center → 해변 산책 → Nemo</b>.</div><div class="actions"><a class="mini primary" href="nha_trang.html">나트랑 지도</a></div></article>
+        <article class="day" data-date="2027-01-22" data-city="nha_trang"><div><div class="date">1/22</div><div class="cityName">나트랑 · 물놀이</div></div><div class="desc"><b>Phê La/국수 아침 → 2H Laundry 선택 → I-Resort → Hòn Chồng View → Mộc Seafood</b>.</div><div class="actions"><a class="mini primary" href="nha_trang.html">나트랑 지도</a></div></article>
+        <article class="day" data-date="2027-01-23" data-city="nha_trang"><div><div class="date">1/23</div><div class="cityName">나트랑 · 시내</div></div><div class="desc"><b>The Coffee House → Institute of Oceanography → Đầm Market → Nem nướng → Lotte Mart → Mê Trang → Nom Nom</b>.</div><div class="actions"><a class="mini primary" href="nha_trang.html">나트랑 지도</a></div></article>
+        <article class="day" data-date="2027-01-24" data-city="nha_trang"><div><div class="date">1/24</div><div class="cityName">나트랑 · 선택</div></div><div class="desc"><b>VinWonders 선택 / 여유·쇼핑·마사지 대체</b> · 저녁 해산물과 Coconut Massage 후보.</div><div class="actions"><a class="mini primary" href="nha_trang.html">나트랑 지도</a></div></article>
+        <article class="day" data-date="2027-01-25" data-city="nha_trang move"><div><div class="date">1/25</div><div class="cityName">출국</div></div><div class="desc"><b>The Costa → Cam Ranh Airport → 인천</b> · 추가 관광 최소화.</div><div class="actions"><a class="mini primary" href="nha_trang.html">나트랑 지도</a></div></article>
+      </div>
     </section>
 
-    <section class="section card">
-      <h2>전체 이동 흐름</h2>
-      <div class="timeline">
-        <div class="row"><div class="date">1/11</div><div class="desc">인천 → 다낭 도착 · New Orient Hotel 체크인</div></div>
-        <div class="row"><div class="date">1/13</div><div class="desc">다낭역 → Diêu Trì역 침대열차 · 꾸이년 이동</div></div>
-        <div class="row"><div class="date">1/17</div><div class="desc">꾸이년 → Gành Đá Đĩa · Ô Loan Lagoon → 뚜이호아 APEC</div></div>
-        <div class="row"><div class="date">1/19</div><div class="desc">APEC → Rosa Alba Resort & Villas 이동 · 리조트 휴식</div></div>
-        <div class="row"><div class="date">1/21</div><div class="desc">뚜이호아 → 나트랑 이동 · The Costa 후보 숙박</div></div>
-        <div class="row"><div class="date">1/25</div><div class="desc">나트랑 → Cam Ranh Airport → 인천</div></div>
+    <section id="maps" class="section card">
+      <h2>도시별 지도</h2>
+      <div class="cityGrid" aria-label="도시별 지도">
+        <article class="card city"><div class="emoji">🌉</div><h3>다낭</h3><div class="meta">1/11~1/13 · New Orient Hotel Da Nang</div><div class="tags"><span class="tag">시내 여유</span><span class="tag">지도 최신</span></div><a class="btn" href="da_nang.html">다낭 지도 열기</a></article>
+        <article class="card city"><div class="emoji">🏖️</div><h3>꾸이년</h3><div class="meta">1/13~1/17 · Sala Quy Nhon Beach Hotel</div><div class="tags"><span class="tag">프리셋 확정</span><span class="tag">생활 POI</span></div><a class="btn" href="quy_nhon.html">꾸이년 지도 열기</a></article>
+        <article class="card city"><div class="emoji">🌊</div><h3>뚜이호아</h3><div class="meta">1/17~1/21 · APEC + Rosa Alba</div><div class="tags"><span class="tag">지역음식</span><span class="tag">남부 해안</span></div><a class="btn" href="tuy_hoa.html">뚜이호아 지도 열기</a></article>
+        <article class="card city"><div class="emoji">♨️</div><h3>나트랑</h3><div class="meta">1/21~1/25 · The Costa 후보</div><div class="tags"><span class="tag">I-Resort 1순위</span><span class="tag">9명 가족</span></div><a class="btn" href="nha_trang.html">나트랑 지도 열기</a></article>
       </div>
     </section>
 
@@ -48,10 +83,42 @@
       <div class="card"><h3>아이폰</h3><p>Safari로 이 페이지 접속 → 공유 버튼 → <b>홈 화면에 추가</b> 선택.</p></div>
     </section>
 
-    <section class="section notice">지도 화면과 장소 목록은 앱처럼 열 수 있지만, 지도 타일·장소 검색·경로 계산은 인터넷 연결이 필요합니다. 여행 전에는 최신 운영시간과 티켓, 픽업·배달 여부를 한 번 더 확인하세요.</section>
-    <p class="small">PWA v1 · 도시별 지도 기준본: Da Nang v15 / Quy Nhon v4.3 / Tuy Hoa v3.6 / Nha Trang v3.5</p>
+    <section class="section notice">지도 화면과 장소 목록은 앱처럼 열 수 있지만, 지도 타일·장소 검색·경로 계산은 인터넷 연결이 필요합니다. 여행 전에는 운영시간, 티켓, 세탁·마사지 가격, 픽업·배달 여부를 한 번 더 확인하세요.</section>
+    <p class="small">PWA Hub v2 · 도시별 지도 기준본: Da Nang v15 / Quy Nhon v4.3 / Tuy Hoa v3.6 / Nha Trang v3.5</p>
   </main>
   <script>
+    const tripStart = new Date('2027-01-11T00:00:00');
+    const tripEnd = new Date('2027-01-25T23:59:59');
+    const now = new Date();
+    const oneDay = 1000*60*60*24;
+    const status = document.getElementById('tripStatus');
+    const sub = document.getElementById('tripStatusSub');
+    const days = [...document.querySelectorAll('.day')];
+    const todayKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    const match = days.find(d => d.dataset.date === todayKey);
+    if (now < tripStart) {
+      const d = Math.ceil((tripStart - now)/oneDay);
+      status.textContent = `D-${d}`;
+      sub.textContent = '출발 전입니다. 지금은 전체 일정표와 도시별 지도를 점검하는 단계입니다.';
+    } else if (now > tripEnd) {
+      status.textContent = '여행 종료';
+      sub.textContent = '여행 기간이 지났습니다. 기록 확인용으로 사용할 수 있습니다.';
+    } else {
+      status.textContent = '오늘 일정';
+      sub.textContent = match ? match.querySelector('.desc').textContent.trim() : '오늘에 해당하는 일정 카드를 확인하세요.';
+      if(match){match.classList.add('today'); match.scrollIntoView({block:'center'});}
+    }
+    document.querySelectorAll('.chip').forEach(chip=>{
+      chip.addEventListener('click',()=>{
+        document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+        chip.classList.add('active');
+        const filter = chip.dataset.filter;
+        days.forEach(day=>{
+          const show = filter === 'all' || day.dataset.city.split(' ').includes(filter);
+          day.classList.toggle('hidden', !show);
+        });
+      });
+    });
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js').catch(()=>{}));
     }
