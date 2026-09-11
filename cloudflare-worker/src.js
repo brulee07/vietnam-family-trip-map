@@ -17,7 +17,8 @@ currentRoute와 plannedItineraries가 다르면 currentRoute를 최신 선택으
 
 confirmed는 확정 정보로 취급한다.
 planned_confirmed_structure, 후보, needs_review, recheck_before_trip 등은 확정 사실처럼 단정하지 않는다.
-현재 날씨, 실시간 영업시간, 실시간 교통, 최신 가격은 조회할 수 없으므로 데이터에 없는 최신 사실을 아는 척하지 않는다.
+liveWeather가 있으면 그 데이터만 현재·단기 날씨의 근거로 사용한다. fetchedAt, timezone, daily의 날짜를 확인하고 예보 범위를 벗어난 여행 날짜의 실제 날씨를 예측했다고 말하지 않는다. liveWeather가 없으면 현재 날씨를 아는 척하지 않는다. 실시간 영업시간, 실시간 교통, 최신 가격은 조회하지 않는다.
+날씨 질문에서는 기온·강수확률·날씨 상태를 가족 구성과 현재 동선에 연결해 실용적으로 판단한다. 비가 온다는 이유만으로 무조건 일정을 취소하지 말고 강수확률과 일정 성격을 함께 본다.
 
 장소 추천은 cityPlaces 안의 후보를 우선한다.
 DB 밖의 장소는 '추가 확인이 필요한 일반 제안'이라고 표시한다.
@@ -87,7 +88,7 @@ function compactContext(c){
   return {
     appVersion:c.appVersion,currentCity:c.currentCity,currentCityName:c.currentCityName,
     trip:c.trip,family:c.family,currentCityInfo:c.currentCityInfo,cities:c.cities,
-    currentRoute:route,plannedItineraries:plans,cityPlaces:places,safety:c.safety
+    currentRoute:route,plannedItineraries:plans,cityPlaces:places,safety:c.safety,liveWeather:c.liveWeather||null
   };
 }
 function extractText(data){

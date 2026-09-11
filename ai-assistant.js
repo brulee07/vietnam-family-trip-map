@@ -3,7 +3,7 @@ const GLOBAL_CFG=window.TRAVEL_AI_CONFIG||{};
 const CFG={
   endpoint:(localStorage.getItem('travelAiEndpoint')||GLOBAL_CFG.endpoint||'').replace(/\/$/,''),
   city:document.body.dataset.city||inferCity(),
-  appVersion:GLOBAL_CFG.appVersion||'10.0'
+  appVersion:GLOBAL_CFG.appVersion||'10.1'
 };
 const history=[];
 function inferCity(){const f=(location.pathname.split('/').pop()||'').replace('.html','');return ['da_nang','quy_nhon','tuy_hoa','nha_trang'].includes(f)?f:'hub'}
@@ -15,7 +15,9 @@ async function context(){
     j('./data/itineraries.json'),j('./data/safety.json')
   ]);
   const cid=CFG.city;let route=[];
+  let liveWeather=null;
   try{if(typeof window.getTravelAiRoute==='function')route=window.getTravelAiRoute()||[]}catch(e){}
+  try{if(typeof window.getTravelWeather==='function')liveWeather=await window.getTravelWeather()||null}catch(e){}
   return {
     appVersion:CFG.appVersion,
     currentCity:cid,
@@ -27,7 +29,8 @@ async function context(){
     currentRoute:route,
     plannedItineraries:Array.isArray(itineraries)?itineraries.filter(x=>cid==='hub'||x.city===cid):[],
     cityPlaces:Array.isArray(places)?places.filter(p=>cid==='hub'||p.city===cid):[],
-    safety
+    safety,
+    liveWeather
   };
 }
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
@@ -35,11 +38,11 @@ function mount(){
   document.body.insertAdjacentHTML('beforeend',`
   <button id="travelAiFab" aria-label="AI 여행 비서 열기">✨ AI 여행 비서</button>
   <aside id="travelAiPanel" aria-label="AI 여행 비서">
-    <div class="tai-head"><div><b>✨ AI 여행 비서 <span class="tai-badge">v10.0.1</span></b><small>우리 가족 여행 데이터 + 현재 지도 경로</small></div><div class="tai-head-actions"><button class="tai-settings" aria-label="AI 서버 설정">⚙️</button><button class="tai-close" aria-label="닫기">×</button></div></div>
+    <div class="tai-head"><div><b>✨ AI 여행 비서 <span class="tai-badge">v10.1</span></b><small>가족 여행 데이터 + 현재 지도 경로 + 실시간 날씨</small></div><div class="tai-head-actions"><button class="tai-settings" aria-label="AI 서버 설정">⚙️</button><button class="tai-close" aria-label="닫기">×</button></div></div>
     <div class="tai-context">컨텍스트 준비 중…</div>
     <div class="tai-server"></div>
-    <div class="tai-messages"><div class="tai-msg ai">안녕하세요. 우리 가족의 2027 베트남 여행 전체 일정, 가족 구성, 도시별 계획과 현재 지도 경로를 함께 읽어 답변합니다.</div></div>
-    <div class="tai-quick"><button>현재 동선 점검</button><button>오늘 일정</button><button>동선 최적화</button><button>아이들과 괜찮아?</button><button>한 곳 빼기</button></div>
+    <div class="tai-messages"><div class="tai-msg ai">안녕하세요. 우리 가족의 전체 일정, 가족 구성, 현재 지도 경로와 확인 가능한 실시간 날씨를 함께 읽어 답변합니다.</div></div>
+    <div class="tai-quick"><button>현재 동선 점검</button><button>오늘 일정</button><button>동선 최적화</button><button>아이들과 괜찮아?</button><button>한 곳 빼기</button><button>오늘 날씨</button></div>
     <form class="tai-form"><input maxlength="700" placeholder="예: 이 동선 너무 빡빡해?" aria-label="질문"><button>전송</button></form>
     <div class="tai-settings-panel" hidden>
       <b>AI 서버 연결</b><p>Cloudflare Worker의 <code>/chat</code> 주소를 입력하세요. 이 값은 이 기기의 브라우저에만 저장됩니다.</p>
