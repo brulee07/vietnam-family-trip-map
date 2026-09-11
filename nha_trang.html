@@ -304,15 +304,35 @@ html,body{overscroll-behavior:none}
   .candidate>.plus{display:none}
 }
 
+
+/* ===== v3 Improvement: city maps return-home button ===== */
+.travel-home-link{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  min-height:34px;padding:8px 11px;border-radius:12px;
+  background:rgba(255,255,255,.96);color:#0f172a!important;
+  border:1px solid rgba(203,213,225,.95);text-decoration:none;
+  font-size:12px;font-weight:900;line-height:1;box-shadow:0 6px 18px rgba(0,0,0,.16);
+}
+.desktop-home-link{margin:0 0 12px 0;background:#f8fafc;color:#0f172a!important;}
+.mobile-home-link{display:none;}
+@media (max-width:850px){
+  .desktop-home-link{display:none!important;}
+  .mobile-home-link{display:inline-flex!important;pointer-events:auto;background:rgba(15,23,42,.92)!important;color:#fff!important;border-color:rgba(255,255,255,.18)!important;box-shadow:0 6px 18px rgba(0,0,0,.22)!important;}
+  .mobile-topbar .mobile-title{flex:1;min-width:0;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+}
+@media (min-width:851px){.mobile-home-link{display:none!important;}}
+
 </style></head><body>
 
 <div class="mobile-topbar" id="mobileTopbar">
+  <a class="travel-home-link mobile-home-link" href="./index.html" aria-label="여행 홈으로">🏠 홈</a>
   <div class="mobile-title">나트랑 가족여행 지도 v3.5</div>
   <button id="mobilePanelToggle" type="button">일정 열기</button>
 </div>
 
 <div class="app"><aside class="side">
 <h1>나트랑 여행 경로 편집기 v3.5</h1>
+<a class="travel-home-link desktop-home-link" href="./index.html">← 여행 홈으로</a>
 <div class="sub">후보지를 여행 경로로 드래그하고 순서를 바꾸면 도로 경로가 재계산됩니다. <b>v3.5: 1/21~1/25 날짜별 실제 일정 프리셋을 확정 흐름에 맞춰 보정한 지도입니다. I-Resort는 물놀이 1순위, VinWonders는 선택 후보입니다.</b><br>명소 이름은 자연스럽게 유지하고, 실제 차량 목적지·케이블카역·운영 재확인 정보는 팝업에 표시합니다. 모든 마커는 클릭 시 상세 팝업이 열립니다.</div>
 <div class="verify-box"><b>검증 기준</b> · 지도 지점명은 <b>명소 이름</b>을 우선 사용하고, 실제 좌표·설명은 <b>차량 도착·입장 시작점</b> 기준을 반영합니다. <span class="warn">VinWonders는 명소명으로 표시하되 실제 이동은 본토 케이블카역/선착장 기준입니다. 음식·카페 좌표는 주소 기준 앵커이며, 여행 전 실제 POI 위치를 최종 확인합니다.</span></div>
 <div class="preset-box">
