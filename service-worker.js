@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vietnam-family-trip-v9-4-1';
+const CACHE_NAME = 'vietnam-family-trip-v9-5';
 const APP_SHELL = [
   './',
   './index.html',
@@ -16,6 +16,7 @@ const APP_SHELL = [
   './data/itineraries.json',
   './data/safety.json',
   './ai-assistant.css',
+  './ai-config.js',
   './ai-assistant.js'
 ];
 

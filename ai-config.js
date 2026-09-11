@@ -1,0 +1,7 @@
+// Vietnam Family Travel Platform v9.5
+// Worker 배포 후 endpoint를 여기에 넣으면 모든 기기에서 자동 사용됩니다.
+// 예: endpoint: 'https://vietnam-family-trip-ai.YOUR_SUBDOMAIN.workers.dev/chat'
+window.TRAVEL_AI_CONFIG = {
+  endpoint: '',
+  appVersion: '9.5'
+};

@@ -54,3 +54,9 @@ Promote JSON maps to official v9.3
 - Add `window.getTravelAiRoute()` bridge on all four city maps.
 - Refresh AI context when the assistant opens and whenever a question is asked.
 - Bump service-worker cache to `vietnam-family-trip-v9-4-1`.
+
+## v9.5 AI Travel Assistant
+- 실제 AI 연결을 위한 Cloudflare Worker 패키지 추가
+- OpenAI API key는 GitHub Pages에 저장하지 않음
+- AI 비서 ⚙️에서 Worker `/chat` 주소를 저장하거나 `ai-config.js`에 공용 endpoint 설정
+- 상세 절차: `README_V9_5_AI_SETUP.md`
