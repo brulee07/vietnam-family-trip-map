@@ -86,3 +86,9 @@ GitHub에 업로드할 때 기존 저장소 루트에 전체 덮어쓰기 후 `A
 - 테스트 후 성공하면 v8 정식 단계에서 4개 도시 전체를 JSON 연동 구조로 전환합니다.
 
 권장 커밋 메시지: `Add Nha Trang JSON alpha v8`
+
+
+## v8-beta
+- 전체 도시 JSON 연동 테스트 페이지 추가
+- da_nang_json_beta.html / quy_nhon_json_beta.html / tuy_hoa_json_beta.html / nha_trang_json_beta.html
+- 기존 도시 지도는 유지하고 테스트 페이지에서만 JSON 데이터를 읽습니다.
