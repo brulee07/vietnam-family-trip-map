@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vietnam-family-trip-v8-beta';
+const CACHE_NAME = 'vietnam-family-trip-v9';
 const APP_SHELL = [
   './',
   './index.html',
@@ -7,20 +7,13 @@ const APP_SHELL = [
   './quy_nhon.html',
   './tuy_hoa.html',
   './nha_trang.html',
-  './nha_trang_json_alpha.html',
   './icons/icon-192.png',
-  './icons/icon-512.png'
-,
-  './data/index.html'
-,
-  './data/trip.json'
-,
-  './data/cities.json'
-,
-  './data/places.json'
-,
-  './data/itineraries.json'
-,
+  './icons/icon-512.png',
+  './data/index.html',
+  './data/trip.json',
+  './data/cities.json',
+  './data/places.json',
+  './data/itineraries.json',
   './data/safety.json'
 ];
 
@@ -41,7 +34,7 @@ self.addEventListener('fetch', event => {
   const req = event.request;
   const accept = req.headers.get('accept') || '';
 
-  // v6: 응급·약국·숙소 주소 카드 추가. HTML 문서는 최신 배포가 바로 반영되도록 network-first로 처리합니다.
+  // HTML 문서는 최신 배포가 바로 반영되도록 network-first로 처리합니다.
   if (req.mode === 'navigate' || accept.includes('text/html')) {
     event.respondWith(
       fetch(req).then(response => {
