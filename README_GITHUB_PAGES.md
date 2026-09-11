@@ -39,3 +39,10 @@ Promote JSON maps to official v9.3
 ## v9.3 hotfix
 - 다낭 공식 지도 파일을 다낭 v16 기반으로 복구하고 JSON 연동 상태 표시를 추가했습니다.
 - 나머지 3개 도시의 JSON 공식 지도 구조는 유지했습니다.
+
+
+## v9.4 AI Travel Assistant Foundation
+- AI chat panel on hub and all four city maps
+- Travel Context Engine reads trip/cities/places/safety JSON and live map itinerary
+- No API key is stored in browser code
+- Optional secure backend endpoint can be set with localStorage key `travelAiEndpoint`

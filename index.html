@@ -22,8 +22,9 @@
 .safetyIntro{color:var(--muted);line-height:1.6;margin:0 0 14px}.emergencyGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0 18px}.emergencyTile{display:flex;flex-direction:column;gap:4px;text-decoration:none;border-radius:16px;border:1px solid var(--line);padding:13px;background:rgba(255,255,255,.06)}.emergencyTile span{font-size:12px;color:#bdd0e7;font-weight:800}.emergencyTile b{font-size:22px;color:#fff}.emergencyTile.red{border-color:rgba(248,113,113,.45);background:rgba(127,29,29,.28)}.addressGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:10px}.addressCard{border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.045);padding:15px}.addressCard h3{margin:8px 0 8px}.addressCard p{margin:0 0 10px;color:#dbeafe;line-height:1.55}.cardActions{display:flex;gap:8px;flex-wrap:wrap}.copyBtn{border:1px solid var(--line);background:#0b1527;color:#eaf8ff;border-radius:12px;padding:9px 11px;font-weight:800;cursor:pointer}.safetyNote{font-size:12px;color:#9bb0c8;line-height:1.55;margin-top:10px}@media(max-width:760px){.emergencyGrid,.addressGrid{grid-template-columns:1fr}.emergencyTile{min-height:74px}.quick{grid-template-columns:1fr}}
 @media(max-width:920px){.hero{grid-template-columns:1fr}.cityGrid{grid-template-columns:repeat(2,1fr)}.day{grid-template-columns:86px 1fr}.actions{grid-column:1/-1;justify-content:flex-start}}@media(max-width:560px){.wrap{padding:18px 12px 30px}.quick,.cityGrid,.install{grid-template-columns:1fr}.card{border-radius:20px;padding:16px}.day{grid-template-columns:74px 1fr;padding:12px}.desc{font-size:14px}.mini{font-size:12px;padding:8px 9px}.filters{gap:6px}.chip{font-size:12px;padding:8px 10px}}
   </style>
+  <link rel="stylesheet" href="./ai-assistant.css">
 </head>
-<body>
+<body data-city="hub">
   <main class="wrap">
     <section class="hero">
       <div class="card">
@@ -117,12 +118,12 @@ Tòa nhà APEC Mandala, Đại lộ Hùng Vương, Tuy Hòa">주소 복사</butt
     </section>
 
     <section class="section notice">지도 화면과 장소 목록은 앱처럼 열 수 있지만, 지도 타일·장소 검색·경로 계산은 인터넷 연결이 필요합니다. 여행 전에는 운영시간, 티켓, 세탁·마사지 가격, 픽업·배달 여부를 한 번 더 확인하세요.</section>
-    <p class="small">PWA Hub v9.3 · JSON 기반 공식 지도 전환 · 안전·주소 카드 · 홈 버튼 · 마커 이름 ON/OFF 유지</p>
+    <p class="small">PWA Hub v9.4 · JSON 기반 공식 지도 전환 · 안전·주소 카드 · 홈 버튼 · 마커 이름 ON/OFF 유지</p>
   
 <section class="section" id="database"><h2>여행 데이터베이스</h2><p class="muted">AI 여행비서 확장을 위해 장소·일정·안전 정보를 JSON으로 분리한 v1 데이터입니다.</p><div class="city-grid"><a class="city-card" href="data/index.html"><div class="city-title">🧠 여행 데이터베이스 v1</div><div class="city-meta">places.json · itineraries.json · safety.json</div><div class="city-desc">현재 지도는 그대로 유지하면서, 다음 단계의 AI 추천 기능이 읽을 수 있는 데이터 기반을 준비했습니다.</div></a></div></section>
 
 <section class="card" style="border-color:#38bdf8;box-shadow:0 0 0 1px rgba(56,189,248,.16) inset;">
-  <h2>🧠 v9.3 · JSON 기반 공식 지도</h2>
+  <h2>🧠 v9.4 · JSON 기반 공식 지도</h2>
   <p>이제 도시별 공식 지도는 <code>data/places.json</code>과 <code>data/itineraries.json</code>을 읽습니다. 앞으로 장소와 일정 수정은 데이터 파일 중심으로 관리할 수 있습니다.</p>
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-top:12px">
     <a class="primary" href="./da_nang.html">다낭 공식 지도</a>
@@ -130,7 +131,7 @@ Tòa nhà APEC Mandala, Đại lộ Hùng Vương, Tuy Hòa">주소 복사</butt
     <a class="primary" href="./tuy_hoa.html">뚜이호아 공식 지도</a>
     <a class="primary" href="./nha_trang.html">나트랑 공식 지도</a>
   </div>
-  <p class="muted">각 도시 지도 상단에 <b>JSON 데이터: 공식 연동 성공</b> 표시가 뜨면 v9.3 전환이 정상 적용된 것입니다.</p>
+  <p class="muted">각 도시 지도 상단에 <b>JSON 데이터: 공식 연동 성공</b> 표시가 뜨면 v9.4 전환이 정상 적용된 것입니다.</p>
 </section>
 </main>
   <script>
@@ -184,5 +185,6 @@ Tòa nhà APEC Mandala, Đại lộ Hùng Vương, Tuy Hòa">주소 복사</butt
       window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js').catch(()=>{}));
     }
   </script>
+  <script src="./ai-assistant.js"></script>
 </body>
 </html>

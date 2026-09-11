@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vietnam-family-trip-v9-3';
+const CACHE_NAME = 'vietnam-family-trip-v9-4';
 const APP_SHELL = [
   './',
   './index.html',
@@ -14,7 +14,9 @@ const APP_SHELL = [
   './data/cities.json',
   './data/places.json',
   './data/itineraries.json',
-  './data/safety.json'
+  './data/safety.json',
+  './ai-assistant.css',
+  './ai-assistant.js'
 ];
 
 self.addEventListener('install', event => {
