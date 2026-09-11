@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ko"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>다낭 가족여행 반응형 지도 v15</title>
+<title>다낭 가족여행 지도 v16</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
 :root{--bg:#0b1220;--panel:#0f172a;--card:#151f31;--line:#2b3a53;--muted:#93a4bc;--text:#f8fafc}
@@ -18,7 +18,20 @@ h1{font-size:20px;margin:0 0 5px}.sub{font-size:11.5px;color:var(--muted);line-h
 .actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.btn{border:1px solid #334155;background:#172033;color:#e5e7eb;border-radius:8px;padding:7px 9px;font-size:10.5px;cursor:pointer}.btn.primary{background:#fff;color:#111827;font-weight:750}
 .route-info{margin-top:10px;background:#101a2b;border:1px solid #26354d;border-radius:10px;padding:9px 10px;font-size:10.5px;color:#cbd5e1;line-height:1.5}
 .segment{display:flex;justify-content:space-between;gap:10px;border-top:1px solid #233047;padding-top:6px;margin-top:6px}.seg-right{white-space:nowrap;color:#fff}
-.note{font-size:9.8px;color:#718198;line-height:1.5;margin-top:11px}#map{height:100%}
+.note{font-size:9.8px;color:#718198;line-height:1.5;margin-top:11px}
+.verify-box{font-size:10.5px;line-height:1.5;color:#cbd5e1;background:#0b1324;border:1px solid #26354d;border-radius:10px;padding:9px 10px;margin:10px 0 12px}
+.verify-box b{color:#fff}.warn{color:#fde68a}
+.preset-box{border:1px solid #26354d;background:#101a2b;border-radius:12px;padding:10px;margin:12px 0 10px}
+.preset-title{font-size:12px;font-weight:850;margin-bottom:7px;color:#f8fafc}
+.preset-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.preset-btn{border:1px solid #334155;background:#172033;color:#e5e7eb;border-radius:9px;padding:8px 9px;font-size:10.5px;line-height:1.25;cursor:pointer;text-align:left}
+.preset-btn b{display:block;font-size:11px;color:#fff;margin-bottom:2px}
+.preset-btn.active{background:#fff;color:#111827;border-color:#fff}
+.preset-btn.active b{color:#111827}
+.preset-note{font-size:9.8px;color:#93a4bc;line-height:1.45;margin-top:8px}
+.preset-current{font-size:10.5px;color:#cbd5e1;background:#0b1324;border:1px solid #26354d;border-radius:9px;padding:7px 8px;margin-top:8px;line-height:1.4}
+@media(max-width:850px){.preset-grid{grid-template-columns:1fr}.preset-box{margin-top:9px}}
+#map{height:100%}
 .pin{width:28px;height:28px;border-radius:50%;border:2px solid white;box-shadow:0 2px 7px #0007;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff;cursor:pointer}
 .lbl{background:#ffffffee!important;border:1px solid #94a3b8!important;border-radius:7px!important;box-shadow:0 1px 5px #0002!important;color:#172033!important;font-size:10.5px!important;font-weight:800!important;padding:3px 6px!important;white-space:nowrap}.lbl:before{display:none!important}.leaflet-tooltip.lbl{pointer-events:auto!important;cursor:pointer!important}.leaflet-marker-icon{pointer-events:auto!important;cursor:pointer!important}
 .leaflet-popup-content-wrapper{border-radius:15px;padding:0;overflow:hidden}.leaflet-popup-content{margin:0;width:355px!important}
@@ -315,17 +328,29 @@ html,body{overscroll-behavior:none}
 
 <div class="mobile-topbar" id="mobileTopbar">
   <a class="travel-home-link mobile-home-link" href="./index.html" aria-label="여행 홈으로">🏠 홈</a>
-  <div class="mobile-title">다낭 가족여행 지도</div>
+  <div class="mobile-title">다낭 가족여행 지도 v16</div>
   <button id="mobilePanelToggle" type="button">일정 열기</button>
 </div>
 
 <div class="app"><aside class="side">
-<h1>다낭 여행 경로 편집기</h1>
+<h1>다낭 여행 경로 편집기 v16</h1>
 <a class="travel-home-link desktop-home-link" href="./index.html">← 여행 홈으로</a>
-<div class="sub">후보지를 여행 경로로 드래그하고 순서를 바꾸면 도로 경로가 재계산됩니다. <b>지도상의 모든 마커는 클릭 시 상세 팝업이 열립니다.</b></div>
+<div class="sub">후보지를 여행 경로로 드래그하고 순서를 바꾸면 도로 경로가 재계산됩니다. <b>v16: 다른 도시 지도와 맞춰 날짜별 일정 프리셋과 검증 안내를 추가했습니다.</b> 모든 마커는 클릭 시 상세 팝업이 열립니다.</div>
+<div class="verify-box"><b>검증 기준</b> · 다낭은 호이안·오행산·미케비치·바나힐을 제외하고, <b>New Orient Hotel 기준 시내 여유 일정</b>으로 구성합니다. <span class="warn">1/12는 A안 시내·실내 일정, 우천·휴식 필요 시 B안 미카즈키 워터파크로 전환합니다.</span></div>
+<div class="preset-box">
+  <div class="preset-title">날짜별 일정 프리셋</div>
+  <div class="preset-grid">
+    <button class="preset-btn" data-preset="arrival"><b>1/11 도착</b>공항 → New Orient</button>
+    <button class="preset-btn" data-preset="day12a"><b>1/12 A안 시내</b>박물관 → 시장 → 쇼핑 → 야경</button>
+    <button class="preset-btn" data-preset="day12b"><b>1/12 B안 물놀이</b>미카즈키 → 쇼핑/저녁</button>
+    <button class="preset-btn" data-preset="day13"><b>1/13 이동</b>체크아웃 → 다낭역</button>
+  </div>
+  <div class="preset-current" id="presetCurrent">현재 경로: 1/11 도착 기본 경로</div>
+  <div class="preset-note">프리셋을 누르면 여행 경로가 해당 날짜 일정으로 교체됩니다. 이후 후보지를 추가하거나 순서를 바꿔도 됩니다.</div>
+</div>
 <div class="mobile-handle" id="mobileHandle"></div><div class="mobile-tabs" id="mobileTabs"><button type="button" class="active" data-mobile-tab="route">여행 경로</button><button type="button" data-mobile-tab="candidate">후보지</button></div><div class="header-row"><b>여행 경로</b><span class="count" id="routeCount">2곳</span></div>
 <div id="itinerary" class="dropzone"></div>
-<div class="actions"><button class="btn primary" id="googleAll">Google Maps에서 전체 경로 열기</button><button class="btn" id="clearRoute">숙소까지만 초기화</button></div>
+<div class="actions"><button class="btn primary" id="googleAll">Google Maps에서 전체 경로 열기</button><button class="btn" id="clearRoute">도착→숙소로 초기화</button></div>
 <div id="routeInfo" class="route-info">도로 경로를 계산하는 중...</div>
 <div class="header-row"><b>후보지</b><div style="display:flex;gap:6px;align-items:center"><button class="btn" id="addPlaceBtn">+ 장소 추가</button><span class="count" id="candidateCount"></span></div></div>
 <div id="candidates" class="candidates"></div>
@@ -367,7 +392,26 @@ html,body{overscroll-behavior:none}
 let P=[{"id": "airport", "name": "다낭 국제공항", "en": "Da Nang International Airport", "cat": "교통", "plan": "공통", "lat": 16.0429, "lng": 108.19839, "address": "Da Nang International Airport (DAD)", "role": "1/11 21:40 도착 · 호텔 이동", "hours": "항공편 기준", "stay": "30~60분", "rating": "필수", "tip": "도착이 늦기 때문에 공항에서는 바로 숙소 이동을 우선합니다.", "desc": "이번 다낭 일정의 시작점. 입국과 수하물 수령 후 뉴 오리엔트 호텔로 이동합니다."}, {"id": "hotel", "name": "뉴 오리엔트 호텔", "en": "New Orient Hotel Da Nang", "cat": "숙소", "plan": "공통", "lat": 16.08247, "lng": 108.221397, "address": "20 Đống Đa, Hải Châu, Đà Nẵng", "role": "1/11~1/13 숙소 · 시내 동선 기준점", "hours": "체크인 조건 기준", "stay": "2박", "rating": "필수", "tip": "1/12 아침 컨디션에 따라 출발 시간을 유연하게 조정하기 좋습니다.", "desc": "한강 북쪽 시내 베이스. 박물관·강변·시장 접근성을 기준으로 전체 동선을 잡습니다."}, {"id": "station", "name": "다낭역", "en": "Ga Đà Nẵng", "cat": "교통", "plan": "공통", "lat": 16.0716, "lng": 108.2093, "address": "Hải Phòng St., Đà Nẵng", "role": "1/13 침대열차 탑승", "hours": "열차 시간 기준", "stay": "40~60분", "rating": "필수", "tip": "7명이므로 역에는 여유 있게 도착하는 편이 좋습니다.", "desc": "1월 13일 꾸이년 지역으로 이동하기 위한 출발역입니다."}, {"id": "museum", "name": "다낭박물관", "en": "Da Nang Museum", "cat": "핵심", "plan": "A안", "lat": 16.07483, "lng": 108.22398, "address": "31 Trần Phú, Hải Châu, Đà Nẵng", "role": "도시 역사·문화 · 실내 핵심 후보", "hours": "매일 08:00–17:00", "stay": "60~90분", "rating": "추천", "tip": "날씨가 덥거나 비가 조금 오는 경우에도 부담 없이 넣을 수 있습니다.", "desc": "현재 31 Trần Phú의 신 박물관을 기준으로 표시했습니다."}, {"id": "con", "name": "꼰시장", "en": "Chợ Cồn", "cat": "핵심", "plan": "A안", "lat": 16.068264, "lng": 108.21437, "address": "290 Hùng Vương, Đà Nẵng", "role": "로컬시장 · 먹거리 체험", "hours": "여행 전 재확인", "stay": "45~75분", "rating": "추천", "tip": "아이들과는 사람이 붐비는 시간대에 오래 머무르기보다 먹거리와 시장 분위기 위주로 보는 편이 좋습니다.", "desc": "한시장 대신 현지 시장 분위기를 보기 위해 우선 후보로 선택한 장소입니다."}, {"id": "aeon", "name": "AEON MALL", "en": "AEON MALL Da Nang Thanh Khe", "cat": "핵심", "plan": "A안", "lat": 16.06654, "lng": 108.20428, "address": "46 Điện Biên Phủ, Thanh Khê, Đà Nẵng", "role": "쇼핑 · 식사 · 실내 휴식", "hours": "평일 10:00–22:00 / 주말 09:00–22:00", "stay": "90~150분", "rating": "추천", "tip": "아이들과 함께 쉬면서 식사·쇼핑을 한 번에 해결하기 좋은 장소입니다.", "desc": "2026년 개장한 대형 쇼핑몰로 가족 일정의 완충 지점 역할을 합니다."}, {"id": "night", "name": "선짜 야시장", "en": "Sơn Trà Night Market", "cat": "핵심", "plan": "A안", "lat": 16.061583, "lng": 108.231972, "address": "Lý Nam Đế × Mai Hắc Đế, An Hải, Đà Nẵng", "role": "저녁 먹거리 · 기념품 · 야경", "hours": "저녁 운영 · 여행 전 재확인", "stay": "60~90분", "rating": "추천", "tip": "용다리와 묶어서 한 번에 이동하면 동선이 좋습니다.", "desc": "다낭 시내 저녁 분위기를 보기 좋은 야시장입니다."}, {"id": "mikazuki", "name": "미카즈키 워터파크", "en": "Mikazuki Water Park 365", "cat": "B안", "plan": "B안", "lat": 16.0921823, "lng": 108.1441563, "address": "Xuân Thiều Tourism Area, Nguyễn Tất Thành St., Đà Nẵng", "role": "우천 시 하루 대체 일정", "hours": "09:00–19:00 · 여행 전 재확인", "stay": "4~6시간", "rating": "B안 핵심", "tip": "비가 많이 오는 날 시내 관광 대신 선택합니다. A안과 동시에 넣지 않습니다.", "desc": "실내 시설을 중심으로 이용할 수 있어 1월 우천 가능성에 대비한 대체 일정입니다."}, {"id": "vincom", "name": "Vincom Plaza", "en": "Vincom Plaza Ngô Quyền", "cat": "보조", "plan": "A안", "lat": 16.071655, "lng": 108.23042, "address": "910A Ngô Quyền, Đà Nẵng", "role": "쇼핑 · 식사 · 휴식 보조 후보", "hours": "평일 10:00–22:00 / 주말 09:30–22:00", "stay": "60~120분", "rating": "보조", "tip": "AEON과 역할이 겹치므로 두 곳을 모두 갈 필요는 없습니다.", "desc": "한강 동쪽 쇼핑몰. 일정 중 휴식이 필요할 때 선택합니다."}, {"id": "go", "name": "GO! Da Nang", "en": "GO! Da Nang", "cat": "보조", "plan": "A안", "lat": 16.066607, "lng": 108.21326, "address": "255–257 Hùng Vương, Thanh Khê, Đà Nẵng", "role": "대형마트 · 현지 쇼핑", "hours": "08:00–22:00 · 여행 전 재확인", "stay": "45~75분", "rating": "보조", "tip": "꼰시장과 매우 가까워 같은 구역에서 선택적으로 묶을 수 있습니다.", "desc": "간식과 현지 상품을 구매하기 좋은 대형마트입니다."}, {"id": "cham", "name": "참조각박물관", "en": "Museum of Cham Sculpture", "cat": "보조", "plan": "A안", "lat": 16.0601689, "lng": 108.2231104, "address": "02 Đường 2 Tháng 9, Hải Châu, Đà Nẵng", "role": "참 문화·유물", "hours": "여행 전 재확인", "stay": "45~75분", "rating": "보조", "tip": "아이들의 박물관 선호도와 당일 피로도를 보고 다낭박물관과 둘 중 하나만 선택해도 충분합니다.", "desc": "다낭의 대표 문화시설 중 하나입니다."}, {"id": "dragon", "name": "용다리", "en": "Dragon Bridge", "cat": "보조", "plan": "A안", "lat": 16.06111, "lng": 108.22667, "address": "Hàn River, Đà Nẵng", "role": "야경 · 선짜 야시장 연계", "hours": "상시 관람", "stay": "20~40분", "rating": "추천", "tip": "1/12는 화요일이므로 정기 불·물 쇼를 전제로 일정을 잡지 않습니다.", "desc": "한강을 가로지르는 다낭의 대표 랜드마크입니다."}, {"id": "xom", "name": "Xóm Mới Garden", "en": "Xóm Mới Garden Đà Nẵng", "cat": "음식", "plan": "A안", "lat": 16.063513, "lng": 108.223274, "address": "222 Trần Phú, Hải Châu, Đà Nẵng", "role": "베트남 가정식 · 가족 식사 후보", "hours": "10:00–22:00 · 여행 전 재확인", "stay": "60~90분", "rating": "식사 우선", "tip": "여럿이 메뉴를 나눠 먹기 좋아 7인 가족 식사에 잘 맞는 후보입니다.", "desc": "메뉴 선택 폭이 넓은 베트남 가정식 후보입니다."}, {"id": "miquang", "name": "Mỳ Quảng Cô Sáu", "en": "Mỳ Quảng Cô Sáu", "cat": "음식", "plan": "A안", "lat": 16.0662, "lng": 108.229656, "address": "397 Trần Hưng Đạo, Đà Nẵng", "role": "미꽝 우선 후보", "hours": "여행 전 재확인", "stay": "40~60분", "rating": "식사 추천", "tip": "가볍게 한 끼 먹기 좋아 일정 중간 식사로 배치하기 좋습니다.", "desc": "다낭 향토음식 미꽝을 맛보기 위한 주요 후보입니다."}, {"id": "banhxeo", "name": "Bánh Xèo Bà Dưỡng", "en": "Bánh Xèo Bà Dưỡng", "cat": "음식", "plan": "A안", "lat": 16.0588, "lng": 108.21603, "address": "280/23 Hoàng Diệu, Hải Châu, Đà Nẵng", "role": "반쎄오 + 넴루이", "hours": "여행 전 재확인", "stay": "45~70분", "rating": "식사 추천", "tip": "골목 안쪽에 있어 차량 하차 후 짧게 걸어 들어갈 가능성을 고려해야 합니다.", "desc": "반쎄오와 넴루이를 함께 먹기 좋은 대표 로컬 음식 후보입니다."}, {"id": "moc", "name": "MỘC Quán Seafood", "en": "MỘC Quán Seafood", "cat": "음식", "plan": "A안", "lat": 16.064027, "lng": 108.241542, "address": "26 Tô Hiến Thành, An Hải, Đà Nẵng", "role": "해산물 저녁 우선 후보", "hours": "여행 전 재확인", "stay": "90~120분", "rating": "저녁 우선", "tip": "7명이 함께 먹기 좋아 저녁 한 끼를 여유 있게 배치할 때 적합합니다.", "desc": "가족 단위 저녁식사로 우선 검토한 해산물 식당입니다."}],COLORS={"교통": "#2563eb", "숙소": "#7c3aed", "핵심": "#059669", "보조": "#d97706", "음식": "#dc2626", "B안": "#0891b2"}; const savedCustom=JSON.parse(localStorage.getItem('danangCustomPlaces')||'[]');
 P=P.concat(savedCustom);
 let byId=Object.fromEntries(P.map(p=>[p.id,p]));
-let itinerary=['airport','hotel'],draggingId=null,draggingSource=null,routeLayers=[],routeToken=0;
+let itinerary=['airport','hotel'],draggingId=null,draggingSource=null,routeLayers=[],routeToken=0,activePreset=null;
+const DAY_PRESETS={
+  arrival:{label:'1/11 도착 · 공항→호텔',ids:['airport','hotel']},
+  day12a:{label:'1/12 A안 · 시내·실내 여유 일정',ids:['hotel','museum','miquang','con','aeon','night','dragon','moc']},
+  day12b:{label:'1/12 B안 · 미카즈키 물놀이 대체 일정',ids:['hotel','mikazuki','aeon','moc']},
+  day13:{label:'1/13 이동 · 체크아웃 후 다낭역',ids:['hotel','go','station']}
+};
+function setPresetUI(key){
+  activePreset=key;
+  document.querySelectorAll('.preset-btn').forEach(btn=>btn.classList.toggle('active',btn.dataset.preset===key));
+  const box=document.getElementById('presetCurrent');
+  if(!box) return;
+  box.textContent=key&&DAY_PRESETS[key] ? '현재 경로: '+DAY_PRESETS[key].label : '현재 경로: 사용자 편집 경로';
+}
+function applyPreset(key){
+  const preset=DAY_PRESETS[key]; if(!preset) return;
+  itinerary=preset.ids.filter(id=>byId[id]);
+  setPresetUI(key);
+  renderAll();
+}
 const map=L.map('map').setView([16.066,108.218],13);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
 
@@ -520,7 +564,8 @@ candZone.addEventListener('drop',e=>{e.preventDefault();if(draggingSource==='rou
 function clearRoutes(){routeLayers.forEach(l=>map.removeLayer(l));routeLayers=[];}
 function googleUrl(){if(itinerary.length<2)return'#';const pts=itinerary.map(id=>byId[id]);const origin=`${pts[0].lat},${pts[0].lng}`,dest=`${pts.at(-1).lat},${pts.at(-1).lng}`,wp=pts.slice(1,-1).map(p=>`${p.lat},${p.lng}`).join('|');let u=`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(dest)}&travelmode=driving`;if(wp)u+=`&waypoints=${encodeURIComponent(wp)}`;return u;}
 document.getElementById('googleAll').onclick=()=>window.open(googleUrl(),'_blank','noopener');
-document.getElementById('clearRoute').onclick=()=>{itinerary=['airport','hotel'];renderAll();};
+document.getElementById('clearRoute').onclick=()=>{itinerary=['airport','hotel'];setPresetUI('arrival');renderAll();};
+document.querySelectorAll('.preset-btn').forEach(btn=>btn.addEventListener('click',()=>applyPreset(btn.dataset.preset)));
 function fmtKm(m){return(m/1000).toFixed(m<10000?1:0)+' km'}
 function fmtMin(s){const m=Math.round(s/60);return m<60?m+'분':Math.floor(m/60)+'시간 '+(m%60)+'분'}
 
@@ -715,6 +760,7 @@ document.getElementById('savePlace').onclick=()=>{
 };
 
 function renderAll(){renderLists();refreshMarkerIcons();drawRoute();}
+setPresetUI('arrival');
 renderAll();
 
 // ===== v12 mobile responsive behavior =====
