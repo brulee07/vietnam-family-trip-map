@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vietnam-family-trip-pwa-v6';
+const CACHE_NAME = 'vietnam-family-trip-v7';
 const APP_SHELL = [
   './',
   './index.html',
@@ -9,6 +9,18 @@ const APP_SHELL = [
   './nha_trang.html',
   './icons/icon-192.png',
   './icons/icon-512.png'
+,
+  './data/index.html'
+,
+  './data/trip.json'
+,
+  './data/cities.json'
+,
+  './data/places.json'
+,
+  './data/itineraries.json'
+,
+  './data/safety.json'
 ];
 
 self.addEventListener('install', event => {

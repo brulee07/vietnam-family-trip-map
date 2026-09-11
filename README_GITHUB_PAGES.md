@@ -63,3 +63,15 @@
 - 도시별 병원 지도/약국 검색 버튼 추가
 - 도시별 지도 상단에서 `🆘 안전·주소`로 허브 안전 섹션 이동
 - service-worker 캐시 버전 v6 갱신
+
+
+## v7 업데이트 - 여행 데이터베이스 v1
+
+- `data/trip.json`: 전체 여행 기간, 인원, 도시 이동 흐름
+- `data/cities.json`: 도시별 숙소·지도 파일·체류일
+- `data/places.json`: 네 도시의 전체 장소 POI 데이터
+- `data/itineraries.json`: 날짜별 일정 프리셋 데이터
+- `data/safety.json`: 응급번호, 숙소 주소, 병원, 약국 검색 정보
+
+이번 v7은 지도 UI를 크게 바꾸지 않고, AI 여행비서 확장을 위한 데이터 기반을 추가한 버전입니다.
+GitHub에 업로드할 때 기존 저장소 루트에 전체 덮어쓰기 후 `Add travel database v7`로 커밋하면 됩니다.
