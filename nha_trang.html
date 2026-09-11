@@ -322,17 +322,40 @@ html,body{overscroll-behavior:none}
 }
 @media (min-width:851px){.mobile-home-link{display:none!important;}}
 
+
+
+/* ===== v5 Improvement: marker label toggle ===== */
+body.labels-hidden .leaflet-tooltip.lbl{display:none!important;}
+.label-toggle-control{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  min-height:34px;padding:8px 12px;border-radius:12px;
+  border:1px solid #334155;background:#172033;color:#e5e7eb;
+  font-size:11px;font-weight:850;text-decoration:none;cursor:pointer;
+}
+.label-toggle-control:hover{border-color:#64748b;background:#1f2a44;}
+.label-toggle-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0 10px;}
+@media(max-width:850px){
+  .desktop-label-toggle{display:none!important;}
+  .mobile-label-toggle{display:inline-flex!important;pointer-events:auto!important;
+    background:rgba(15,23,42,.92)!important;color:#fff!important;
+    border-color:rgba(255,255,255,.18)!important;box-shadow:0 6px 18px rgba(0,0,0,.22)!important;
+    padding:9px 10px!important;white-space:nowrap;
+  }
+}
+@media(min-width:851px){.mobile-label-toggle{display:none!important;}}
+
 </style></head><body>
 
 <div class="mobile-topbar" id="mobileTopbar">
   <a class="travel-home-link mobile-home-link" href="./index.html" aria-label="여행 홈으로">🏠 홈</a>
   <div class="mobile-title">나트랑 가족여행 지도 v3.5</div>
+  <button class="label-toggle-control mobile-label-toggle" data-label-toggle type="button">이름 숨김</button>
   <button id="mobilePanelToggle" type="button">일정 열기</button>
 </div>
 
 <div class="app"><aside class="side">
 <h1>나트랑 여행 경로 편집기 v3.5</h1>
-<a class="travel-home-link desktop-home-link" href="./index.html">← 여행 홈으로</a>
+<div class="label-toggle-row"><a class="travel-home-link desktop-home-link" href="./index.html">← 여행 홈으로</a><button class="label-toggle-control desktop-label-toggle" data-label-toggle type="button">이름 숨김</button></div>
 <div class="sub">후보지를 여행 경로로 드래그하고 순서를 바꾸면 도로 경로가 재계산됩니다. <b>v3.5: 1/21~1/25 날짜별 실제 일정 프리셋을 확정 흐름에 맞춰 보정한 지도입니다. I-Resort는 물놀이 1순위, VinWonders는 선택 후보입니다.</b><br>명소 이름은 자연스럽게 유지하고, 실제 차량 목적지·케이블카역·운영 재확인 정보는 팝업에 표시합니다. 모든 마커는 클릭 시 상세 팝업이 열립니다.</div>
 <div class="verify-box"><b>검증 기준</b> · 지도 지점명은 <b>명소 이름</b>을 우선 사용하고, 실제 좌표·설명은 <b>차량 도착·입장 시작점</b> 기준을 반영합니다. <span class="warn">VinWonders는 명소명으로 표시하되 실제 이동은 본토 케이블카역/선착장 기준입니다. 음식·카페 좌표는 주소 기준 앵커이며, 여행 전 실제 POI 위치를 최종 확인합니다.</span></div>
 <div class="preset-box">
@@ -769,6 +792,32 @@ document.getElementById('savePlace').onclick=()=>{
 
 function renderAll(){renderLists();refreshMarkerIcons();drawRoute();}
 renderAll();
+
+
+
+// ===== v5 marker label toggle =====
+(function(){
+  const key='vietnamTripLabelVisible:'+location.pathname.split('/').pop();
+  let visible=localStorage.getItem(key)!=='hidden';
+  function apply(){
+    document.body.classList.toggle('labels-hidden', !visible);
+    document.querySelectorAll('[data-label-toggle]').forEach(btn=>{
+      btn.textContent = visible ? '이름 숨김' : '이름 표시';
+      btn.setAttribute('aria-pressed', String(!visible));
+      btn.setAttribute('title', visible ? '지도 위 장소 이름을 숨깁니다' : '지도 위 장소 이름을 표시합니다');
+    });
+  }
+  document.querySelectorAll('[data-label-toggle]').forEach(btn=>{
+    btn.addEventListener('click', function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      visible=!visible;
+      localStorage.setItem(key, visible ? 'visible' : 'hidden');
+      apply();
+    });
+  });
+  apply();
+})();
 
 // ===== v12 mobile responsive behavior =====
 (function(){
