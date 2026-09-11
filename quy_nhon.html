@@ -1,0 +1,835 @@
+<!doctype html>
+<html lang="ko"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>꾸이년 가족여행 반응형 지도 v4.3</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{--bg:#0b1220;--panel:#0f172a;--card:#151f31;--line:#2b3a53;--muted:#93a4bc;--text:#f8fafc}
+*{box-sizing:border-box}html,body{height:100%;margin:0;font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif;background:var(--bg)}
+.app{height:100%;display:grid;grid-template-columns:420px 1fr}.side{background:var(--panel);color:var(--text);overflow:auto;padding:18px;border-right:1px solid #24334b}
+h1{font-size:20px;margin:0 0 5px}.sub{font-size:11.5px;color:var(--muted);line-height:1.5;margin-bottom:14px}
+.header-row{display:flex;justify-content:space-between;align-items:center;margin:14px 0 7px}.header-row b{font-size:12.5px}.count{font-size:10px;color:#9fb0c8;background:#172033;padding:4px 7px;border-radius:999px}
+.dropzone{min-height:68px;border:1px dashed #475569;border-radius:12px;padding:7px;background:#0b1324}.dropzone.over{border-color:#38bdf8;background:#102239}
+.stop{display:grid;grid-template-columns:28px 1fr 24px;gap:8px;align-items:center;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:9px;margin:5px 0;cursor:grab;user-select:none}
+.stop.dragging{opacity:.35}.num{width:25px;height:25px;border-radius:50%;background:#fff;color:#111827;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900}
+.stop-name{font-size:12.5px;font-weight:800}.stop-meta{font-size:10px;color:#94a3b8;margin-top:2px;line-height:1.35}.remove{border:0;background:transparent;color:#94a3b8;cursor:pointer;font-size:15px;padding:0}
+.candidates{display:flex;flex-direction:column;gap:5px}.candidate{display:grid;grid-template-columns:9px 1fr 22px;gap:8px;align-items:center;border:1px solid #26354d;background:#131d2e;border-radius:9px;padding:8px 9px;cursor:grab}
+.candidate:hover{border-color:#64748b}.dot{width:8px;height:8px;border-radius:50%}.plus{font-size:17px;color:#64748b;text-align:center}.cname{font-size:12px;font-weight:750}.cmeta{font-size:9.7px;color:#8797ad;margin-top:2px}
+.actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.preset-box{border:1px solid #26354d;background:#101a2b;border-radius:12px;padding:10px;margin:12px 0 10px}
+.preset-title{font-size:12px;font-weight:850;margin-bottom:7px;color:#f8fafc}
+.preset-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.preset-btn{border:1px solid #334155;background:#172033;color:#e5e7eb;border-radius:9px;padding:8px 9px;font-size:10.5px;line-height:1.25;cursor:pointer;text-align:left}
+.preset-btn b{display:block;font-size:11px;color:#fff;margin-bottom:2px}
+.preset-btn.active{background:#fff;color:#111827;border-color:#fff}
+.preset-btn.active b{color:#111827}
+.preset-note{font-size:9.8px;color:#93a4bc;line-height:1.45;margin-top:8px}
+.preset-current{font-size:10.5px;color:#cbd5e1;background:#0b1324;border:1px solid #26354d;border-radius:9px;padding:7px 8px;margin-top:8px;line-height:1.4}
+.btn{border:1px solid #334155;background:#172033;color:#e5e7eb;border-radius:8px;padding:7px 9px;font-size:10.5px;cursor:pointer}.btn.primary{background:#fff;color:#111827;font-weight:750}
+.route-info{margin-top:10px;background:#101a2b;border:1px solid #26354d;border-radius:10px;padding:9px 10px;font-size:10.5px;color:#cbd5e1;line-height:1.5}
+.segment{display:flex;justify-content:space-between;gap:10px;border-top:1px solid #233047;padding-top:6px;margin-top:6px}.seg-right{white-space:nowrap;color:#fff}
+.note{font-size:9.8px;color:#718198;line-height:1.5;margin-top:11px}#map{height:100%}
+.pin{width:28px;height:28px;border-radius:50%;border:2px solid white;box-shadow:0 2px 7px #0007;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff;cursor:pointer}
+.lbl{background:#ffffffee!important;border:1px solid #94a3b8!important;border-radius:7px!important;box-shadow:0 1px 5px #0002!important;color:#172033!important;font-size:10.5px!important;font-weight:800!important;padding:3px 6px!important;white-space:nowrap}.lbl:before{display:none!important}.leaflet-tooltip.lbl{pointer-events:auto!important;cursor:pointer!important}.leaflet-marker-icon{pointer-events:auto!important;cursor:pointer!important}
+.leaflet-popup-content-wrapper{border-radius:15px;padding:0;overflow:hidden}.leaflet-popup-content{margin:0;width:355px!important}
+.photo{height:110px;background:linear-gradient(135deg,#e2e8f0,#cbd5e1);display:flex;align-items:center;justify-content:center;color:#475569;font-size:12px;text-align:center;padding:20px}
+.card{padding:13px 14px}.card h3{margin:0;font-size:17px}.en{font-size:11px;color:#64748b;margin:2px 0 9px}
+.tags{display:flex;gap:5px;flex-wrap:wrap;margin:7px 0}.tag{font-size:10px;background:#eef2ff;color:#334155;border-radius:999px;padding:4px 7px}
+.rec-badge{display:inline-block;background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;border-radius:999px;padding:5px 8px;font-size:10.5px;font-weight:800;margin:2px 0 6px}
+.meta{font-size:11px;line-height:1.55;color:#334155;margin:5px 0}.tip{font-size:12px;line-height:1.55;background:#f8fafc;border-radius:9px;padding:9px 10px;margin:8px 0}
+.maplink{display:inline-block;background:#0f172a;color:#fff!important;text-decoration:none;border-radius:8px;padding:7px 10px;font-size:11px;margin-top:5px}
+.modal-backdrop{position:fixed;inset:0;background:#0008;z-index:3000;display:none;align-items:center;justify-content:center;padding:18px}
+.modal{width:min(460px,96vw);background:#fff;color:#0f172a;border-radius:16px;box-shadow:0 20px 60px #0007;overflow:hidden}
+.modal-head{padding:15px 16px;border-bottom:1px solid #e2e8f0;font-weight:800}
+.modal-body{padding:15px 16px;display:grid;gap:10px}
+.modal-body label{font-size:11px;font-weight:700;color:#475569}
+.modal-body input,.modal-body select,.modal-body textarea{width:100%;margin-top:5px;border:1px solid #cbd5e1;border-radius:9px;padding:9px 10px;font:inherit;font-size:12px}
+.modal-body textarea{min-height:68px;resize:vertical}
+.searchrow{display:grid;grid-template-columns:1fr auto;gap:7px;align-items:end}
+.searchrow button{height:36px;border:0;border-radius:9px;background:#0f172a;color:#fff;padding:0 14px;font-size:11px;font-weight:750;cursor:pointer}
+.search-results{display:grid;gap:6px;max-height:205px;overflow:auto}
+.search-result{border:1px solid #dbe3ee;background:#fff;border-radius:9px;padding:9px 10px;cursor:pointer;text-align:left}
+.search-result:hover{border-color:#64748b;background:#f8fafc}
+.search-result.selected{border-color:#0f172a;background:#f1f5f9}
+.sr-name{font-size:12px;font-weight:800;color:#0f172a}
+.sr-address{font-size:10px;color:#64748b;line-height:1.4;margin-top:3px}
+.search-status{font-size:10.5px;color:#64748b;line-height:1.45}
+.selected-place{display:none;border:1px solid #cbd5e1;border-radius:10px;padding:9px 10px;background:#f8fafc}
+.selected-place strong{display:block;font-size:12px}
+.selected-place div{font-size:10px;color:#64748b;line-height:1.4;margin-top:3px}
+.selected-place a{display:inline-block;margin-top:6px;font-size:10px;color:#0369a1;text-decoration:none}
+.modal-actions{display:flex;justify-content:flex-end;gap:7px;padding:12px 16px;border-top:1px solid #e2e8f0}
+.modal-actions button{border:1px solid #cbd5e1;background:#fff;color:#0f172a;border-radius:8px;padding:8px 11px;font-size:11px;cursor:pointer}
+.modal-actions .save{background:#0f172a;color:#fff;border-color:#0f172a}
+.modal-actions .save:disabled{opacity:.4;cursor:not-allowed}
+.pickhint{font-size:10.5px;color:#64748b;line-height:1.45;background:#f8fafc;padding:8px 9px;border-radius:8px}
+@media(max-width:850px){.app{grid-template-columns:1fr;grid-template-rows:58vh 42vh}#map{grid-row:1}.side{grid-row:2;border-right:0;border-top:1px solid #24334b}}
+
+/* ===== v12 Responsive / Mobile Travel UI ===== */
+:root{
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+html,body{overscroll-behavior:none}
+.mobile-topbar,.mobile-handle,.mobile-tabs{display:none}
+
+@media (max-width: 850px){
+  body{overflow:hidden}
+  .app,.layout,.container,.wrapper{height:100dvh;min-height:100dvh}
+
+  /* Sidebar becomes a bottom sheet */
+  #sidebar,.sidebar,.left-panel,.panel-left,.side{
+    position:fixed!important;
+    left:0!important;
+    right:0!important;
+    bottom:0!important;
+    top:auto!important;
+    width:100%!important;
+    max-width:none!important;
+    height:46dvh!important;
+    min-height:220px!important;
+    max-height:78dvh!important;
+    z-index:1800!important;
+    border-radius:18px 18px 0 0!important;
+    box-shadow:0 -12px 30px rgba(0,0,0,.24)!important;
+    padding-bottom:calc(10px + var(--safe-bottom))!important;
+    overflow:hidden!important;
+    transition:height .22s ease, transform .22s ease;
+  }
+
+  #sidebar.mobile-expanded,.sidebar.mobile-expanded,.left-panel.mobile-expanded,.panel-left.mobile-expanded,.side.mobile-expanded{
+    height:76dvh!important;
+    transform:translateY(0)!important;
+    pointer-events:auto!important;
+  }
+
+  #sidebar.mobile-collapsed,.sidebar.mobile-collapsed,.left-panel.mobile-collapsed,.panel-left.mobile-collapsed,.side.mobile-collapsed{
+    height:0!important;
+    min-height:0!important;
+    max-height:0!important;
+    padding-top:0!important;
+    padding-bottom:0!important;
+    border-radius:0!important;
+    box-shadow:none!important;
+    overflow:hidden!important;
+    pointer-events:none!important;
+    transform:translateY(100%)!important;
+  }
+
+  /* Map occupies the full screen behind the sheet */
+  #map,.map{
+    position:fixed!important;
+    inset:0!important;
+    width:100%!important;
+    height:100dvh!important;
+    z-index:1!important;
+  }
+
+  .mobile-handle{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    height:24px;
+    cursor:pointer;
+    touch-action:manipulation;
+    background:transparent;
+  }
+  .mobile-handle::before{
+    content:"";
+    width:46px;
+    height:5px;
+    border-radius:999px;
+    background:#cbd5e1;
+  }
+
+  .mobile-topbar{
+    display:flex;
+    position:fixed;
+    top:calc(8px + var(--safe-top));
+    left:10px;
+    right:10px;
+    z-index:1900;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    pointer-events:none;
+  }
+  .mobile-topbar .mobile-title,
+  .mobile-topbar button{
+    pointer-events:auto;
+    border:0;
+    border-radius:12px;
+    background:rgba(15,23,42,.92);
+    color:#fff;
+    box-shadow:0 6px 18px rgba(0,0,0,.2);
+  }
+  .mobile-title{
+    padding:9px 12px;
+    font-size:12px;
+    font-weight:800;
+    backdrop-filter:blur(8px);
+  }
+  .mobile-topbar button{
+    padding:9px 11px;
+    font-size:11px;
+    font-weight:800;
+    cursor:pointer;
+  }
+
+  .mobile-tabs{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:6px;
+    padding:0 10px 8px;
+  }
+  .mobile-tabs button{
+    border:1px solid #334155;
+    background:#0f172a;
+    border-radius:9px;
+    padding:8px 10px;
+    font-size:11px;
+    font-weight:800;
+    color:#fff;
+  }
+  .mobile-tabs button.active{
+    background:#fff;
+    color:#0f172a;
+    border-color:#cbd5e1;
+  }
+
+  /* Make the sheet's internal content scrollable */
+  #sidebar > *:not(.mobile-handle):not(.mobile-tabs),
+  .sidebar > *:not(.mobile-handle):not(.mobile-tabs){
+    max-width:100%;
+  }
+
+  /* Lists and controls */
+  .list,.route-list,.candidate-list,#routeList,#candidateList{
+    overflow-y:auto!important;
+    -webkit-overflow-scrolling:touch;
+  }
+  .item,.place-item,.route-item,.candidate-item{
+    min-height:50px!important;
+    padding:10px 11px!important;
+    margin-bottom:7px!important;
+    touch-action:pan-y;
+  }
+  button,.btn{
+    min-height:40px;
+    font-size:12px!important;
+  }
+
+  /* Tooltip labels easier to tap */
+  .leaflet-tooltip.lbl{
+    font-size:11px!important;
+    padding:6px 8px!important;
+    border-radius:8px!important;
+    box-shadow:0 2px 8px rgba(0,0,0,.16)!important;
+  }
+
+  /* Popup sized for phones */
+  .leaflet-popup-content-wrapper{border-radius:14px!important}
+  .leaflet-popup-content{
+    width:min(78vw,320px)!important;
+    margin:12px 14px!important;
+    font-size:12px!important;
+  }
+
+  /* Modal becomes bottom sheet-ish on mobile */
+  .modal-backdrop{
+    align-items:flex-end!important;
+    padding:0!important;
+  }
+  .modal{
+    width:100%!important;
+    max-height:88dvh!important;
+    overflow:auto!important;
+    border-radius:18px 18px 0 0!important;
+    padding-bottom:var(--safe-bottom);
+  }
+
+  /* Leaflet controls lifted above bottom sheet */
+  .leaflet-bottom{bottom:calc(46dvh + 8px)!important}
+  .mobile-collapsed ~ #map .leaflet-bottom{bottom:14px!important}
+
+  /* Avoid tiny map labels */
+  .leaflet-control-zoom a{width:38px!important;height:38px!important;line-height:38px!important}
+}
+
+/* Narrow phones */
+@media (max-width: 480px){
+  #sidebar,.sidebar,.left-panel,.panel-left,.side{height:48dvh!important}
+  #sidebar.mobile-expanded,.sidebar.mobile-expanded,.left-panel.mobile-expanded,.panel-left.mobile-expanded,.side.mobile-expanded{height:80dvh!important}
+  .mobile-title{max-width:70vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+}
+
+
+@media (max-width:850px){
+  .side{
+    display:block!important;
+    transform:translateY(0)!important;
+    pointer-events:auto!important;
+    position:fixed!important;
+    left:0!important;right:0!important;bottom:0!important;top:auto!important;
+    z-index:1800!important;
+    overflow-y:auto!important;
+    -webkit-overflow-scrolling:touch!important;
+    padding:0 14px calc(14px + var(--safe-bottom))!important;
+    background:var(--panel)!important;
+  }
+  .side h1{font-size:17px;margin-top:3px}
+  .side .sub{font-size:10.5px;margin-bottom:8px}
+  .mobile-handle{position:sticky;top:0;z-index:5;background:var(--panel);margin:0 -14px;padding-top:4px}
+  .mobile-tabs{position:sticky;top:24px;z-index:4;background:var(--panel);padding:4px 0 8px}
+  #itinerary,#candidates{scroll-margin-top:70px}
+  .stop{grid-template-columns:28px 1fr auto!important;cursor:default}
+  .mobile-order{display:flex;gap:3px;align-items:center}
+  .mobile-order button,.candidate-add{
+    min-width:34px!important;height:34px!important;min-height:34px!important;
+    border:1px solid #475569;background:#172033;color:#fff;border-radius:8px;
+    font-size:14px!important;font-weight:800;cursor:pointer;
+  }
+  .candidate{grid-template-columns:9px 1fr auto!important;cursor:default}
+  .candidate-add{display:inline-flex;align-items:center;justify-content:center}
+}
+@media (min-width:851px){
+  .mobile-order{display:none}
+  .candidate-add{display:none}
+}
+
+
+.desktop-stop-action{display:block}
+@media(max-width:850px){
+  .desktop-stop-action{display:none}
+  .candidate>.plus{display:none}
+}
+
+</style></head><body>
+
+<div class="mobile-topbar" id="mobileTopbar">
+  <div class="mobile-title">꾸이년 가족여행 지도 v4.3</div>
+  <button id="mobilePanelToggle" type="button">일정 열기</button>
+</div>
+
+<div class="app"><aside class="side">
+<h1>꾸이년 여행 경로 편집기 v4.3</h1>
+<div class="sub">후보지를 여행 경로로 드래그하고 순서를 바꾸면 도로 경로가 재계산됩니다. <b>v4.3: 날짜별 일정 프리셋을 추가하고, 명소명/차량 접근 정보 구분을 유지.</b> 모든 마커는 클릭 시 상세 팝업이 열립니다.</div>
+<div class="verify-box"><b>검증 기준</b> · 지도 지점명은 <b>명소 이름</b>을 우선 사용하고, 실제 좌표·설명은 <b>차량 도착·입장 시작점</b> 기준을 반영합니다. <span class="warn">Eo Gió와 Hòn Khô는 명소와 실제 입구/선착장이 분리되어 있어, 실제 입구·선착장 좌표는 현장/투어 예약 시 최종 확인합니다.</span></div>
+<div class="preset-box">
+  <div class="preset-title">날짜별 일정 프리셋</div>
+  <div class="preset-grid">
+    <button class="preset-btn" data-preset="arrival"><b>1/13 도착</b>Diêu Trì → Sala → 저녁</button>
+    <button class="preset-btn" data-preset="day14"><b>1/14 시내·실내</b>Tháp Đôi → 과학관 → 해변</button>
+    <button class="preset-btn" data-preset="day15"><b>1/15 북동부 해안</b>Eo Gió → Kỳ Co → Gia Vy</button>
+    <button class="preset-btn" data-preset="day16"><b>1/16 여유·선택</b>유적/시장 → 마사지</button>
+    <button class="preset-btn" data-preset="day17"><b>1/17 이동일</b>Bãi Xép → Gành Đá Đĩa → Ô Loan → APEC</button>
+  </div>
+  <div class="preset-current" id="presetCurrent">현재 경로: 도착 기본 경로</div>
+  <div class="preset-note">프리셋을 누르면 여행 경로가 해당 날짜 일정으로 교체됩니다. 이후 후보지를 추가하거나 순서를 바꿔도 됩니다.</div>
+</div>
+
+<div class="mobile-handle" id="mobileHandle"></div><div class="mobile-tabs" id="mobileTabs"><button type="button" class="active" data-mobile-tab="route">여행 경로</button><button type="button" data-mobile-tab="candidate">후보지</button></div><div class="header-row"><b>여행 경로</b><span class="count" id="routeCount">2곳</span></div>
+<div id="itinerary" class="dropzone"></div>
+<div class="actions"><button class="btn primary" id="googleAll">Google Maps에서 전체 경로 열기</button><button class="btn" id="clearRoute">도착→숙소로 초기화</button></div>
+<div id="routeInfo" class="route-info">도로 경로를 계산하는 중...</div>
+<div class="header-row"><b>후보지</b><div style="display:flex;gap:6px;align-items:center"><button class="btn" id="addPlaceBtn">+ 장소 추가</button><span class="count" id="candidateCount"></span></div></div>
+<div id="candidates" class="candidates"></div>
+<div class="note">※ 지도 안의 선은 OpenStreetMap 도로망 기반 미리보기입니다. 실제 교통상황을 반영한 경로는 Google Maps에서 확인하세요.</div>
+</aside><div id="map"></div></div>
+
+<div class="modal-backdrop" id="placeModal">
+  <div class="modal">
+    <div class="modal-head">새 장소 추가</div>
+    <div class="modal-body">
+      <div class="searchrow">
+        <label>꾸이년 장소 검색
+          <input id="placeSearch" placeholder="예: Lotte Mart, 카페 이름, 식당 이름">
+        </label>
+        <button id="searchPlaceBtn">검색</button>
+      </div>
+      <div class="search-status" id="searchStatus">장소명을 입력하고 검색하세요. 검색 결과는 OpenStreetMap 장소 데이터를 사용합니다.</div>
+      <div class="search-results" id="searchResults"></div>
+      <div class="selected-place" id="selectedPlace"></div>
+
+      <label>분류
+        <select id="newCat">
+          <option>관광</option><option>이동일</option><option>음식</option><option>로컬</option><option>카페</option><option>마사지</option><option>쇼핑</option><option>세탁</option><option>숙소</option><option>교통</option>
+        </select>
+      </label>
+      <label>간단한 메모<textarea id="newDesc" placeholder="예: 아이들과 쉬기 좋은 카페 / 저녁 식사 후보"></textarea></label>
+      <div class="pickhint">검색 결과에 원하는 장소가 없으면 <b>지도에서 직접 위치 선택</b>을 사용할 수 있습니다. 위도·경도는 화면에 입력할 필요가 없습니다.</div>
+      <button class="btn" id="pickOnMap" style="color:#0f172a;background:#f8fafc;border-color:#cbd5e1">검색 결과에 없음 · 지도에서 위치 선택</button>
+      <div class="search-status">검색: OpenStreetMap Nominatim · 지도: © OpenStreetMap contributors</div>
+    </div>
+    <div class="modal-actions">
+      <button id="cancelPlace">취소</button>
+      <button class="save" id="savePlace" disabled>후보지에 추가</button>
+    </div>
+  </div>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+/* v4.3: POI 원본은 HTML 내부 백업으로 포함하고, 날짜별 일정 프리셋을 추가했습니다.
+   이 HTML에는 오프라인/단일파일 동작을 위한 동일 데이터 백업을 포함합니다. */
+let P=[{"id":"dieutri","name":"Diêu Trì Railway Station","en":"Ga Diêu Trì","cat":"교통","plan":"1/13 도착","lat":13.8072,"lng":109.14369,"address":"108 Nguyễn Đình Thụ, Diêu Trì / Tuy Phước","role":"다낭에서 침대열차로 도착 · 숙소 이동 기준점","hours":"열차 시간 기준","stay":"30~60분","rating":"필수","tip":"7명이 함께 이동하므로 하차 후 짐을 확인하고 예약 차량으로 숙소 이동.","desc":"다낭→꾸이년 구간의 실제 하차·출발 기준점입니다.","verified":"v4.2 명칭·표시 보정"},{"id":"hotel","name":"Sala Quy Nhon Beach Hotel","en":"Sala Quy Nhon Beach Hotel","cat":"숙소","plan":"1/13~1/17","lat":13.77218,"lng":109.237165,"address":"124 Phan Chu Trinh, Quy Nhơn","role":"4박 숙소 · 시내 동선 기준점","hours":"예약 조건 기준","stay":"4박","rating":"확정","tip":"비치·푸드스트리트·시내 생활권을 판단하는 기준점으로 사용합니다.","desc":"현재 주소와 위치를 재검증한 숙소입니다.","badge":"숙소 확정","verified":"v4.2 명칭·표시 보정"},{"id":"eogio","name":"Eo Gió","en":"Eo Gió","cat":"관광","plan":"꾸이년 체류","lat":13.89088,"lng":109.29141,"address":"Nhơn Lý / Quy Nhơn Đông","role":"대표 해안 절벽·산책 · 입구 이용","hours":"05:30~18:30 안내 · 여행 전 재확인","stay":"60~90분","rating":"핵심","tip":"🚐 실제 방문은 Eo Gió 남쪽 Ticket Shop/입구에서 시작하는 것으로 확인됩니다. 숫자 좌표가 직접 검증되기 전까지 마커는 명소 기준점을 유지하고, 현장 길찾기는 Google Maps에서 Eo Gió Ticket Shop을 한 번 더 확인하세요.","desc":"Mapcarta/OSM 기준 명소 좌표는 확인되었고, Eo Gió Ticket shop이 약 670m 남쪽에 별도 표시됩니다. v4.2에서는 임의 좌표를 만들지 않기 위해 명소 기준 마커를 유지합니다.","badge":"입구 분리 주의","verified":"v4.2 명칭·표시 보정"},{"id":"kyco","name":"Kỳ Co Beach","en":"Kỳ Co Beach","cat":"관광","plan":"꾸이년 체류","lat":13.8538125,"lng":109.2904375,"address":"V73R+G5, Quy Nhơn Đông","role":"키코 비치 · 실제 차량 목적지는 Kỳ Co 관광구역 육로 주차·입장권역","hours":"07:30~17:00 안내 · 재확인","stay":"2~4시간","rating":"핵심","tip":"🚐 지도 마커는 실제 길찾기 편의를 위해 Kỳ Co 관광구역 육로 접근권을 사용합니다. 명칭은 가족이 알아보기 쉽도록 명소명 Kỳ Co Beach로 표시합니다. 1월에는 해상·기상 상황에 따라 경관 중심으로 유연하게 결정합니다.","desc":"목록명은 명소 이름인 Kỳ Co Beach로 표시하고, 좌표와 설명은 차량 접근 가능한 관광구역 입장권역을 기준으로 반영했습니다.","badge":"차량 접근 정보 포함","verified":"v4.2 명칭·표시 보정"},{"id":"explora","name":"ExploraScience Quy Nhon","en":"ExploraScience Quy Nhon","cat":"관광","plan":"꾸이년 체류","lat":13.7183,"lng":109.2136,"address":"10 Đại lộ Khoa học, Quy Nhơn Nam","role":"과학·우주 체험","hours":"공식 운영일·시간 변동 가능 · 2027 여행 전 재확인","stay":"2~3시간","rating":"핵심","tip":"아이들과 함께하기 좋은 실내 핵심 후보입니다. 운영일이 제한될 수 있으므로 여행 직전에 공식 일정을 확인하세요.","desc":"과학전시와 천문 관련 시설을 갖춘 가족 체험 장소.","badge":"가족 핵심 체험","verified":"v4.2 명칭·표시 보정"},{"id":"ghenhrang","name":"Ghềnh Ráng","en":"Khu du lịch Ghềnh Ráng","cat":"관광","plan":"꾸이년 체류","lat":13.74332,"lng":109.21476,"address":"Ghềnh Ráng, Quy Nhơn","role":"바위 해안·전망","hours":"07:00~20:00 안내 · 여행 전 재확인","stay":"60~90분","rating":"핵심","tip":"시내권 관광과 묶기 좋은 장소입니다.","desc":"Bãi Trứng·해안 전망을 함께 보는 후보.","badge":"시내권 핵심","verified":"v4.2 명칭·표시 보정"},{"id":"thapdoi","name":"Tháp Đôi","en":"Tháp Đôi Quy Nhơn","cat":"관광","plan":"꾸이년 체류","lat":13.7861875,"lng":109.2110625,"address":"Q6P6+FC7, Quy Nhơn","role":"시내 참 유적 · 짧은 문화 일정","hours":"07:30–11:30 / 14:30–16:30 안내 · 재확인","stay":"45~60분","rating":"핵심","tip":"시내 동선에 넣기 쉬운 참 유적입니다. ExploraScience·시장 일정과 분리해 짧게 배치하기 좋습니다.","desc":"실제 관광 POI Plus Code를 좌표로 변환해 반영.","badge":"시내 참 유적","verified":"v4.2 명칭·표시 보정"},{"id":"banhit","name":"Bánh Ít Cham Towers","en":"Bánh Ít Cham Towers / Yang M'Tian","cat":"관광","plan":"꾸이년 체류","lat":13.868433,"lng":109.135017,"address":"Tuy Phước Bắc","role":"대형 참 유적군 · 선택 관광","hours":"07:00~18:00 안내 · 재확인","stay":"60~90분","rating":"선택","tip":"Tháp Đôi보다 이동거리가 길지만 유적 규모가 큽니다. 가족 컨디션에 따라 둘 중 하나를 선택해도 좋습니다.","desc":"Wikidata와 현장사진 GPS가 사실상 일치한 좌표.","badge":"선택 참 유적","verified":"v4.2 명칭·표시 보정"},{"id":"honko","name":"Hòn Khô","en":"Hòn Khô Island","cat":"관광","plan":"꾸이년 체류","lat":13.76443,"lng":109.29841,"address":"Nhơn Hải, Quy Nhơn","role":"혼코 섬 · 실제 차량 목적지는 Nhơn Hải 선착장/투어 집결지","hours":"해상상황 기준","stay":"2~4시간","rating":"선택","tip":"🚤 명칭은 Hòn Khô로 표시하되, 실제 이동은 Nhơn Hải 어촌/선착장에서 보트·카누를 타는 구조입니다. 투어업체 예약 시 집결지를 최종 차량 목적지로 바꾸세요.","desc":"목록명은 명소 이름인 Hòn Khô로 표시하고, 실제 이동은 Nhơn Hải 선착장/투어 집결지 이용으로 안내합니다.","badge":"선착장 이동 주의","verified":"v4.2 명칭·표시 보정"},{"id":"phuongmai","name":"Phương Mai Sand Dunes","en":"Đồi Cát Phương Mai","cat":"관광","plan":"꾸이년 체류","lat":13.8478125,"lng":109.2675625,"address":"R7X9+42, Quy Nhơn Đông","role":"프엉마이 사구 · 도로변 관광 진입점 기준","hours":"주간 방문 권장","stay":"45~75분","rating":"선택","tip":"🚐 자연지형 중심이 아니라 도로에서 접근하는 관광 POI Plus Code를 사용합니다. 한낮보다 오전이 편합니다.","desc":"목록명은 명소 이름인 Phương Mai Sand Dunes로 표시하고, 좌표는 도로 접근 가능한 관광 POI를 기준으로 사용합니다.","badge":"차량 접근 정보 포함","verified":"v4.2 명칭·표시 보정"},{"id":"baixep","name":"Bãi Xép Quy Nhơn","en":"Bãi Xép Quy Nhơn","cat":"이동일","plan":"1/17 뚜이호아 이동","lat":13.6846875,"lng":109.2313125,"address":"M6MJ+VG3, Quy Nhơn Nam","role":"바이셉 비치 · 꾸이년 남부 Ghềnh Ráng 권역 진입 POI","hours":"상시 경관 · 현장 상황 확인","stay":"45~90분","rating":"선택","tip":"⚠️ 명칭은 Bãi Xép Quy Nhơn으로 표시합니다. 푸옌의 동명 Bãi Xép이 아니라 꾸이년 남쪽 Ghềnh Ráng 권역입니다. 1월에는 수영보다 산책·경관 중심으로 봅니다.","desc":"목록명은 명소 이름인 Bãi Xép Quy Nhơn으로 표시하고, 설명에서 실제 진입 POI와 동명 장소 주의사항을 안내합니다.","badge":"동명 장소 주의","verified":"v4.2 명칭·표시 보정"},{"id":"ganhdadia","name":"Gành Đá Đĩa","en":"Gành Đá Đĩa / Sea Cliff of Stone Plates","cat":"이동일","plan":"1/17 뚜이호아 이동","lat":13.35419,"lng":109.29363,"address":"Tuy An Đông, Đắk Lắk","role":"꾸이년→뚜이호아 이동일 핵심 관광 · 주차 후 입장","hours":"여행 전 재확인","stay":"60~90분","rating":"핵심","tip":"🚐 관광단지에 대형 주차장이 운영되는 것으로 확인됩니다. 차량은 현장 주차·입구 표지를 우선 따르고, 지도 마커는 관광지 권역 기준으로 사용합니다.","desc":"현무암 주상절리 해안. 기존 v1의 잘못된 좌표를 실제 Gành Đá Đĩa 권역으로 수정.","badge":"이동일 핵심","verified":"v4.2 명칭·표시 보정"},{"id":"oloan","name":"Ô Loan Lagoon","en":"Ô Loan Lagoon","cat":"이동일","plan":"1/17 뚜이호아 이동","lat":13.26857,"lng":109.25136,"address":"Ô Loan Lagoon, Tuy An","role":"오로안 석호 · 실제 차량 목적지는 접근 가능한 전망지점","hours":"상시 경관","stay":"30~60분","rating":"선택","tip":"🚐 명칭은 Ô Loan Lagoon으로 표시하되, 좌표는 석호 한가운데가 아니라 실제 접근 가능한 전망지점을 사용합니다. 점심 식당이 정해지면 식당 자체를 경로점으로 바꾸는 편이 더 실용적입니다.","desc":"목록명은 명소 이름인 Ô Loan Lagoon으로 표시하고, 좌표는 차량 접근 관점의 전망지점으로 반영했습니다.","badge":"전망 접근점 정보 포함","verified":"v4.2 명칭·표시 보정"},{"id":"giavy","name":"Gia Vy 2","en":"Gia Vy 2 Restaurant","cat":"음식","plan":"지역특색","lat":13.7739,"lng":109.22106,"address":"14 Diên Hồng, Quy Nhơn","role":"Bánh xèo tôm nhảy · 꾸이년/빈딘 지역음식","hours":"여행 전 재확인","stay":"45~75분","rating":"추천","tip":"👨‍👩‍👧‍👦 가족 추천 · 아이들과 지역 대표 반쎄오를 함께 경험하기 좋습니다.","desc":"⭐ 지역특색음식: Bánh xèo tôm nhảy. 누적 후기가 많은 식당을 우선 선정.","badge":"지역특색음식 추천","verified":"v4.2 명칭·표시 보정"},{"id":"phuongteo","name":"Phượng Tèo","en":"Quán bún chả cá Phượng Tèo","cat":"음식","plan":"지역특색","lat":13.7678306,"lng":109.2282057,"address":"211 Nguyễn Huệ, Quy Nhơn","role":"Bún chả cá · 꾸이년식 생선 어묵 국수","hours":"05:45–22:30 안내 · 재확인","stay":"40~60분","rating":"추천","tip":"👨‍👩‍👧‍👦/🧑 모두 가능 · 간단한 로컬 한 끼로 좋습니다.","desc":"⭐ 지역특색음식: Chả cá / Bún chả cá.","badge":"어묵·생선국수","verified":"v4.2 명칭·표시 보정"},{"id":"cakhoi","name":"Nhà Hàng Cá Khói","en":"Nhà Hàng Cá Khói","cat":"음식","plan":"가족식","lat":13.7587,"lng":109.2189,"address":"04 Nguyễn Trung Tín, Quy Nhơn","role":"가족 해산물 저녁","hours":"10:00~24:00 안내 · 재확인","stay":"90~120분","rating":"추천","tip":"👨‍👩‍👧‍👦 가족 추천 · 7명이 메뉴를 나눠 먹는 저녁 후보입니다.","desc":"🦐 해안도시 해산물. 지역특산으로 과장하지 않고 가족 해산물 식사로 분류.","badge":"가족 해산물","verified":"v4.2 명칭·표시 보정"},{"id":"mrmoc","name":"Mr Mộc","en":"Cơm Ngon Quy Nhơn Mr Mộc","cat":"음식","plan":"가족식","lat":13.7549,"lng":109.2147,"address":"57 Nguyễn Thị Định, Quy Nhơn","role":"베트남 가정식 · 가족 식사","hours":"09:00~23:00 · 2027 여행 전 재확인","stay":"60~90분","rating":"4.8 · 리뷰 2,510","tip":"👨‍👩‍👧‍👦 가족 추천 · 지역음식만 고집하지 않고 아이들과 편하게 식사할 수 있는 카드.","desc":"넓은 공간과 다양한 베트남식 메뉴를 갖춘 가족식 후보.","badge":"가족식 안전카드","verified":"v4.2 명칭·표시 보정"},{"id":"foodstreet","name":"Ngô Văn Sở Food Street","en":"Ngô Văn Sở Food Street","cat":"로컬","plan":"성인 추천","lat":13.7697,"lng":109.2343,"address":"Ngô Văn Sở, Quy Nhơn","role":"현지 먹거리 거리 · 어른 로컬 탐방","hours":"14:00~24:00 안내 · 재확인","stay":"60~120분","rating":"추천","tip":"🧑 성인 추천 · 특정 점포를 지정하지 않고 사람이 많은 곳과 먹고 싶은 메뉴를 현장에서 선택합니다.","desc":"⭐ 지역음식 체험: Tré·Nem 등. 거리 전체를 하나의 POI로 관리.","badge":"성인 로컬 탐방","verified":"v4.2 명칭·표시 보정"},{"id":"surf","name":"Surf Bar 1","en":"Surf Bar Quy Nhon","cat":"카페","plan":"비치 카페","lat":13.770132,"lng":109.235733,"address":"Xuân Diệu beachfront, Quy Nhơn","role":"해변 휴식·오션뷰","hours":"여행 전 재확인","stay":"45~90분","rating":"핵심","tip":"👨‍👩‍👧‍👦 가족 추천 · 해변에서 쉬는 일정에 넣기 좋습니다.","desc":"🏖️ 비치 카페. 꾸이년 해변과 직접 연결되는 휴식 포인트.","badge":"해변 휴식 추천","verified":"v4.2 명칭·표시 보정"},{"id":"katinat","name":"KATINAT Quy Nhơn","en":"KATINAT Coffee & Tea House Quy Nhơn","cat":"카페","plan":"시내·가족 카페","lat":13.763382,"lng":109.223602,"address":"19–19A Nguyễn Lạc, Quy Nhơn","role":"시내 휴식 · 가족 카페","hours":"07:00~22:30 · 재확인","stay":"45~75분","rating":"4.6 · 리뷰 1,714","tip":"👨‍👩‍👧‍👦 가족 추천 · 일정 사이 쉬기 좋은 안정적인 시내 카페.","desc":"🏙️ 시내 카페. 동일 주소 건물 좌표와 현행 매장 주소를 교차해 반영.","badge":"시내 가족 카페","verified":"v4.2 명칭·표시 보정"},{"id":"adiuvat","name":"ADIUVAT Coffee Roasters","en":"ADIUVAT COFFEE ROASTERS QUINHON","cat":"카페","plan":"로컬 로스터리","lat":13.76961,"lng":109.23226,"address":"57 Nguyễn Huệ, Quy Nhơn","role":"스페셜티 커피 · 자체 로스팅","hours":"07:30~21:30 · 재확인","stay":"45~75분","rating":"4.6 · 리뷰 634","tip":"☕ 커피 자체를 즐기고 싶을 때 우선 추천하는 로컬 로스터리.","desc":"☕ 로컬 커피. GPS 좌표와 현행 주소를 교차확인.","badge":"로컬 로스터리","verified":"v4.2 명칭·표시 보정"},{"id":"treehugger","name":"Tree Hugger","en":"tree hugger (crafts, café & stay)","cat":"카페","plan":"로컬 감성·공예","lat":13.7712,"lng":109.2336,"address":"5A Hai Bà Trưng, Quy Nhơn","role":"카페 · 공예품·기념품 구경","hours":"이용 전 재확인","stay":"45~75분","rating":"4.9 · 리뷰 258","tip":"☕ 선택 POI · 커피와 함께 공예품·작은 기념품을 둘러보기 좋습니다.","desc":"🛍️ 카페+공예숍 성격의 선택 장소.","badge":"감성·공예 선택","verified":"v4.2 명칭·표시 보정"},{"id":"huongvi","name":"Hương Vi Spa & Clinic","en":"Hương Vi Spa & Clinic","cat":"마사지","plan":"직접 이용·우선 후보","lat":13.7541,"lng":109.2158,"address":"95 Chương Dương, Nguyễn Văn Cừ, Quy Nhơn","role":"이전 여행에서 직접 이용 · 만족도 높음","hours":"08:00~20:00 일반 안내 · 재확인","stay":"60~120분","rating":"4.8 · 리뷰 96","tip":"⭐ 이전 여행에서 직접 이용해 만족도가 높았던 곳. 이번 여행에서도 우선 후보로 유지합니다.","desc":"사용자 직접 경험 POI. 가격·영업시간은 2027 여행 직전 재확인.","badge":"직접 이용 만족도 높음","verified":"v4.2 명칭·표시 보정"},{"id":"hyhalona","name":"Hy-Halona Wellness","en":"Hy-Halona Wellness","cat":"마사지","plan":"1순위","lat":13.770063,"lng":109.232892,"address":"Grand Hyams Hotel, 28 Nguyễn Huệ, Quy Nhơn","role":"호텔 인근 고평가 웰니스","hours":"09:00~23:00 · 재확인","stay":"60~120분","rating":"5.0 · 리뷰 664","tip":"💆 온라인 평가와 접근성을 함께 고려한 마사지 1순위 후보.","desc":"Grand Hyams Hotel 내부 웰니스 시설. 호텔 좌표를 사용.","badge":"호텔 인근 1순위","verified":"v4.2 명칭·표시 보정"},{"id":"chamspa","name":"Chạm Massage & Spa","en":"Cham Massage & Spa","cat":"마사지","plan":"시내 대안","lat":13.76425,"lng":109.22318,"address":"152 Nguyễn Huệ, Quy Nhơn","role":"바디·발 마사지 · 시내 대안","hours":"10:00~22:00 · 재확인","stay":"60~120분","rating":"4.8 · 리뷰 759","tip":"💆 누적 후기가 충분한 시내 마사지 대안.","desc":"공식 운영정보와 GPS 좌표가 확인된 마사지 스파.","badge":"리뷰 충분 대안","verified":"v4.2 명칭·표시 보정"},{"id":"zenn","name":"ZENN Wellness","en":"ZENN WELLNESS QUY NHƠN","cat":"마사지","plan":"웰니스 대안","lat":13.7539121,"lng":109.2091138,"address":"270 Nguyễn Thị Định, Quy Nhơn","role":"웰니스형 마사지·스파","hours":"09:00~21:00 안내 · 재확인","stay":"60~120분","rating":"4.5 · 리뷰 355","tip":"💆 시내 중심에서 조금 떨어진 웰니스형 선택지.","desc":"공개 지도 링크의 좌표와 현행 주소를 교차확인.","verified":"v4.2 명칭·표시 보정"},{"id":"coop","name":"Co.opmart Quy Nhơn","en":"Co.opmart Quy Nhơn","cat":"쇼핑","plan":"대형마트","lat":13.76736,"lng":109.2217,"address":"07 Lê Duẩn, Quy Nhơn","role":"물·과일·간식·생필품","hours":"08:00~21:30 안내 · 재확인","stay":"45~75분","rating":"핵심","tip":"숙박 초반에 생필품과 간식을 한 번에 구매하기 좋습니다.","desc":"🛒 생활형 대형마트 핵심 후보.","badge":"생필품 1순위","verified":"v4.2 명칭·표시 보정"},{"id":"market2","name":"Chợ Khu 2 / Market 2","en":"Chợ Khu 2 / Market 2","cat":"쇼핑","plan":"호텔 인근 생활시장","lat":13.7658362,"lng":109.2249222,"address":"110 Nguyễn Huệ, Quy Nhơn","role":"호텔 인근 생활시장 · 과일·먹거리","hours":"07:00~19:00 · 재확인","stay":"30~60분","rating":"4.0 · 리뷰 464","tip":"🥭 가까운 현지 생활시장을 잠깐 둘러보고 싶을 때 적합.","desc":"주소와 공개 지도 좌표를 교차확인.","badge":"호텔 인근 시장","verified":"v4.2 명칭·표시 보정"},{"id":"chodam","name":"Chợ Đầm","en":"Chợ Đầm Quy Nhơn","cat":"쇼핑","plan":"현지시장","lat":13.7821882,"lng":109.2254308,"address":"124 Phạm Hồng Thái, Quy Nhơn","role":"대표 현지 생활시장 · 해산물·식재료 구경","hours":"05:00~18:30 안내 · 재확인","stay":"30~60분","rating":"추천","tip":"🥭 관광형 야시장보다 실제 생활시장 성격이 강합니다. 오전 방문이 더 활발합니다.","desc":"주소와 지도 좌표를 교차확인한 현지시장.","badge":"현지시장 추천","verified":"v4.2 명칭·표시 보정"},{"id":"mmmega","name":"MM Mega Market","en":"MM Mega Market Quy Nhơn","cat":"쇼핑","plan":"대량구매 선택","lat":13.753381,"lng":109.207383,"address":"QL1D, Tổ 24, Khu vực 5, Quy Nhơn Nam","role":"대형 하이퍼마켓 · 대량구매","hours":"08:00~21:00 · 재확인","stay":"45~90분","rating":"4.6 · 리뷰 698","tip":"🛒 Co.opmart로 부족하거나 대량구매가 필요할 때 선택.","desc":"MM 계열 매장 주소와 길찾기 좌표를 확인한 선택 POI.","verified":"v4.2 명칭·표시 보정"},{"id":"gold","name":"Gold Laundry","en":"Gold Laundry Quy Nhon","cat":"세탁","plan":"생활","lat":13.7609,"lng":109.2166,"address":"282 Diên Hồng, Quy Nhơn","role":"가족 빨래 · 세탁+건조 · 픽업/배달 문의","hours":"07:00~21:00 안내 · 이용 전 재확인","stay":"최단 약 2시간 안내","rating":"핵심","tip":"🧺 세탁+건조 요금은 자료별 차이가 있어 이용 직전 공식 가격표/업체에 재확인하세요. 가족 빨래는 숙소에서 전화/Zalo로 호텔 픽업·배달 가능 여부를 먼저 문의하는 방식이 가장 편합니다.","desc":"픽업·배달 안내가 있는 세탁소. 본점 282 Diên Hồng · 공식 운영 07:00~21:00 · 빠른 서비스 약 2시간부터 안내.","badge":"세탁 핵심 POI","verified":"v4.2 명칭·표시 보정"},{"id":"apec","name":"APEC Mandala Phú Yên","en":"APEC Mandala Phú Yên / Tuy Hòa","cat":"숙소","plan":"1/17 도착","lat":13.10362,"lng":109.306915,"address":"Tòa nhà Apec Mandala, Đại lộ Hùng Vương, Tuy Hòa","role":"1/17 꾸이년→뚜이호아 이동일 최종 도착 기준점","hours":"예약 조건 기준 · 뚜이호아 지도에서 재확인","stay":"2박","rating":"확정 숙소","tip":"🚐 1/17 이동일 프리셋의 종착점으로만 포함합니다. 뚜이호아 세부 지도에서 정확한 체크인 동선과 주변 POI를 다시 정리합니다.","desc":"꾸이년 이동일 경로 계산을 위해 추가한 뚜이호아 숙소 기준점입니다.","badge":"이동일 도착점","verified":"v4.3 일정 프리셋용 추가 · 뚜이호아 지도에서 재확인"}],COLORS={"교통": "#2563eb", "숙소": "#7c3aed", "관광": "#059669", "이동일": "#ea580c", "음식": "#dc2626", "로컬": "#b45309", "카페": "#0891b2", "마사지": "#9333ea", "쇼핑": "#4d7c0f", "세탁": "#475569"}; const savedCustom=JSON.parse(localStorage.getItem('quynhonCustomPlaces')||'[]');
+P=P.concat(savedCustom);
+let byId=Object.fromEntries(P.map(p=>[p.id,p]));
+let itinerary=['dieutri','hotel'],draggingId=null,draggingSource=null,routeLayers=[],routeToken=0;
+const DAY_PRESETS={
+  arrival:{label:'1/13 도착·휴식',ids:['dieutri','hotel','mrmoc'],note:'Diêu Trì역 도착 → Sala 체크인 → 컨디션에 따라 Mr Mộc 또는 호텔 근처 가벼운 저녁'},
+  day14:{label:'1/14 시내·실내권',ids:['hotel','thapdoi','phuongteo','explora','surf','cakhoi'],note:'Tháp Đôi → Phượng Tèo → ExploraScience → Surf Bar 1 → Cá Khói'},
+  day15:{label:'1/15 북동부 해안권',ids:['hotel','eogio','kyco','phuongmai','giavy'],note:'Eo Gió → Kỳ Co Beach → Phương Mai 선택 → Gia Vy 2. 날씨가 좋지 않으면 Phương Mai는 제외'},
+  day16:{label:'1/16 여유·선택일',ids:['hotel','banhit','chodam','huongvi'],note:'Bánh Ít Cham Towers 또는 휴식 → Chợ Đầm/쇼핑 → Hương Vi Spa. Hòn Khô는 해상 상황이 좋을 때 후보지에서 추가'},
+  day17:{label:'1/17 뚜이호아 이동일',ids:['hotel','baixep','ganhdadia','oloan','apec'],note:'Sala 체크아웃 → Bãi Xép 선택 → Gành Đá Đĩa → Ô Loan Lagoon → APEC Mandala Phú Yên'}
+};
+let activePreset=null;
+function setPresetUI(key){
+  document.querySelectorAll('.preset-btn').forEach(btn=>btn.classList.toggle('active',btn.dataset.preset===key));
+  const box=document.getElementById('presetCurrent');
+  if(box&&DAY_PRESETS[key]) box.textContent='현재 경로: '+DAY_PRESETS[key].label+' · '+DAY_PRESETS[key].note;
+}
+function applyPreset(key){
+  const preset=DAY_PRESETS[key]; if(!preset) return;
+  itinerary=preset.ids.filter(id=>byId[id]);
+  activePreset=key;
+  setPresetUI(key);
+  renderAll();
+  const side=document.querySelector('.side');
+  const route=document.getElementById('itinerary');
+  if(side&&route) side.scrollTo({top:Math.max(0,route.offsetTop-90),behavior:'smooth'});
+}
+
+const map=L.map('map').setView([13.77,109.225],13);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+
+function popup(p){
+const badge=p.badge?`<div class="rec-badge">⭐ ${p.badge}</div>`:'';
+return `<div class="photo">📷 대표 사진은 추후 사용자가 제공한 실제 사진으로 교체</div>
+<div class="card"><h3>${p.name}</h3><div class="en">${p.en}</div>${badge}
+<div class="tags"><span class="tag">${p.cat}</span><span class="tag">${p.plan}</span><span class="tag">${p.rating}</span><span class="tag">${p.stay}</span></div>
+<div class="meta"><b>주소</b> · ${p.address}</div><div class="meta"><b>운영</b> · ${p.hours}</div>
+<div class="meta"><b>우리 일정</b> · ${p.role}</div><div class="tip"><b>가족 팁</b><br>${p.tip}</div>
+<div class="meta">${p.desc}</div><div class="meta"><b>검증 메모</b> · ${p.verified||'v4 점검'}</div><a class="maplink" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}">Google Maps에서 위치 확인</a></div>`;
+}
+
+function iconFor(p){
+ const idx=itinerary.indexOf(p.id);
+ const bg=idx>=0 ? '#111827' : COLORS[p.cat];
+ const label=idx>=0 ? String(idx+1) : '•';
+ return L.divIcon({className:'',html:`<div class="pin" style="background:${bg}">${label}</div>`,iconSize:[28,28],iconAnchor:[14,14]});
+}
+
+const markers={};
+function addMarker(p){
+ const m=L.marker([p.lat,p.lng],{icon:iconFor(p),zIndexOffset:500,riseOnHover:true}).addTo(map);
+ m.bindTooltip(p.name,{permanent:true,direction:'right',offset:[14,0],className:'lbl',interactive:true});
+ markers[p.id]=m;
+
+ function openPlacePopup(){
+   L.popup({maxWidth:370,autoPan:true,closeButton:true,offset:[0,-10]})
+    .setLatLng([p.lat,p.lng])
+    .setContent(popup(p))
+    .openOn(map);
+ }
+
+ m.on('click', function(e){
+   if (e && e.originalEvent) L.DomEvent.stopPropagation(e.originalEvent);
+   openPlacePopup();
+ });
+
+ function wireDomClick(){
+   const el=m.getElement();
+   if(el){
+     el.style.pointerEvents='auto';
+     el.style.cursor='pointer';
+     el.onclick=function(ev){
+       ev.preventDefault();
+       ev.stopPropagation();
+       openPlacePopup();
+       return false;
+     };
+   }
+   const tt=m.getTooltip && m.getTooltip();
+   const ttEl=tt && tt.getElement ? tt.getElement() : null;
+   if(ttEl){
+     ttEl.style.pointerEvents='auto';
+     ttEl.style.cursor='pointer';
+     ttEl.onclick=function(ev){
+       ev.preventDefault();
+       ev.stopPropagation();
+       openPlacePopup();
+       return false;
+     };
+   }
+ }
+ m.on('add', wireDomClick);
+ setTimeout(wireDomClick, 0);
+}
+P.forEach(addMarker);
+
+function refreshMarkerIcons(){
+ P.forEach(p=>{if(markers[p.id])markers[p.id].setIcon(iconFor(p));});
+}
+
+function makeStop(id,index){
+ const p=byId[id],d=document.createElement('div');d.className='stop';d.draggable=true;d.dataset.id=id;
+ const locked=index<2;
+ d.innerHTML=`<div class="num">${index+1}</div>
+ <div><div class="stop-name">${p.name}</div><div class="stop-meta">${p.role} · ${p.address}</div></div>
+ <div class="desktop-stop-action">${locked?'<div>⋮⋮</div>':'<button class="remove">×</button>'}</div>
+ <div class="mobile-order">
+   <button class="move-up" title="위로">↑</button>
+   <button class="move-down" title="아래로">↓</button>
+   ${locked?'':'<button class="remove-mobile" title="후보지로">×</button>'}
+ </div>`;
+ d.addEventListener('dragstart',e=>{draggingId=id;draggingSource='route';d.classList.add('dragging');e.dataTransfer.effectAllowed='move';});
+ d.addEventListener('dragend',()=>d.classList.remove('dragging'));
+ d.addEventListener('click',e=>{
+   if(e.target.closest('button'))return;
+   map.setView([p.lat,p.lng],16);
+   if(markers[id]) markers[id].fire('click');
+ });
+ const rm=d.querySelector('.remove');
+ if(rm)rm.onclick=e=>{e.stopPropagation();itinerary=itinerary.filter(x=>x!==id);renderAll();};
+ const rmm=d.querySelector('.remove-mobile');
+ if(rmm)rmm.onclick=e=>{e.stopPropagation();itinerary=itinerary.filter(x=>x!==id);renderAll();};
+ const up=d.querySelector('.move-up');
+ const down=d.querySelector('.move-down');
+ up.onclick=e=>{
+   e.stopPropagation();
+   if(index<=0)return;
+   const arr=[...itinerary];[arr[index-1],arr[index]]=[arr[index],arr[index-1]];itinerary=arr;renderAll();
+ };
+ down.onclick=e=>{
+   e.stopPropagation();
+   if(index>=itinerary.length-1)return;
+   const arr=[...itinerary];[arr[index+1],arr[index]]=[arr[index],arr[index+1]];itinerary=arr;renderAll();
+ };
+ if(index===0)up.disabled=true;
+ if(index===itinerary.length-1)down.disabled=true;
+ return d;
+}
+
+function makeCandidate(p){
+ const d=document.createElement('div');d.className='candidate';d.draggable=true;d.dataset.id=p.id;
+ d.innerHTML=`<span class="dot" style="background:${COLORS[p.cat]}"></span>
+ <div><div class="cname">${p.name}</div><div class="cmeta">${p.cat} · ${p.plan} · ${p.role}</div></div>
+ <button class="candidate-add" title="여행 경로에 추가">＋</button><div class="plus">＋</div>`;
+ d.addEventListener('dragstart',e=>{draggingId=p.id;draggingSource='candidate';e.dataTransfer.effectAllowed='move';});
+ d.addEventListener('click',e=>{
+   if(e.target.closest('.candidate-add'))return;
+   map.setView([p.lat,p.lng],16);
+   if(markers[p.id]) markers[p.id].fire('click');
+ });
+ const add=d.querySelector('.candidate-add');
+ add.onclick=e=>{
+   e.stopPropagation();
+   if(!itinerary.includes(p.id)){itinerary.push(p.id);renderAll();}
+ };
+ return d;
+}
+
+function renderLists(){
+ const route=document.getElementById('itinerary');route.innerHTML='';
+ itinerary.forEach((id,i)=>route.appendChild(makeStop(id,i)));
+ const cand=document.getElementById('candidates');cand.innerHTML='';
+ const remain=P.filter(p=>!itinerary.includes(p.id));remain.forEach(p=>cand.appendChild(makeCandidate(p)));
+ document.getElementById('routeCount').textContent=itinerary.length+'곳';document.getElementById('candidateCount').textContent=remain.length+'곳';
+}
+
+const zone=document.getElementById('itinerary');
+zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('over');});
+zone.addEventListener('dragleave',()=>zone.classList.remove('over'));
+zone.addEventListener('drop',e=>{
+ e.preventDefault();zone.classList.remove('over');if(!draggingId)return;
+ const items=[...zone.querySelectorAll('.stop:not(.dragging)')];let insert=items.length;
+ for(let i=0;i<items.length;i++){const r=items[i].getBoundingClientRect();if(e.clientY<r.top+r.height/2){insert=i;break;}}
+ let arr=itinerary.filter(x=>x!==draggingId);insert=Math.max(0,Math.min(insert,arr.length));arr.splice(insert,0,draggingId);itinerary=arr;draggingId=null;renderAll();
+});
+const candZone=document.getElementById('candidates');candZone.addEventListener('dragover',e=>e.preventDefault());
+candZone.addEventListener('drop',e=>{e.preventDefault();if(draggingSource==='route'&&draggingId&&!['dieutri','hotel'].includes(draggingId))itinerary=itinerary.filter(x=>x!==draggingId);draggingId=null;renderAll();});
+
+function clearRoutes(){routeLayers.forEach(l=>map.removeLayer(l));routeLayers=[];}
+function googleUrl(){if(itinerary.length<2)return'#';const pts=itinerary.map(id=>byId[id]);const origin=`${pts[0].lat},${pts[0].lng}`,dest=`${pts.at(-1).lat},${pts.at(-1).lng}`,wp=pts.slice(1,-1).map(p=>`${p.lat},${p.lng}`).join('|');let u=`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(dest)}&travelmode=driving`;if(wp)u+=`&waypoints=${encodeURIComponent(wp)}`;return u;}
+document.getElementById('googleAll').onclick=()=>window.open(googleUrl(),'_blank','noopener');
+document.getElementById('clearRoute').onclick=()=>{itinerary=['dieutri','hotel'];activePreset=null;setPresetUI(null);const box=document.getElementById('presetCurrent');if(box)box.textContent='현재 경로: 도착 기본 경로';renderAll();};
+document.querySelectorAll('.preset-btn').forEach(btn=>btn.addEventListener('click',()=>applyPreset(btn.dataset.preset)));
+function fmtKm(m){return(m/1000).toFixed(m<10000?1:0)+' km'}
+function fmtMin(s){const m=Math.round(s/60);return m<60?m+'분':Math.floor(m/60)+'시간 '+(m%60)+'분'}
+
+async function drawRoute(){
+ clearRoutes();const my=++routeToken,pts=itinerary.map(id=>byId[id]);if(pts.length<2)return;
+ const info=document.getElementById('routeInfo');info.innerHTML='도로 경로를 계산하는 중...';let totalD=0,totalT=0,segs=[];
+ try{
+  for(let i=0;i<pts.length-1;i++){
+   const a=pts[i],b=pts[i+1],url=`https://router.project-osrm.org/route/v1/driving/${a.lng},${a.lat};${b.lng},${b.lat}?overview=full&geometries=geojson`;
+   const res=await fetch(url),data=await res.json();if(my!==routeToken)return;if(data.code!=='Ok'||!data.routes?.length)throw new Error();
+   const r=data.routes[0];totalD+=r.distance;totalT+=r.duration;
+   const layer=L.geoJSON(r.geometry,{interactive:false,style:{color:i%2===0?'#2563eb':'#0ea5e9',weight:6,opacity:.78}}).addTo(map);routeLayers.push(layer);layer.bringToBack();
+   const gu=`https://www.google.com/maps/dir/?api=1&origin=${a.lat},${a.lng}&destination=${b.lat},${b.lng}&travelmode=driving`;
+   segs.push(`<div class="segment"><span>${i+1} → ${i+2} &nbsp;${a.name} → ${b.name}<br><a href="${gu}" target="_blank" style="color:#7dd3fc">Google 추천경로 확인</a></span><span class="seg-right">${fmtKm(r.distance)} · ${fmtMin(r.duration)}</span></div>`);
+  }
+  info.innerHTML=`<b>미리보기 합계</b> · ${fmtKm(totalD)} · 약 ${fmtMin(totalT)}${segs.join('')}`;
+  const bounds=L.latLngBounds(pts.map(p=>[p.lat,p.lng]));routeLayers.forEach(l=>bounds.extend(l.getBounds()));map.fitBounds(bounds.pad(.12));
+ }catch(e){if(my!==routeToken)return;info.innerHTML='도로 경로 미리보기를 불러오지 못했습니다. Google Maps 전체 경로 버튼은 계속 사용할 수 있습니다.';}
+}
+
+let pickingLocation=false;
+let selectedLocation=null;
+let tempPickMarker=null;
+let lastSearchAt=0;
+const modal=document.getElementById('placeModal');
+const searchInput=document.getElementById('placeSearch');
+const searchResults=document.getElementById('searchResults');
+const searchStatus=document.getElementById('searchStatus');
+const selectedPlace=document.getElementById('selectedPlace');
+const savePlaceBtn=document.getElementById('savePlace');
+const SEARCH_CACHE_KEY='quynhonPlaceSearchCacheV42';
+
+function loadSearchCache(){
+  try{return JSON.parse(localStorage.getItem(SEARCH_CACHE_KEY)||'{}')}catch(e){return {}}
+}
+function saveSearchCache(cache){
+  try{localStorage.setItem(SEARCH_CACHE_KEY,JSON.stringify(cache))}catch(e){}
+}
+function resetSelectedLocation(){
+  selectedLocation=null;
+  savePlaceBtn.disabled=true;
+  selectedPlace.style.display='none';
+  selectedPlace.innerHTML='';
+  if(tempPickMarker){map.removeLayer(tempPickMarker);tempPickMarker=null;}
+}
+function showSelectedLocation(loc){
+  selectedLocation=loc;
+  savePlaceBtn.disabled=false;
+  selectedPlace.style.display='block';
+  const g=`https://www.google.com/maps/search/?api=1&query=${loc.lat},${loc.lng}`;
+  selectedPlace.innerHTML=`<strong>선택됨 · ${escHtml(loc.name)}</strong><div>${escHtml(loc.address||'주소 정보 없음')}</div><a href="${g}" target="_blank" rel="noopener">Google Maps에서 위치 확인 ↗</a>`;
+  if(tempPickMarker) map.removeLayer(tempPickMarker);
+  tempPickMarker=L.circleMarker([loc.lat,loc.lng],{radius:9,weight:3,color:'#0f172a',fillColor:'#38bdf8',fillOpacity:.9}).addTo(map);
+}
+function escHtml(s){
+  return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+}
+function openModal(){
+  modal.style.display='flex';
+  searchInput.value='';
+  searchResults.innerHTML='';
+  searchStatus.textContent='장소명을 입력하고 검색하세요. 검색 결과는 OpenStreetMap 장소 데이터를 사용합니다.';
+  document.getElementById('newDesc').value='';
+  resetSelectedLocation();
+  setTimeout(()=>searchInput.focus(),50);
+}
+function closeModal(){
+  modal.style.display='none';
+  pickingLocation=false;
+  map.getContainer().style.cursor='';
+  if(tempPickMarker){map.removeLayer(tempPickMarker);tempPickMarker=null;}
+}
+document.getElementById('addPlaceBtn').onclick=openModal;
+document.getElementById('cancelPlace').onclick=closeModal;
+modal.addEventListener('click',e=>{if(e.target===modal)closeModal();});
+
+async function runPlaceSearch(){
+  const raw=searchInput.value.trim();
+  if(!raw){searchStatus.textContent='검색할 장소명을 입력해 주세요.';return;}
+  const query=/quy nhon|quy nhơn|꾸이년/i.test(raw)?raw:`${raw}, Quy Nhơn, Việt Nam`;
+  const cache=loadSearchCache();
+  const key=query.toLowerCase();
+
+  if(cache[key]?.items?.length){
+    renderSearchResults(cache[key].items);
+    searchStatus.textContent=`저장된 검색 결과 ${cache[key].items.length}개를 표시합니다.`;
+    return;
+  }
+
+  const wait=Math.max(0,1100-(Date.now()-lastSearchAt));
+  if(wait) await new Promise(r=>setTimeout(r,wait));
+  lastSearchAt=Date.now();
+
+  searchStatus.textContent='장소를 검색하는 중...';
+  searchResults.innerHTML='';
+  const params=new URLSearchParams({
+    q:query,
+    format:'jsonv2',
+    addressdetails:'1',
+    namedetails:'1',
+    limit:'6',
+    countrycodes:'vn',
+    viewbox:'109.08,13.97,109.36,13.62',
+    bounded:'0',
+    'accept-language':'ko,vi,en'
+  });
+
+  try{
+    const res=await fetch(`https://nominatim.openstreetmap.org/search?${params.toString()}`,{
+      method:'GET',
+      headers:{'Accept':'application/json'}
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    const items=data.map(x=>({
+      name:(x.namedetails && (x.namedetails['name:ko']||x.namedetails['name:vi']||x.namedetails.name)) || x.name || String(x.display_name||'').split(',')[0],
+      address:x.display_name||'',
+      lat:Number(x.lat),
+      lng:Number(x.lon),
+      type:x.type||x.addresstype||''
+    })).filter(x=>Number.isFinite(x.lat)&&Number.isFinite(x.lng));
+    cache[key]={ts:Date.now(),items};
+    saveSearchCache(cache);
+    renderSearchResults(items);
+    searchStatus.textContent=items.length?`검색 결과 ${items.length}개 · 원하는 장소를 클릭하세요.`:'검색 결과가 없습니다. 검색어를 바꾸거나 지도에서 직접 위치를 선택하세요.';
+  }catch(e){
+    searchStatus.textContent='장소 검색을 불러오지 못했습니다. 잠시 후 다시 검색하거나 지도에서 직접 위치를 선택하세요.';
+  }
+}
+function renderSearchResults(items){
+  searchResults.innerHTML='';
+  items.forEach((x,i)=>{
+    const btn=document.createElement('button');
+    btn.type='button';
+    btn.className='search-result';
+    btn.innerHTML=`<div class="sr-name">${escHtml(x.name||'이름 없음')}</div><div class="sr-address">${escHtml(x.address)}</div>`;
+    btn.onclick=()=>{
+      [...searchResults.children].forEach(el=>el.classList.remove('selected'));
+      btn.classList.add('selected');
+      showSelectedLocation(x);
+      map.setView([x.lat,x.lng],16);
+    };
+    searchResults.appendChild(btn);
+  });
+}
+document.getElementById('searchPlaceBtn').onclick=runPlaceSearch;
+searchInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();runPlaceSearch();}});
+
+document.getElementById('pickOnMap').onclick=()=>{
+  pickingLocation=true;
+  modal.style.display='none';
+  map.getContainer().style.cursor='crosshair';
+};
+
+map.on('click',async e=>{
+  if(!pickingLocation)return;
+  pickingLocation=false;
+  map.getContainer().style.cursor='';
+  const loc={name:searchInput.value.trim()||'사용자 지정 장소',address:'지도에서 직접 지정한 위치',lat:e.latlng.lat,lng:e.latlng.lng};
+  showSelectedLocation(loc);
+  modal.style.display='flex';
+  searchStatus.textContent='지도에서 위치를 선택했습니다. 장소명은 검색창의 내용을 사용합니다.';
+});
+
+document.getElementById('savePlace').onclick=()=>{
+  if(!selectedLocation){alert('검색 결과에서 장소를 선택해 주세요.');return;}
+  const cat=document.getElementById('newCat').value;
+  const desc=document.getElementById('newDesc').value.trim();
+  const p={
+    id:'custom_'+Date.now(),
+    name:selectedLocation.name||searchInput.value.trim()||'사용자 추가 장소',
+    en:selectedLocation.name||searchInput.value.trim()||'Custom place',
+    cat,plan:'사용자 추가',
+    lat:selectedLocation.lat,lng:selectedLocation.lng,
+    address:selectedLocation.address||'사용자 지정 위치',
+    role:desc||'사용자 추가 후보지',
+    hours:'여행 전 확인',
+    stay:'미정',
+    rating:'사용자 추가',
+    tip:'사용자가 직접 추가한 장소입니다. 최종 일정에 넣기 전 운영 여부와 정확한 위치를 확인하세요.',
+    desc:desc||'사용자가 직접 추가한 장소입니다.',
+    custom:true
+  };
+  P.push(p);
+  byId[p.id]=p;
+  addMarker(p);
+  localStorage.setItem('quynhonCustomPlaces',JSON.stringify(P.filter(x=>x.custom)));
+  closeModal();
+  renderAll();
+  map.setView([p.lat,p.lng],16);
+  setTimeout(()=>markers[p.id].fire('click'),80);
+};
+
+function renderAll(){renderLists();refreshMarkerIcons();drawRoute();}
+renderAll();
+
+// ===== v12 mobile responsive behavior =====
+(function(){
+  const mq=window.matchMedia('(max-width: 850px)');
+  const sidebar=document.getElementById('sidebar') || document.querySelector('.side,.sidebar,.left-panel,.panel-left');
+  const handle=document.getElementById('mobileHandle');
+  const toggle=document.getElementById('mobilePanelToggle');
+  const tabs=document.getElementById('mobileTabs');
+
+  function invalidateMapSoon(){
+    try{setTimeout(()=>map.invalidateSize(),120);}catch(e){}
+  }
+
+  function setPanel(state){
+    if(!sidebar) return;
+    sidebar.classList.remove('mobile-expanded','mobile-collapsed');
+    if(state==='expanded') sidebar.classList.add('mobile-expanded');
+    if(state==='collapsed') sidebar.classList.add('mobile-collapsed');
+    if(toggle){
+      toggle.textContent = state==='collapsed' ? '일정 열기' : (state==='expanded' ? '지도 보기' : '접기');
+    }
+    invalidateMapSoon();
+  }
+
+  function currentState(){
+    if(!sidebar) return 'normal';
+    if(sidebar.classList.contains('mobile-expanded')) return 'expanded';
+    if(sidebar.classList.contains('mobile-collapsed')) return 'collapsed';
+    return 'normal';
+  }
+
+  function cyclePanel(){
+    if(!mq.matches || !sidebar) return;
+    const s=currentState();
+    setPanel(s==='collapsed' ? 'normal' : (s==='normal' ? 'expanded' : 'collapsed'));
+  }
+
+  handle?.addEventListener('click',cyclePanel);
+  toggle?.addEventListener('click',()=>{
+    if(!mq.matches || !sidebar) return;
+    setPanel(currentState()==='collapsed' ? 'normal' : 'collapsed');
+  });
+
+  // Swipe on handle: up expands, down collapses.
+  let startY=null;
+  handle?.addEventListener('touchstart',e=>{startY=e.touches[0].clientY},{passive:true});
+  handle?.addEventListener('touchend',e=>{
+    if(startY==null) return;
+    const dy=e.changedTouches[0].clientY-startY;
+    startY=null;
+    if(Math.abs(dy)<24) return;
+    setPanel(dy<0?'expanded':'collapsed');
+  },{passive:true});
+
+  // Tabs: scroll/focus the corresponding list area instead of hiding data.
+  tabs?.addEventListener('click',e=>{
+    const btn=e.target.closest('button[data-mobile-tab]');
+    if(!btn) return;
+    tabs.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b===btn));
+    const tab=btn.dataset.mobileTab;
+    const routeTarget=document.getElementById('itinerary') || document.getElementById('routeList') || document.querySelector('.route-list');
+    const candTarget=document.getElementById('candidates') || document.getElementById('candidateList') || document.querySelector('.candidate-list');
+    const target=tab==='route'?routeTarget:candTarget;
+    if(sidebar && currentState()==='collapsed') setPanel('normal');
+    setTimeout(()=>target?.scrollIntoView({behavior:'smooth',block:'start'}),80);
+  });
+
+  function applyMode(){
+    if(!sidebar) return;
+    if(mq.matches){
+      if(!sidebar.classList.contains('mobile-expanded')&&!sidebar.classList.contains('mobile-collapsed')) setPanel('normal');
+    }else{
+      sidebar.classList.remove('mobile-expanded','mobile-collapsed');
+      if(toggle) toggle.textContent='일정 열기';
+      invalidateMapSoon();
+    }
+  }
+  mq.addEventListener?.('change',applyMode);
+  window.addEventListener('orientationchange',invalidateMapSoon);
+  window.addEventListener('resize',invalidateMapSoon);
+  applyMode();
+})();
+
+</script></body></html>

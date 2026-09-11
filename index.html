@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f766e" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="베트남여행지도" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <title>2027 베트남 가족여행 지도</title>
+  <style>
+    :root{--bg:#07111f;--card:#0f1d31;--card2:#13243b;--text:#eef7ff;--muted:#9bb0c8;--line:rgba(255,255,255,.12);--accent:#2dd4bf;--accent2:#facc15;--danger:#f97316}
+    *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:radial-gradient(circle at top left,#123b55 0,#07111f 45%,#050a12 100%);color:var(--text);min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+    .wrap{max-width:1080px;margin:0 auto;padding:26px 18px 40px}.hero{padding:26px 0 20px}.badge{display:inline-flex;gap:8px;align-items:center;background:rgba(45,212,191,.12);border:1px solid rgba(45,212,191,.35);color:#bffef5;border-radius:999px;padding:8px 12px;font-size:13px}h1{font-size:clamp(30px,6vw,56px);line-height:1.05;margin:18px 0 12px;letter-spacing:-.05em}.lead{color:var(--muted);font-size:16px;line-height:1.65;max-width:760px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:24px 0}.card{background:linear-gradient(180deg,rgba(19,36,59,.92),rgba(8,18,33,.92));border:1px solid var(--line);border-radius:22px;padding:18px;box-shadow:0 18px 50px rgba(0,0,0,.25)}.city{display:flex;flex-direction:column;min-height:250px}.city .emoji{font-size:34px}.city h2{margin:12px 0 6px;font-size:22px}.meta{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:14px}.tags{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 16px}.tag{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:5px 8px;color:#d8e8f8;background:rgba(255,255,255,.05)}.btn{display:flex;align-items:center;justify-content:center;text-decoration:none;color:#06221f;background:linear-gradient(135deg,#5eead4,#facc15);font-weight:800;border-radius:14px;padding:12px 14px;margin-top:auto}.btn.secondary{background:#0b1527;color:#eaf8ff;border:1px solid var(--line);margin-top:10px}.section{margin-top:24px}.timeline{display:grid;grid-template-columns:1fr;gap:10px}.row{display:grid;grid-template-columns:90px 1fr;gap:14px;padding:14px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.045)}.date{color:#fde68a;font-weight:800}.desc{color:#d6e4f4;line-height:1.5}.notice{border-left:4px solid var(--accent2);padding:14px 16px;background:rgba(250,204,21,.08);border-radius:14px;color:#f8fafc;line-height:1.6}.install{display:grid;grid-template-columns:1fr 1fr;gap:14px}.install h3{margin:0 0 8px}.install p{margin:0;color:var(--muted);line-height:1.55}.small{font-size:12px;color:#90a4bc;margin-top:12px;line-height:1.5}@media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:560px){.wrap{padding:20px 14px 30px}.grid,.install{grid-template-columns:1fr}.row{grid-template-columns:70px 1fr}.city{min-height:220px}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <div class="badge">📱 Galaxy · iPhone 겸용 PWA</div>
+      <h1>2027 베트남 가족여행 지도</h1>
+      <p class="lead">다낭, 꾸이년, 뚜이호아, 나트랑 도시별 지도를 한 곳에서 여는 가족 공유용 웹앱입니다. 홈 화면에 추가하면 앱처럼 실행됩니다.</p>
+    </section>
+
+    <section class="grid" aria-label="도시별 지도">
+      <article class="card city"><div class="emoji">🌉</div><h2>다낭</h2><div class="meta">1/11~1/13 · New Orient Hotel Da Nang</div><div class="tags"><span class="tag">시내 여유</span><span class="tag">가족 후보지</span><span class="tag">지도 v15</span></div><a class="btn" href="da_nang.html">다낭 지도 열기</a></article>
+      <article class="card city"><div class="emoji">🏖️</div><h2>꾸이년</h2><div class="meta">1/13~1/17 · Sala Quy Nhon Beach Hotel</div><div class="tags"><span class="tag">프리셋 확정</span><span class="tag">생활 POI</span><span class="tag">지도 v4.3</span></div><a class="btn" href="quy_nhon.html">꾸이년 지도 열기</a></article>
+      <article class="card city"><div class="emoji">🌊</div><h2>뚜이호아</h2><div class="meta">1/17~1/21 · APEC + Rosa Alba</div><div class="tags"><span class="tag">지역음식</span><span class="tag">남부 해안</span><span class="tag">지도 v3.6</span></div><a class="btn" href="tuy_hoa.html">뚜이호아 지도 열기</a></article>
+      <article class="card city"><div class="emoji">♨️</div><h2>나트랑</h2><div class="meta">1/21~1/25 · The Costa 후보</div><div class="tags"><span class="tag">I-Resort 1순위</span><span class="tag">9명 가족</span><span class="tag">지도 v3.5</span></div><a class="btn" href="nha_trang.html">나트랑 지도 열기</a></article>
+    </section>
+
+    <section class="section card">
+      <h2>전체 이동 흐름</h2>
+      <div class="timeline">
+        <div class="row"><div class="date">1/11</div><div class="desc">인천 → 다낭 도착 · New Orient Hotel 체크인</div></div>
+        <div class="row"><div class="date">1/13</div><div class="desc">다낭역 → Diêu Trì역 침대열차 · 꾸이년 이동</div></div>
+        <div class="row"><div class="date">1/17</div><div class="desc">꾸이년 → Gành Đá Đĩa · Ô Loan Lagoon → 뚜이호아 APEC</div></div>
+        <div class="row"><div class="date">1/19</div><div class="desc">APEC → Rosa Alba Resort & Villas 이동 · 리조트 휴식</div></div>
+        <div class="row"><div class="date">1/21</div><div class="desc">뚜이호아 → 나트랑 이동 · The Costa 후보 숙박</div></div>
+        <div class="row"><div class="date">1/25</div><div class="desc">나트랑 → Cam Ranh Airport → 인천</div></div>
+      </div>
+    </section>
+
+    <section class="section install">
+      <div class="card"><h3>삼성 갤럭시</h3><p>Chrome으로 이 페이지 접속 → 오른쪽 위 ⋮ → <b>홈 화면에 추가</b> 또는 <b>앱 설치</b> 선택.</p></div>
+      <div class="card"><h3>아이폰</h3><p>Safari로 이 페이지 접속 → 공유 버튼 → <b>홈 화면에 추가</b> 선택.</p></div>
+    </section>
+
+    <section class="section notice">지도 화면과 장소 목록은 앱처럼 열 수 있지만, 지도 타일·장소 검색·경로 계산은 인터넷 연결이 필요합니다. 여행 전에는 최신 운영시간과 티켓, 픽업·배달 여부를 한 번 더 확인하세요.</section>
+    <p class="small">PWA v1 · 도시별 지도 기준본: Da Nang v15 / Quy Nhon v4.3 / Tuy Hoa v3.6 / Nha Trang v3.5</p>
+  </main>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js').catch(()=>{}));
+    }
+  </script>
+</body>
+</html>

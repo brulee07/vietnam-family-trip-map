@@ -1,0 +1,835 @@
+<!doctype html>
+<html lang="ko"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>뚜이호아 가족여행 반응형 지도 v3.6</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{--bg:#0b1220;--panel:#0f172a;--card:#151f31;--line:#2b3a53;--muted:#93a4bc;--text:#f8fafc}
+*{box-sizing:border-box}html,body{height:100%;margin:0;font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif;background:var(--bg)}
+.app{height:100%;display:grid;grid-template-columns:420px 1fr}.side{background:var(--panel);color:var(--text);overflow:auto;padding:18px;border-right:1px solid #24334b}
+h1{font-size:20px;margin:0 0 5px}.sub{font-size:11.5px;color:var(--muted);line-height:1.5;margin-bottom:14px}
+.header-row{display:flex;justify-content:space-between;align-items:center;margin:14px 0 7px}.header-row b{font-size:12.5px}.count{font-size:10px;color:#9fb0c8;background:#172033;padding:4px 7px;border-radius:999px}
+.dropzone{min-height:68px;border:1px dashed #475569;border-radius:12px;padding:7px;background:#0b1324}.dropzone.over{border-color:#38bdf8;background:#102239}
+.stop{display:grid;grid-template-columns:28px 1fr 24px;gap:8px;align-items:center;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:9px;margin:5px 0;cursor:grab;user-select:none}
+.stop.dragging{opacity:.35}.num{width:25px;height:25px;border-radius:50%;background:#fff;color:#111827;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900}
+.stop-name{font-size:12.5px;font-weight:800}.stop-meta{font-size:10px;color:#94a3b8;margin-top:2px;line-height:1.35}.remove{border:0;background:transparent;color:#94a3b8;cursor:pointer;font-size:15px;padding:0}
+.candidates{display:flex;flex-direction:column;gap:5px}.candidate{display:grid;grid-template-columns:9px 1fr 22px;gap:8px;align-items:center;border:1px solid #26354d;background:#131d2e;border-radius:9px;padding:8px 9px;cursor:grab}
+.candidate:hover{border-color:#64748b}.dot{width:8px;height:8px;border-radius:50%}.plus{font-size:17px;color:#64748b;text-align:center}.cname{font-size:12px;font-weight:750}.cmeta{font-size:9.7px;color:#8797ad;margin-top:2px}
+.actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.preset-box{border:1px solid #26354d;background:#101a2b;border-radius:12px;padding:10px;margin:12px 0 10px}
+.preset-title{font-size:12px;font-weight:850;margin-bottom:7px;color:#f8fafc}
+.preset-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.preset-btn{border:1px solid #334155;background:#172033;color:#e5e7eb;border-radius:9px;padding:8px 9px;font-size:10.5px;line-height:1.25;cursor:pointer;text-align:left}
+.preset-btn b{display:block;font-size:11px;color:#fff;margin-bottom:2px}
+.preset-btn.active{background:#fff;color:#111827;border-color:#fff}
+.preset-btn.active b{color:#111827}
+.preset-note{font-size:9.8px;color:#93a4bc;line-height:1.45;margin-top:8px}
+.preset-current{font-size:10.5px;color:#cbd5e1;background:#0b1324;border:1px solid #26354d;border-radius:9px;padding:7px 8px;margin-top:8px;line-height:1.4}
+.btn{border:1px solid #334155;background:#172033;color:#e5e7eb;border-radius:8px;padding:7px 9px;font-size:10.5px;cursor:pointer}.btn.primary{background:#fff;color:#111827;font-weight:750}
+.route-info{margin-top:10px;background:#101a2b;border:1px solid #26354d;border-radius:10px;padding:9px 10px;font-size:10.5px;color:#cbd5e1;line-height:1.5}
+.segment{display:flex;justify-content:space-between;gap:10px;border-top:1px solid #233047;padding-top:6px;margin-top:6px}.seg-right{white-space:nowrap;color:#fff}
+.note{font-size:9.8px;color:#718198;line-height:1.5;margin-top:11px}#map{height:100%}
+.pin{width:28px;height:28px;border-radius:50%;border:2px solid white;box-shadow:0 2px 7px #0007;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff;cursor:pointer}
+.lbl{background:#ffffffee!important;border:1px solid #94a3b8!important;border-radius:7px!important;box-shadow:0 1px 5px #0002!important;color:#172033!important;font-size:10.5px!important;font-weight:800!important;padding:3px 6px!important;white-space:nowrap}.lbl:before{display:none!important}.leaflet-tooltip.lbl{pointer-events:auto!important;cursor:pointer!important}.leaflet-marker-icon{pointer-events:auto!important;cursor:pointer!important}
+.leaflet-popup-content-wrapper{border-radius:15px;padding:0;overflow:hidden}.leaflet-popup-content{margin:0;width:355px!important}
+.photo{height:110px;background:linear-gradient(135deg,#e2e8f0,#cbd5e1);display:flex;align-items:center;justify-content:center;color:#475569;font-size:12px;text-align:center;padding:20px}
+.card{padding:13px 14px}.card h3{margin:0;font-size:17px}.en{font-size:11px;color:#64748b;margin:2px 0 9px}
+.tags{display:flex;gap:5px;flex-wrap:wrap;margin:7px 0}.tag{font-size:10px;background:#eef2ff;color:#334155;border-radius:999px;padding:4px 7px}
+.rec-badge{display:inline-block;background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;border-radius:999px;padding:5px 8px;font-size:10.5px;font-weight:800;margin:2px 0 6px}
+.meta{font-size:11px;line-height:1.55;color:#334155;margin:5px 0}.tip{font-size:12px;line-height:1.55;background:#f8fafc;border-radius:9px;padding:9px 10px;margin:8px 0}
+.maplink{display:inline-block;background:#0f172a;color:#fff!important;text-decoration:none;border-radius:8px;padding:7px 10px;font-size:11px;margin-top:5px}
+.modal-backdrop{position:fixed;inset:0;background:#0008;z-index:3000;display:none;align-items:center;justify-content:center;padding:18px}
+.modal{width:min(460px,96vw);background:#fff;color:#0f172a;border-radius:16px;box-shadow:0 20px 60px #0007;overflow:hidden}
+.modal-head{padding:15px 16px;border-bottom:1px solid #e2e8f0;font-weight:800}
+.modal-body{padding:15px 16px;display:grid;gap:10px}
+.modal-body label{font-size:11px;font-weight:700;color:#475569}
+.modal-body input,.modal-body select,.modal-body textarea{width:100%;margin-top:5px;border:1px solid #cbd5e1;border-radius:9px;padding:9px 10px;font:inherit;font-size:12px}
+.modal-body textarea{min-height:68px;resize:vertical}
+.searchrow{display:grid;grid-template-columns:1fr auto;gap:7px;align-items:end}
+.searchrow button{height:36px;border:0;border-radius:9px;background:#0f172a;color:#fff;padding:0 14px;font-size:11px;font-weight:750;cursor:pointer}
+.search-results{display:grid;gap:6px;max-height:205px;overflow:auto}
+.search-result{border:1px solid #dbe3ee;background:#fff;border-radius:9px;padding:9px 10px;cursor:pointer;text-align:left}
+.search-result:hover{border-color:#64748b;background:#f8fafc}
+.search-result.selected{border-color:#0f172a;background:#f1f5f9}
+.sr-name{font-size:12px;font-weight:800;color:#0f172a}
+.sr-address{font-size:10px;color:#64748b;line-height:1.4;margin-top:3px}
+.search-status{font-size:10.5px;color:#64748b;line-height:1.45}
+.selected-place{display:none;border:1px solid #cbd5e1;border-radius:10px;padding:9px 10px;background:#f8fafc}
+.selected-place strong{display:block;font-size:12px}
+.selected-place div{font-size:10px;color:#64748b;line-height:1.4;margin-top:3px}
+.selected-place a{display:inline-block;margin-top:6px;font-size:10px;color:#0369a1;text-decoration:none}
+.modal-actions{display:flex;justify-content:flex-end;gap:7px;padding:12px 16px;border-top:1px solid #e2e8f0}
+.modal-actions button{border:1px solid #cbd5e1;background:#fff;color:#0f172a;border-radius:8px;padding:8px 11px;font-size:11px;cursor:pointer}
+.modal-actions .save{background:#0f172a;color:#fff;border-color:#0f172a}
+.modal-actions .save:disabled{opacity:.4;cursor:not-allowed}
+.pickhint{font-size:10.5px;color:#64748b;line-height:1.45;background:#f8fafc;padding:8px 9px;border-radius:8px}
+@media(max-width:850px){.app{grid-template-columns:1fr;grid-template-rows:58vh 42vh}#map{grid-row:1}.side{grid-row:2;border-right:0;border-top:1px solid #24334b}}
+
+/* ===== v12 Responsive / Mobile Travel UI ===== */
+:root{
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+html,body{overscroll-behavior:none}
+.mobile-topbar,.mobile-handle,.mobile-tabs{display:none}
+
+@media (max-width: 850px){
+  body{overflow:hidden}
+  .app,.layout,.container,.wrapper{height:100dvh;min-height:100dvh}
+
+  /* Sidebar becomes a bottom sheet */
+  #sidebar,.sidebar,.left-panel,.panel-left,.side{
+    position:fixed!important;
+    left:0!important;
+    right:0!important;
+    bottom:0!important;
+    top:auto!important;
+    width:100%!important;
+    max-width:none!important;
+    height:46dvh!important;
+    min-height:220px!important;
+    max-height:78dvh!important;
+    z-index:1800!important;
+    border-radius:18px 18px 0 0!important;
+    box-shadow:0 -12px 30px rgba(0,0,0,.24)!important;
+    padding-bottom:calc(10px + var(--safe-bottom))!important;
+    overflow:hidden!important;
+    transition:height .22s ease, transform .22s ease;
+  }
+
+  #sidebar.mobile-expanded,.sidebar.mobile-expanded,.left-panel.mobile-expanded,.panel-left.mobile-expanded,.side.mobile-expanded{
+    height:76dvh!important;
+    transform:translateY(0)!important;
+    pointer-events:auto!important;
+  }
+
+  #sidebar.mobile-collapsed,.sidebar.mobile-collapsed,.left-panel.mobile-collapsed,.panel-left.mobile-collapsed,.side.mobile-collapsed{
+    height:0!important;
+    min-height:0!important;
+    max-height:0!important;
+    padding-top:0!important;
+    padding-bottom:0!important;
+    border-radius:0!important;
+    box-shadow:none!important;
+    overflow:hidden!important;
+    pointer-events:none!important;
+    transform:translateY(100%)!important;
+  }
+
+  /* Map occupies the full screen behind the sheet */
+  #map,.map{
+    position:fixed!important;
+    inset:0!important;
+    width:100%!important;
+    height:100dvh!important;
+    z-index:1!important;
+  }
+
+  .mobile-handle{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    height:24px;
+    cursor:pointer;
+    touch-action:manipulation;
+    background:transparent;
+  }
+  .mobile-handle::before{
+    content:"";
+    width:46px;
+    height:5px;
+    border-radius:999px;
+    background:#cbd5e1;
+  }
+
+  .mobile-topbar{
+    display:flex;
+    position:fixed;
+    top:calc(8px + var(--safe-top));
+    left:10px;
+    right:10px;
+    z-index:1900;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    pointer-events:none;
+  }
+  .mobile-topbar .mobile-title,
+  .mobile-topbar button{
+    pointer-events:auto;
+    border:0;
+    border-radius:12px;
+    background:rgba(15,23,42,.92);
+    color:#fff;
+    box-shadow:0 6px 18px rgba(0,0,0,.2);
+  }
+  .mobile-title{
+    padding:9px 12px;
+    font-size:12px;
+    font-weight:800;
+    backdrop-filter:blur(8px);
+  }
+  .mobile-topbar button{
+    padding:9px 11px;
+    font-size:11px;
+    font-weight:800;
+    cursor:pointer;
+  }
+
+  .mobile-tabs{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:6px;
+    padding:0 10px 8px;
+  }
+  .mobile-tabs button{
+    border:1px solid #334155;
+    background:#0f172a;
+    border-radius:9px;
+    padding:8px 10px;
+    font-size:11px;
+    font-weight:800;
+    color:#fff;
+  }
+  .mobile-tabs button.active{
+    background:#fff;
+    color:#0f172a;
+    border-color:#cbd5e1;
+  }
+
+  /* Make the sheet's internal content scrollable */
+  #sidebar > *:not(.mobile-handle):not(.mobile-tabs),
+  .sidebar > *:not(.mobile-handle):not(.mobile-tabs){
+    max-width:100%;
+  }
+
+  /* Lists and controls */
+  .list,.route-list,.candidate-list,#routeList,#candidateList{
+    overflow-y:auto!important;
+    -webkit-overflow-scrolling:touch;
+  }
+  .item,.place-item,.route-item,.candidate-item{
+    min-height:50px!important;
+    padding:10px 11px!important;
+    margin-bottom:7px!important;
+    touch-action:pan-y;
+  }
+  button,.btn{
+    min-height:40px;
+    font-size:12px!important;
+  }
+
+  /* Tooltip labels easier to tap */
+  .leaflet-tooltip.lbl{
+    font-size:11px!important;
+    padding:6px 8px!important;
+    border-radius:8px!important;
+    box-shadow:0 2px 8px rgba(0,0,0,.16)!important;
+  }
+
+  /* Popup sized for phones */
+  .leaflet-popup-content-wrapper{border-radius:14px!important}
+  .leaflet-popup-content{
+    width:min(78vw,320px)!important;
+    margin:12px 14px!important;
+    font-size:12px!important;
+  }
+
+  /* Modal becomes bottom sheet-ish on mobile */
+  .modal-backdrop{
+    align-items:flex-end!important;
+    padding:0!important;
+  }
+  .modal{
+    width:100%!important;
+    max-height:88dvh!important;
+    overflow:auto!important;
+    border-radius:18px 18px 0 0!important;
+    padding-bottom:var(--safe-bottom);
+  }
+
+  /* Leaflet controls lifted above bottom sheet */
+  .leaflet-bottom{bottom:calc(46dvh + 8px)!important}
+  .mobile-collapsed ~ #map .leaflet-bottom{bottom:14px!important}
+
+  /* Avoid tiny map labels */
+  .leaflet-control-zoom a{width:38px!important;height:38px!important;line-height:38px!important}
+}
+
+/* Narrow phones */
+@media (max-width: 480px){
+  #sidebar,.sidebar,.left-panel,.panel-left,.side{height:48dvh!important}
+  #sidebar.mobile-expanded,.sidebar.mobile-expanded,.left-panel.mobile-expanded,.panel-left.mobile-expanded,.side.mobile-expanded{height:80dvh!important}
+  .mobile-title{max-width:70vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+}
+
+
+@media (max-width:850px){
+  .side{
+    display:block!important;
+    transform:translateY(0)!important;
+    pointer-events:auto!important;
+    position:fixed!important;
+    left:0!important;right:0!important;bottom:0!important;top:auto!important;
+    z-index:1800!important;
+    overflow-y:auto!important;
+    -webkit-overflow-scrolling:touch!important;
+    padding:0 14px calc(14px + var(--safe-bottom))!important;
+    background:var(--panel)!important;
+  }
+  .side h1{font-size:17px;margin-top:3px}
+  .side .sub{font-size:10.5px;margin-bottom:8px}
+  .mobile-handle{position:sticky;top:0;z-index:5;background:var(--panel);margin:0 -14px;padding-top:4px}
+  .mobile-tabs{position:sticky;top:24px;z-index:4;background:var(--panel);padding:4px 0 8px}
+  #itinerary,#candidates{scroll-margin-top:70px}
+  .stop{grid-template-columns:28px 1fr auto!important;cursor:default}
+  .mobile-order{display:flex;gap:3px;align-items:center}
+  .mobile-order button,.candidate-add{
+    min-width:34px!important;height:34px!important;min-height:34px!important;
+    border:1px solid #475569;background:#172033;color:#fff;border-radius:8px;
+    font-size:14px!important;font-weight:800;cursor:pointer;
+  }
+  .candidate{grid-template-columns:9px 1fr auto!important;cursor:default}
+  .candidate-add{display:inline-flex;align-items:center;justify-content:center}
+}
+@media (min-width:851px){
+  .mobile-order{display:none}
+  .candidate-add{display:none}
+}
+
+
+.desktop-stop-action{display:block}
+@media(max-width:850px){
+  .desktop-stop-action{display:none}
+  .candidate>.plus{display:none}
+}
+
+</style></head><body>
+
+<div class="mobile-topbar" id="mobileTopbar">
+  <div class="mobile-title">뚜이호아 가족여행 지도 v3.6</div>
+  <button id="mobilePanelToggle" type="button">일정 열기</button>
+</div>
+
+<div class="app"><aside class="side">
+<h1>뚜이호아 여행 경로 편집기 v3.6</h1>
+<div class="sub">후보지를 여행 경로로 드래그하고 순서를 바꾸면 도로 경로가 재계산됩니다. <b>v3.6: 1/17~1/21 확정 일정 흐름과 날짜별 프리셋을 일치시킨 일정 정리본.</b> 모든 마커는 클릭 시 상세 팝업이 열립니다.</div>
+<div class="verify-box"><b>검증 기준</b> · 지도 지점명은 <b>명소 이름</b>을 우선 사용하고, 실제 좌표·설명은 <b>차량 도착·입장 시작점</b> 기준을 반영합니다. <span class="warn">Eo Gió와 Hòn Khô는 명소와 실제 입구/선착장이 분리되어 있어, 실제 입구·선착장 좌표는 현장/투어 예약 시 최종 확인합니다.</span></div>
+<div class="preset-box">
+  <div class="preset-title">날짜별 일정 프리셋</div>
+  <div class="preset-grid">
+    <button class="preset-btn" data-preset="arrival"><b>1/17 이동·도착</b>Gành Đá Đĩa → Ô Loan → APEC</button>
+    <button class="preset-btn" data-preset="day18"><b>1/18 시내권</b>조식 → Nhạn Tower → 해변</button>
+    <button class="preset-btn" data-preset="day19"><b>1/19 리조트 이동</b>장보기 → Rosa Alba → 휴식</button>
+    <button class="preset-btn" data-preset="day20"><b>1/20 남부 해안</b>Mũi Điện → Vũng Rô → 리조트</button>
+    <button class="preset-btn" data-preset="day21"><b>1/21 나트랑 이동</b>체크아웃 → 이동</button>
+  </div>
+  <div class="preset-current" id="presetCurrent">현재 경로: APEC → Rosa Alba 기본 경로</div>
+  <div class="preset-note">프리셋을 누르면 여행 경로가 해당 날짜 일정으로 교체됩니다. 이후 후보지를 추가하거나 순서를 바꿔도 됩니다.</div>
+</div>
+
+<div class="mobile-handle" id="mobileHandle"></div><div class="mobile-tabs" id="mobileTabs"><button type="button" class="active" data-mobile-tab="route">여행 경로</button><button type="button" data-mobile-tab="candidate">후보지</button></div><div class="header-row"><b>여행 경로</b><span class="count" id="routeCount">2곳</span></div>
+<div id="itinerary" class="dropzone"></div>
+<div class="actions"><button class="btn primary" id="googleAll">Google Maps에서 전체 경로 열기</button><button class="btn" id="clearRoute">도착→숙소로 초기화</button></div>
+<div id="routeInfo" class="route-info">도로 경로를 계산하는 중...</div>
+<div class="header-row"><b>후보지</b><div style="display:flex;gap:6px;align-items:center"><button class="btn" id="addPlaceBtn">+ 장소 추가</button><span class="count" id="candidateCount"></span></div></div>
+<div id="candidates" class="candidates"></div>
+<div class="note">※ 지도 안의 선은 OpenStreetMap 도로망 기반 미리보기입니다. 실제 교통상황을 반영한 경로는 Google Maps에서 확인하세요.</div>
+</aside><div id="map"></div></div>
+
+<div class="modal-backdrop" id="placeModal">
+  <div class="modal">
+    <div class="modal-head">새 장소 추가</div>
+    <div class="modal-body">
+      <div class="searchrow">
+        <label>뚜이호아 장소 검색
+          <input id="placeSearch" placeholder="예: Nghinh Phong Tower, 카페 이름, 식당 이름">
+        </label>
+        <button id="searchPlaceBtn">검색</button>
+      </div>
+      <div class="search-status" id="searchStatus">장소명을 입력하고 검색하세요. 검색 결과는 OpenStreetMap 장소 데이터를 사용합니다.</div>
+      <div class="search-results" id="searchResults"></div>
+      <div class="selected-place" id="selectedPlace"></div>
+
+      <label>분류
+        <select id="newCat">
+          <option>관광</option><option>이동일</option><option>음식</option><option>로컬</option><option>카페</option><option>마사지</option><option>쇼핑</option><option>세탁</option><option>숙소</option><option>교통</option>
+        </select>
+      </label>
+      <label>간단한 메모<textarea id="newDesc" placeholder="예: 아이들과 쉬기 좋은 카페 / 저녁 식사 후보"></textarea></label>
+      <div class="pickhint">검색 결과에 원하는 장소가 없으면 <b>지도에서 직접 위치 선택</b>을 사용할 수 있습니다. 위도·경도는 화면에 입력할 필요가 없습니다.</div>
+      <button class="btn" id="pickOnMap" style="color:#0f172a;background:#f8fafc;border-color:#cbd5e1">검색 결과에 없음 · 지도에서 위치 선택</button>
+      <div class="search-status">검색: OpenStreetMap Nominatim · 지도: © OpenStreetMap contributors</div>
+    </div>
+    <div class="modal-actions">
+      <button id="cancelPlace">취소</button>
+      <button class="save" id="savePlace" disabled>후보지에 추가</button>
+    </div>
+  </div>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+/* Tuy Hoa v3.6: v3.3 UI를 유지하고, 1/17~1/21 날짜별 실제 일정 프리셋을 정리했습니다. */
+let P=[{"id":"apec","name":"APEC Mandala Phú Yên","en":"APEC Mandala Phú Yên / Tuy Hòa","cat":"숙소","plan":"1/17~1/19","lat":13.10362,"lng":109.306915,"address":"Đại lộ Hùng Vương, Tuy Hòa","role":"뚜이호아 1~2박 기준 숙소 · 시내 동선 출발점","hours":"예약 조건 기준","stay":"2박","rating":"확정 숙소","tip":"꾸이년에서 차량 이동 후 체크인하는 첫 숙소입니다. v3에서는 시내권·북쪽 이동의 기준점으로 사용합니다.","desc":"APEC Mandala Phú Yên은 Hùng Vương 대로 중심축에 위치한 숙소 기준점입니다.","badge":"숙소 확정","verified":"v3 기본 앵커 · 상세 재검증 예정"},{"id":"rosa","name":"Rosa Alba Resort & Villas","en":"Rosa Alba Resort & Villas Tuy Hoa","cat":"숙소","plan":"1/19~1/21","lat":13.1115,"lng":109.3078,"address":"88 Lê Duẩn Street, Tuy Hòa","role":"뚜이호아 후반 2박 풀빌라 숙소 · 리조트 휴식 기준점","hours":"예약 조건 기준","stay":"2박","rating":"확정 숙소","tip":"1/19 체크인 후 리조트 휴식 중심으로 운영하기 좋은 숙소입니다.","desc":"공식 연락처 페이지 주소와 외부 좌표 정보를 기준으로 v3 앵커에 반영했습니다.","badge":"풀빌라 숙소 확정","verified":"v3 기본 앵커 · 상세 재검증 예정"},{"id":"nghinhphong","name":"Nghinh Phong Tower","en":"Tháp Nghinh Phong","cat":"관광","plan":"시내권","lat":13.11632,"lng":109.30726,"address":"Quảng trường Nghinh Phong, Tuy Hòa","role":"뚜이호아 대표 광장·포토 스팟","hours":"상시 경관 · 야간 조명 확인","stay":"30~60분","rating":"핵심","tip":"APEC·Rosa Alba 모두에서 가까운 시내 해변축 포인트입니다. 저녁 산책이나 카페 일정과 묶기 좋습니다.","desc":"지도 목록에는 명소 이름을 사용하고, 실제 방문은 Nghinh Phong Square 권역으로 접근합니다.","badge":"시내 핵심 포인트","verified":"Mapcarta/OSM 좌표 확인"},{"id":"thapnhan","name":"Nhạn Tower","en":"Tháp Nhạn / Nhan Tower","cat":"관광","plan":"시내권","lat":13.0823667,"lng":109.3015583,"address":"Núi Nhạn, Tuy Hòa","role":"뚜이호아 참 유적 · 일몰/야경 후보","hours":"상시 경관 · 현장 개방시간 재확인","stay":"45~75분","rating":"핵심","tip":"언덕 위 유적이라 차량 하차 후 짧은 오르막 동선이 있을 수 있습니다. 더운 시간대보다 오전·해질녘이 낫습니다.","desc":"목록명은 Nhạn Tower로 표시하고, 팝업에서 언덕 접근 동선을 안내합니다.","badge":"시내 참 유적","verified":"Travelfish GPS 좌표 확인"},{"id":"ganhdadia","name":"Gành Đá Đĩa","en":"Gành Đá Đĩa / Sea Cliff of Stone Plates","cat":"관광","plan":"1/17 이동일 또는 북쪽","lat":13.35419,"lng":109.29363,"address":"Tuy An Đông","role":"현무암 주상절리 해안 · 1/17 이동일 핵심 관광","hours":"여행 전 재확인","stay":"60~90분","rating":"핵심","tip":"꾸이년→뚜이호아 이동일에 이미 배치된 핵심 관광지입니다. 뚜이호아 지도에서는 북쪽 관광 후보로도 표시합니다.","desc":"차량 접근은 관광단지 주차·입구 권역을 기준으로 현장 표지를 따릅니다.","badge":"이동일 핵심","verified":"꾸이년 v4.3 검증값 승계"},{"id":"oloan","name":"Ô Loan Lagoon","en":"Ô Loan Lagoon","cat":"관광","plan":"1/17 이동일 또는 북쪽","lat":13.26857,"lng":109.25136,"address":"Tuy An","role":"석호 전망·점심 후보","hours":"상시 경관","stay":"30~60분","rating":"선택","tip":"석호 중심이 아니라 실제 접근 가능한 전망지점을 기준으로 둡니다. 점심 식당이 확정되면 식당 자체를 경로점으로 바꾸는 편이 더 실용적입니다.","desc":"1/17 이동일의 점심·전망 후보. 추후 식당 검증 단계에서 보정합니다.","badge":"전망 접근점","verified":"꾸이년 v4.3 검증값 승계"},{"id":"muidien","name":"Mũi Điện · Bãi Môn","en":"Mui Dien Cape Lighthouse / Bai Mon","cat":"관광","plan":"남부 해안권","lat":12.8965126,"lng":109.4570124,"address":"Hòa Tâm, Đông Hòa","role":"동쪽 곶·등대·Bãi Môn 해변권","hours":"주간 방문 권장 · 현장 개방 확인","stay":"90~150분","rating":"핵심","tip":"차량 접근 후 등대·해변 동선이 나뉠 수 있습니다. v3에서는 등대 좌표를 기준으로 두고, 실제 주차·입장 시작점은 v3에서 재검증합니다.","desc":"목록명은 가족이 알기 쉽게 Mũi Điện · Bãi Môn으로 표시하고, 설명에서 등대·해변 접근을 구분합니다.","badge":"남부 핵심","verified":"Tanitour 지도 좌표 확인"},{"id":"vungro","name":"Vũng Rô Bay","en":"Vũng Rô Bay","cat":"관광","plan":"남부 해안권","lat":12.86607,"lng":109.42361,"address":"Hòa Xuân Nam / Đông Hòa","role":"남부 만 경관 · 해산물 점심 후보","hours":"상시 경관 · 식당은 별도 확인","stay":"60~120분","rating":"선택","tip":"지도 좌표는 만의 기준점입니다. 실제 일정에서는 전망대나 해산물 식당을 차량 목적지로 바꾸는 것이 더 정확합니다.","desc":"Mũi Điện과 묶기 좋은 남부 해안권 후보. v3에서 실제 정차점·식당을 검증합니다.","badge":"실제 정차점 재검증","verified":"Mapcarta/OSM 자연지형 좌표 확인"},{"id":"tuyhoabeach","name":"Tuy Hòa Beach","en":"Bãi biển Tuy Hòa","cat":"관광","plan":"시내 해변","lat":13.111,"lng":109.3089,"address":"Tuy Hòa beachfront","role":"숙소 인근 해변 산책 · 여유 시간용","hours":"상시 경관","stay":"30~90분","rating":"선택","tip":"APEC·Rosa Alba 주변에서 부담 없이 넣을 수 있는 산책 후보입니다. 정확한 정차 지점은 숙소 위치에 따라 조정합니다.","desc":"v3에서는 시내 해변축을 대표하는 보조 POI로 둡니다. 세부 접근점은 현지에서 조정합니다.","badge":"해변 산책","verified":"v3 보조 앵커 · 세부 좌표 보정 예정"},{"id":"vincom","name":"Vincom Plaza Tuy Hòa","en":"Vincom Plaza Tuy Hòa","cat":"쇼핑","plan":"쇼핑몰·비상용","lat":13.0959,"lng":109.3065,"address":"Hùng Vương × Trần Phú 교차로, Ward 7, Tuy Hòa","role":"쇼핑몰·식당·카페·비상용 실내 대안","hours":"여행 전 재확인","stay":"30~90분","rating":"공식 쇼핑몰 후보","tip":"장보기 1순위라기보다 비 오는 날, 더운 시간대, 아이들과 실내 대기가 필요할 때 쓰기 좋은 후보입니다.","desc":"🏬 쇼핑몰·식당·카페 · 🌧️ 비 오는 날 대안 · 👨‍👩‍👧‍👦 가족 실내 대기 후보","badge":"실내 대안","verified":"Vincom 공식 지점 정보와 중심권 위치 확인. 세부 매장·영업시간은 여행 전 재확인"},{"id":"coopmarttuyhoa","name":"Co.opmart Tuy Hòa","en":"Co.opmart Tuy Hoa Supermarket","cat":"쇼핑","plan":"생필품·장보기","lat":13.0862,"lng":109.3051,"address":"8 Duy Tân, Ward 4, Tuy Hòa","role":"APEC 2박 중 물·과일·간식·생필품 구매 1순위","hours":"여행 전 재확인","stay":"30~70분","rating":"핵심 마트","tip":"APEC 2박 중 가장 실용적인 장보기 후보입니다. Rosa Alba 풀빌라 이동 전 물·음료·간식·과일을 사서 가기에도 좋습니다.","desc":"🛒 생필품·물·과일·간식 · 🏨 APEC 2박 장보기 1순위 · 🏖️ Rosa Alba 이동 전 구매 후보","badge":"장보기 핵심","verified":"공식 Co.opmart 지점 정보에서 8 Duy Tân 확인. 좌표는 주소 기준 앵커로 최종 길찾기 전 재확인"},{"id":"tuyhoamarket","name":"Tuy Hòa Market / Chợ Tuy Hòa","en":"Chợ Tuy Hòa / Tuy Hoa Market","cat":"쇼핑","plan":"현지시장","lat":13.0847,"lng":109.3048,"address":"Ngô Quyền / Ward 4, Tuy Hòa 중심권","role":"현지시장 · 과일·생활상 구경 · 오전 짧은 방문 후보","hours":"오전 방문 권장 · 여행 전 재확인","stay":"30~60분","rating":"현지시장 후보","tip":"아이들과 오래 머무는 목적지라기보다 현지 분위기를 보고 과일을 사는 정도로 짧게 들르는 시장입니다.","desc":"🥭 현지시장·과일 · 🌅 오전 방문 추천 · 👨‍👩‍👧‍👦 짧은 생활시장 구경","badge":"현지시장","verified":"Chợ Tuy Hòa 시장권 확인. 좌표는 중심권 기준 앵커로 실제 입구는 현장 동선에 맞춰 조정"},{"id":"winmarttuyhoa","name":"WinMart Tuy Hòa","en":"Siêu thị WinMart Tuy Hòa","cat":"쇼핑","plan":"보조 생활 POI","lat":13.0964,"lng":109.3066,"address":"Tuy Hòa 중심권 · 실제 지점 선택 전 재확인","role":"Co.opmart 이용이 어려울 때 쓰는 보조 생활마트 후보","hours":"여행 전 재확인","stay":"15~40분","rating":"보조 후보","tip":"Co.opmart, Vincom, Tuy Hòa Market보다 역할은 약하지만 가까운 지점이 확인되면 비상용 생필품 구매 후보로 사용할 수 있습니다.","desc":"🛍️ 보조 생활마트 · 🧃 음료·간식·생필품 · 🟡 실제 지점/좌표 재확인","badge":"보조 후보","verified":"WinMart Tuy Hòa 존재 확인. 정확한 지점 좌표는 다음 검증에서 확정 필요"},{"id":"thaovy","name":"Bánh Canh Hẹ Thảo Vy","en":"Bánh canh hẹ Thảo Vy / Phú Yên chive fish-cake noodle","cat":"음식","plan":"APEC 조식","lat":13.1009,"lng":109.3062,"address":"393 Đại lộ Hùng Vương, Tuy Hòa","role":"APEC 조식 없는 1~2박의 아침식사 1순위 후보","hours":"06:30~21:00 · 여행 전 재확인","stay":"30~45분","rating":"4.7 / 391","tip":"부추 어묵국수. APEC 숙소에서 도보 또는 짧은 택시 이동으로 아침을 해결하기 좋은 후보입니다.","desc":"⭐ 푸옌 지역특색음식 · 🌅 아침식사 가능 · 🍜 부추 어묵국수 · 👨‍👩‍👧‍👦/🧑 모두 가능","badge":"APEC 조식 대체 1순위","verified":"주소·영업시간·리뷰 확인. 좌표는 v3.6에서 도로/해안선 기준으로 보정한 임시 앵커로 현지/Google Maps에서 최종 재확인"},{"id":"thanhtam","name":"Bánh Canh Hẹ Thành Tâm","en":"Bánh canh hẹ Thành Tâm","cat":"음식","plan":"지역 아침","lat":13.0969,"lng":109.3161,"address":"53 Điện Biên Phủ, Tuy Hòa ※ 일부 자료 30 Điện Biên Phủ 표기","role":"푸옌식 부추 어묵국수 유명 후보 · 주소 재확인 후 사용","hours":"13:00~22:00 자료 확인 · 아침용 여부 재확인","stay":"30~45분","rating":"유명 후보","tip":"유명도는 높지만 주소가 출처별로 엇갈립니다. v3에는 후보로 넣되, 실제 방문 전 지도 POI를 한 번 더 확인해야 합니다.","desc":"⭐ 푸옌 지역특색음식 · 🍜 부추 어묵국수 · 🟡 주소/좌표 재확인 후보","badge":"유명 후보 · 재검증","verified":"53 Điện Biên Phủ 자료 우세, Foody에는 30 Điện Biên Phủ 표기. 좌표는 Mapcarta 주변 POI 기반 임시 앵커"},{"id":"cobadiep","name":"Quán Cô Ba Diệp","en":"Cô Ba Diệp · Mắt cá ngừ đại dương / Lẩu gà lá é / Hải sản","cat":"음식","plan":"지역 저녁","lat":13.0979,"lng":109.319,"address":"261 Điện Biên Phủ, Tuy Hòa","role":"참치 눈 요리와 푸옌 로컬 메뉴를 함께 먹을 수 있는 저녁 후보","hours":"저녁 중심 · 여행 전 재확인","stay":"60~90분","rating":"4.7 / 422","tip":"참치 눈 요리만 있는 집보다 메뉴 폭이 넓어 가족·어른 모두 선택지가 있습니다. 아이들은 해산물·닭고기 메뉴로 조정 가능합니다.","desc":"⭐ 푸옌 지역특색음식 · 🐟 참치 특산 · 🌊 해산물 · 👨‍👩‍👧‍👦/🧑 모두 가능","badge":"푸옌 로컬 저녁","verified":"주소·리뷰·메뉴 구성 확인. 좌표는 v3.6에서 도로/해안선 기준으로 보정한 임시 앵커로 최종 재확인"},{"id":"tuyetnhung","name":"Cơm Gà Tuyết Nhung","en":"Tuyết Nhung Chicken Rice / Cơm gà Phú Yên","cat":"음식","plan":"가족식사","lat":13.0842,"lng":109.3097,"address":"189 Lê Thánh Tôn, Tuy Hòa","role":"푸옌식 닭고기밥 · 아이들과 먹기 쉬운 가족식사 후보","hours":"영업시간 자료 상이 · 여행 전 재확인","stay":"40~60분","rating":"대표 후보","tip":"조식 없는 날의 늦은 아침, 점심, 간단한 가족식사로 쓰기 좋습니다. 해산물이 부담될 때 안전한 카드입니다.","desc":"⭐ 푸옌 지역음식 · 🍚 닭고기밥 · 👨‍👩‍👧‍👦 가족 추천","badge":"가족식사 안전 카드","verified":"베트남 관광 DB·Foody 등에서 189 Lê Thánh Tôn 주소 확인. 좌표는 v3.6에서 도로/해안선 기준으로 보정한 임시 앵커"},{"id":"oloanseafood","name":"Ô Loan Seafood Lunch Zone","en":"Ô Loan lagoon seafood lunch area","cat":"음식","plan":"1/17 이동일 점심","lat":13.28433,"lng":109.25531,"address":"Quốc lộ 1, Ô Loan Lagoon 권역","role":"굴죽·꼬막·석호 해산물 점심 권역 · 1/17 이동일 후보","hours":"식당별 상이 · 당일 동선에 맞춰 선택","stay":"60~90분","rating":"권역 POI","tip":"특정 식당을 고정하기보다 이동일 점심 권역으로 두는 것이 안전합니다. 실제 식당이 정해지면 그 식당을 경로점으로 교체하세요.","desc":"🦪 굴죽·꼬막·석호 해산물 · 🚐 꾸이년→뚜이호아 이동일 점심 후보","badge":"이동일 점심 권역","verified":"Mapcarta O Loan 인근 Quốc lộ 1 접근 POI 좌표 확인"},{"id":"hiepyen","name":"Hiệp Yến Coffee & Restaurant","en":"Hiệp Yến Cafe & Điểm Tâm","cat":"카페","plan":"APEC 근처 아침 커피","lat":13.1041,"lng":109.3061,"address":"262–266 Hùng Vương, P.7, Tuy Hòa ※ 일부 자료 365/340 Hùng Vương 표기","role":"APEC 조식 없는 날 아침 커피·간단 휴식 후보","hours":"여행 전 재확인","stay":"30~60분","rating":"정원형 카페 후보","tip":"APEC과 같은 Hùng Vương 축에 있어 아침 식사 전후로 쓰기 좋은 후보입니다. 주소 표기가 일부 엇갈리므로 실제 이동 전 지도 POI를 한 번 더 확인하세요.","desc":"🌅 APEC 근처 아침 커피 · 🌿 정원형 카페 · 👨‍👩‍👧‍👦/🧑 모두 가능","badge":"APEC 근처 카페 후보","verified":"Foody·Mytour 등에서 262–266 Hùng Vương 표기 반복 확인. 좌표는 주소축 기준 v3 임시 앵커"},{"id":"sandyvibes","name":"SANDY VIBES Coffee and Tea","en":"SANDY VIBES Coffee and Tea Tuy Hòa","cat":"카페","plan":"해변 산책","lat":13.1182,"lng":109.3049,"address":"Nguyễn Huệ 해변권, Phường 7, Tuy Hòa","role":"Nghinh Phong·Tuy Hòa Beach 산책과 연결하기 좋은 해변 카페","hours":"여행 전 재확인","stay":"40~70분","rating":"4.2 / 약 189","tip":"바다 가까운 분위기형 카페입니다. 해변 산책 후 쉬거나 사진을 찍기 좋은 후보로 두고, 음료·서비스 후기는 여행 전 한 번 더 확인하세요.","desc":"🏖️ 해변 산책용 카페 · 🌊 바다 분위기 · 👨‍👩‍👧‍👦/🧑 모두 가능","badge":"해변 카페","verified":"최근 카페 자료에서 Nguyễn Huệ 해변권·4.2/189 정보 확인. 좌표는 v3.6에서 해안도로 안쪽으로 보정한 임시 앵커"},{"id":"urabeach","name":"URA BEACH Camping & Coffee","en":"URA BEACH Camping & Coffee","cat":"카페","plan":"해변 카페","lat":13.1096,"lng":109.3075,"address":"21 Độc Lập, Phường 7, Tuy Hòa","role":"바다 앞 분위기형 카페 · 저녁 산책 전후 후보","hours":"여행 전 재확인","stay":"40~80분","rating":"해변 카페 후보","tip":"21 Độc Lập 주소가 비교적 명확합니다. 주차 여건은 이번 검토 기준에서 제외하고, 해변 분위기와 동선 중심으로 평가합니다.","desc":"🏖️ 바다 앞 분위기형 카페 · 🌅 아침/오후 휴식 후보 · 👨‍👩‍👧‍👦/🧑 모두 가능","badge":"바다 앞 카페","verified":"21 Độc Lập 주소 확인. 좌표는 v3.6에서 도로/해안선 기준으로 보정한 임시 앵커"},{"id":"phdcoffee","name":"PHD Book & Coffee","en":"PHD Book & Coffee / PHD Photo & Coffee","cat":"카페","plan":"조용한 시내형","lat":13.1136,"lng":109.2924,"address":"An Dương Vương, Bình Kiến, Tuy Hòa · 477R+4X6","role":"조용히 쉬기 좋은 책·사진 콘셉트 카페 · 비 오는 날 대안","hours":"여행 전 재확인","stay":"40~90분","rating":"4.7 자료 확인","tip":"리뷰 수는 많지 않지만 성격이 분명한 카페입니다. 아이들이 쉬거나 조용한 실내 공간이 필요할 때 선택 후보로 두면 좋습니다.","desc":"📚 조용한 시내 카페 · ☕ 책/사진 콘셉트 · 🌧️ 비 오는 날 대안","badge":"조용한 카페 후보","verified":"PHD Book & Coffee / PHD Photo & Coffee 명칭과 An Dương Vương권 주소 확인. 좌표는 Plus Code 기준 v3 임시 앵커"},{"id":"giatuituyhoa","name":"Giặt Ủi Tuy Hòa Laundry","en":"Tuy Hòa Laundry Service","cat":"세탁","plan":"APEC 세탁 핵심","lat":13.0961,"lng":109.3199,"address":"121 Điện Biên Phủ, Tuy Hòa","role":"APEC 숙박 중 세탁·건조 후보 · 핵심 세탁 POI","hours":"영업시간 여행 전 재확인","stay":"맡김/수령 일정 별도 확인","rating":"핵심 후보","tip":"APEC 2박 중 세탁이 필요할 때 우선 확인할 세탁소입니다. kg당 요금, 당일 가능 여부, 수거·배송 가능 여부는 맡기기 전에 직접 확인하세요.","desc":"🧺 APEC 숙박 중 세탁 후보 · ☎ 0914 102 857 · 💰 15,000~25,000 VND 수준 언급 · 이용 전 재확인","badge":"세탁 핵심 후보","verified":"121 Điện Biên Phủ 및 전화번호 0914 102 857 확인. 좌표는 주소 기준 v3.3 임시 앵커로 최종 길찾기 전 재확인"},{"id":"giatsayphuyen","name":"Giặt Sấy Phú Yên","en":"Giặt Sấy Phú Yên Laundry","cat":"세탁","plan":"세탁 보조 후보","lat":13.1018,"lng":109.3138,"address":"2/74 Nguyễn Văn Cừ, Tuy Hòa","role":"Nguyễn Văn Cừ권 세탁소 · APEC 접근성 보조 후보","hours":"영업시간 여행 전 재확인","stay":"맡김/수령 일정 별도 확인","rating":"보조 후보","tip":"Giặt Ủi Tuy Hòa Laundry 이용이 어렵거나 동선상 Nguyễn Văn Cừ권이 더 편할 때 확인할 보조 세탁 후보입니다.","desc":"🧺 Nguyễn Văn Cừ권 세탁소 · ⚠️ 영업시간·kg당 요금·수거배송 여부 재확인","badge":"세탁 보조 후보","verified":"2/74 Nguyễn Văn Cừ 주소 확인. 좌표는 주소 기준 v3.3 임시 앵커로 실제 POI 최종 재확인 필요"},{"id":"roselispa","name":"Roseli Spa · Rosa Alba Resort","en":"Roseli Spa at Rosa Alba Resort & Villas","cat":"마사지","plan":"Rosa Alba 숙박 중","lat":13.1115,"lng":109.3078,"address":"Rosa Alba Resort & Villas, 88 Lê Duẩn Street, Tuy Hòa","role":"Rosa Alba 숙박 중 가장 안정적인 리조트 내부 스파 후보","hours":"공식 14:00~22:00 · 여행 전 재확인","stay":"60~120분","rating":"리조트 내 스파","tip":"1/19~1/21 Rosa Alba 풀빌라 숙박 중 가족이 쉬는 시간에 어른들이 이용하기 가장 편한 후보입니다. 숙박객/비숙박객 이용 조건과 가격은 체크인 시 확인하세요.","desc":"💆 리조트 내 스파 · 🏨 Rosa Alba 숙박 중 1순위 · 👨‍👩‍👧‍👦 가족 휴식 시간에 어른 이용 후보","badge":"Rosa Alba 1순위","verified":"Rosa Alba 공식 사이트에서 Roseli Spa 운영 및 88 Lê Duẩn 주소 확인. 좌표는 Rosa Alba 숙소 앵커와 동일하게 사용 · v3.6에서 해안선 안쪽으로 보정"},{"id":"apecspa","name":"APEC Spa Tuy Hoà","en":"APEC Spa Tuy Hoà - Dưỡng Sinh Trị Liệu","cat":"마사지","plan":"APEC 근처","lat":13.0988,"lng":109.3183,"address":"23 Điện Biên Phủ, Tuy Hòa ※ 주소 자료 기준","role":"APEC 숙박 중 시내권 마사지 후보","hours":"09:00~22:00 자료 확인 · 여행 전 재확인","stay":"60~120분","rating":"APEC 근처 후보","tip":"APEC 숙박 1~2박 중 저녁 시간에 어른들이 이용할 수 있는 시내권 후보입니다. 공개 리뷰가 많지는 않으므로 최근 후기와 예약 가능 여부를 이용 전 확인하세요.","desc":"💆 APEC 근처 마사지 후보 · 🧑 어른 휴식용 · ⚠️ 최근 후기·가격 재확인","badge":"APEC 근처 후보","verified":"Tripadvisor에서 APEC Spa Tuy Hoà 항목과 09:00~22:00 운영 확인. 주소는 관련 호텔/주변 자료의 23 Điện Biên Phủ 표기를 기준으로 한 임시 앵커"},{"id":"anspa","name":"An Spa","en":"An Spa Tuy Hoa","cat":"마사지","plan":"해변·시내권","lat":13.1089,"lng":109.3067,"address":"271 Lê Duẩn, Phường 7, Tuy Hòa","role":"해변·시내권 로컬 스파 후보","hours":"영업시간 여행 전 재확인","stay":"60~120분","rating":"Tripadvisor 5.0 / 소수 리뷰","tip":"Rosa Alba와 같은 Lê Duẩn 축의 로컬 스파 후보입니다. 리뷰 수가 많지는 않으므로 당일 컨디션과 최근 후기를 확인한 뒤 선택하는 정도가 좋습니다.","desc":"💆 해변·시내권 로컬 스파 · 🧑 어른 휴식 후보 · ⚠️ 최근 후기·가격 재확인","badge":"로컬 스파 후보","verified":"Tripadvisor 다수 지역 페이지에서 271 Lê Duẩn, Phường 7 주소 확인. 좌표는 주소 기준 임시 앵커"},{"id":"tuibluewellness","name":"Lumiere Wellness · TUI BLUE Tuy Hoa","en":"Lumiere Wellness & Healing Club at TUI BLUE Tuy Hoa","cat":"마사지","plan":"고급 웰니스 선택","lat":13.1221,"lng":109.3047,"address":"TUI BLUE Tuy Hoa, 2 Hải Dương Street / Độc Lập 해변권","role":"찜질방·온천·사우나 성격의 고급 웰니스 선택 후보","hours":"시설별 상이 · 이용 조건 재확인","stay":"90~180분","rating":"4.9 / 120+ 자료","tip":"일반 마사지샵보다 호텔 웰니스 시설에 가까운 후보입니다. 숙박객 외 이용 가능 여부와 요금 확인이 필요하므로 선택 후보로만 둡니다.","desc":"💆 고급 웰니스 · ♨️ 찜질방/온천/사우나 성격 · 🟡 이용 조건·요금 재확인","badge":"고급 웰니스 선택","verified":"TUI BLUE 공식·호텔 자료에서 Lumiere Wellness & Healing Club 및 스파 시설 확인. 좌표는 호텔 위치 기준 임시 앵커 · v3.6에서 해안선 안쪽으로 보정"}],COLORS={"교통": "#2563eb", "숙소": "#7c3aed", "관광": "#059669", "이동일": "#ea580c", "음식": "#dc2626", "로컬": "#b45309", "카페": "#0891b2", "마사지": "#9333ea", "쇼핑": "#4d7c0f", "세탁": "#475569"}; const savedCustom=JSON.parse(localStorage.getItem('tuyhoaCustomPlaces')||'[]');
+P=P.concat(savedCustom);
+let byId=Object.fromEntries(P.map(p=>[p.id,p]));
+let itinerary=['apec','rosa'],draggingId=null,draggingSource=null,routeLayers=[],routeToken=0;
+const DAY_PRESETS={
+  arrival:{label:'1/17 꾸이년→뚜이호아 이동·도착',ids:['ganhdadia','oloanseafood','apec','nghinhphong'],note:'꾸이년 출발 후 Gành Đá Đĩa 핵심 관광 → Ô Loan 점심권 → APEC 체크인 → 컨디션이 좋으면 Nghinh Phong Tower 가벼운 산책'},
+  day18:{label:'1/18 시내권·지역음식',ids:['apec','thaovy','hiepyen','thapnhan','tuyhoamarket','nghinhphong','sandyvibes','cobadiep','apecspa'],note:'APEC 조식 대체 → 아침 커피 → Nhạn Tower → Tuy Hòa Market → Nghinh Phong/Tuy Hòa Beach → 해변 카페 → 푸옌 로컬 저녁 → 컨디션 좋으면 마사지'},
+  day19:{label:'1/19 Rosa Alba 이동·리조트 휴식',ids:['apec','thaovy','coopmarttuyhoa','giatuituyhoa','tuyetnhung','rosa','roselispa','tuyhoabeach','urabeach'],note:'APEC 아침 → Co.opmart 장보기 → 세탁 회수 확인 → 닭고기밥 후보 → Rosa Alba 체크인 → 리조트 휴식 → Roseli Spa 또는 해변 카페 선택'},
+  day20:{label:'1/20 남부 해안권',ids:['rosa','muidien','vungro','rosa','roselispa'],note:'Rosa Alba → Mũi Điện·Bãi Môn → Vũng Rô Bay → Rosa Alba 복귀 → 리조트 휴식 또는 Roseli Spa'},
+  day21:{label:'1/21 나트랑 이동',ids:['rosa'],note:'Rosa Alba 체크아웃 → 나트랑 이동. 이동 시간이 길어 뚜이호아 추가 관광은 최소화'}
+};
+let activePreset=null;
+
+function setPresetUI(key){
+  document.querySelectorAll('.preset-btn').forEach(btn=>btn.classList.toggle('active',btn.dataset.preset===key));
+  const box=document.getElementById('presetCurrent');
+  if(box&&DAY_PRESETS[key]) box.textContent='현재 경로: '+DAY_PRESETS[key].label+' · '+DAY_PRESETS[key].note;
+}
+function applyPreset(key){
+  const preset=DAY_PRESETS[key]; if(!preset) return;
+  itinerary=preset.ids.filter(id=>byId[id]);
+  activePreset=key;
+  setPresetUI(key);
+  renderAll();
+  const side=document.querySelector('.side');
+  const route=document.getElementById('itinerary');
+  if(side&&route) side.scrollTo({top:Math.max(0,route.offsetTop-90),behavior:'smooth'});
+}
+
+const map=L.map('map').setView([13.10,109.31],12);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+
+function popup(p){
+const badge=p.badge?`<div class="rec-badge">⭐ ${p.badge}</div>`:'';
+return `<div class="photo">📷 대표 사진은 추후 사용자가 제공한 실제 사진으로 교체</div>
+<div class="card"><h3>${p.name}</h3><div class="en">${p.en}</div>${badge}
+<div class="tags"><span class="tag">${p.cat}</span><span class="tag">${p.plan}</span><span class="tag">${p.rating}</span><span class="tag">${p.stay}</span></div>
+<div class="meta"><b>주소</b> · ${p.address}</div><div class="meta"><b>운영</b> · ${p.hours}</div>
+<div class="meta"><b>우리 일정</b> · ${p.role}</div><div class="tip"><b>가족 팁</b><br>${p.tip}</div>
+<div class="meta">${p.desc}</div><div class="meta"><b>검증 메모</b> · ${p.verified||'v4 점검'}</div><a class="maplink" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}">Google Maps에서 위치 확인</a></div>`;
+}
+
+function iconFor(p){
+ const idx=itinerary.indexOf(p.id);
+ const bg=idx>=0 ? '#111827' : COLORS[p.cat];
+ const label=idx>=0 ? String(idx+1) : '•';
+ return L.divIcon({className:'',html:`<div class="pin" style="background:${bg}">${label}</div>`,iconSize:[28,28],iconAnchor:[14,14]});
+}
+
+const markers={};
+function addMarker(p){
+ const m=L.marker([p.lat,p.lng],{icon:iconFor(p),zIndexOffset:500,riseOnHover:true}).addTo(map);
+ m.bindTooltip(p.name,{permanent:true,direction:'right',offset:[14,0],className:'lbl',interactive:true});
+ markers[p.id]=m;
+
+ function openPlacePopup(){
+   L.popup({maxWidth:370,autoPan:true,closeButton:true,offset:[0,-10]})
+    .setLatLng([p.lat,p.lng])
+    .setContent(popup(p))
+    .openOn(map);
+ }
+
+ m.on('click', function(e){
+   if (e && e.originalEvent) L.DomEvent.stopPropagation(e.originalEvent);
+   openPlacePopup();
+ });
+
+ function wireDomClick(){
+   const el=m.getElement();
+   if(el){
+     el.style.pointerEvents='auto';
+     el.style.cursor='pointer';
+     el.onclick=function(ev){
+       ev.preventDefault();
+       ev.stopPropagation();
+       openPlacePopup();
+       return false;
+     };
+   }
+   const tt=m.getTooltip && m.getTooltip();
+   const ttEl=tt && tt.getElement ? tt.getElement() : null;
+   if(ttEl){
+     ttEl.style.pointerEvents='auto';
+     ttEl.style.cursor='pointer';
+     ttEl.onclick=function(ev){
+       ev.preventDefault();
+       ev.stopPropagation();
+       openPlacePopup();
+       return false;
+     };
+   }
+ }
+ m.on('add', wireDomClick);
+ setTimeout(wireDomClick, 0);
+}
+P.forEach(addMarker);
+
+function refreshMarkerIcons(){
+ P.forEach(p=>{if(markers[p.id])markers[p.id].setIcon(iconFor(p));});
+}
+
+function makeStop(id,index){
+ const p=byId[id],d=document.createElement('div');d.className='stop';d.draggable=true;d.dataset.id=id;
+ const locked=index<2;
+ d.innerHTML=`<div class="num">${index+1}</div>
+ <div><div class="stop-name">${p.name}</div><div class="stop-meta">${p.role} · ${p.address}</div></div>
+ <div class="desktop-stop-action">${locked?'<div>⋮⋮</div>':'<button class="remove">×</button>'}</div>
+ <div class="mobile-order">
+   <button class="move-up" title="위로">↑</button>
+   <button class="move-down" title="아래로">↓</button>
+   ${locked?'':'<button class="remove-mobile" title="후보지로">×</button>'}
+ </div>`;
+ d.addEventListener('dragstart',e=>{draggingId=id;draggingSource='route';d.classList.add('dragging');e.dataTransfer.effectAllowed='move';});
+ d.addEventListener('dragend',()=>d.classList.remove('dragging'));
+ d.addEventListener('click',e=>{
+   if(e.target.closest('button'))return;
+   map.setView([p.lat,p.lng],16);
+   if(markers[id]) markers[id].fire('click');
+ });
+ const rm=d.querySelector('.remove');
+ if(rm)rm.onclick=e=>{e.stopPropagation();itinerary=itinerary.filter(x=>x!==id);renderAll();};
+ const rmm=d.querySelector('.remove-mobile');
+ if(rmm)rmm.onclick=e=>{e.stopPropagation();itinerary=itinerary.filter(x=>x!==id);renderAll();};
+ const up=d.querySelector('.move-up');
+ const down=d.querySelector('.move-down');
+ up.onclick=e=>{
+   e.stopPropagation();
+   if(index<=0)return;
+   const arr=[...itinerary];[arr[index-1],arr[index]]=[arr[index],arr[index-1]];itinerary=arr;renderAll();
+ };
+ down.onclick=e=>{
+   e.stopPropagation();
+   if(index>=itinerary.length-1)return;
+   const arr=[...itinerary];[arr[index+1],arr[index]]=[arr[index],arr[index+1]];itinerary=arr;renderAll();
+ };
+ if(index===0)up.disabled=true;
+ if(index===itinerary.length-1)down.disabled=true;
+ return d;
+}
+
+function makeCandidate(p){
+ const d=document.createElement('div');d.className='candidate';d.draggable=true;d.dataset.id=p.id;
+ d.innerHTML=`<span class="dot" style="background:${COLORS[p.cat]}"></span>
+ <div><div class="cname">${p.name}</div><div class="cmeta">${p.cat} · ${p.plan} · ${p.role}</div></div>
+ <button class="candidate-add" title="여행 경로에 추가">＋</button><div class="plus">＋</div>`;
+ d.addEventListener('dragstart',e=>{draggingId=p.id;draggingSource='candidate';e.dataTransfer.effectAllowed='move';});
+ d.addEventListener('click',e=>{
+   if(e.target.closest('.candidate-add'))return;
+   map.setView([p.lat,p.lng],16);
+   if(markers[p.id]) markers[p.id].fire('click');
+ });
+ const add=d.querySelector('.candidate-add');
+ add.onclick=e=>{
+   e.stopPropagation();
+   if(!itinerary.includes(p.id)){itinerary.push(p.id);renderAll();}
+ };
+ return d;
+}
+
+function renderLists(){
+ const route=document.getElementById('itinerary');route.innerHTML='';
+ itinerary.forEach((id,i)=>route.appendChild(makeStop(id,i)));
+ const cand=document.getElementById('candidates');cand.innerHTML='';
+ const remain=P.filter(p=>!itinerary.includes(p.id));remain.forEach(p=>cand.appendChild(makeCandidate(p)));
+ document.getElementById('routeCount').textContent=itinerary.length+'곳';document.getElementById('candidateCount').textContent=remain.length+'곳';
+}
+
+const zone=document.getElementById('itinerary');
+zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('over');});
+zone.addEventListener('dragleave',()=>zone.classList.remove('over'));
+zone.addEventListener('drop',e=>{
+ e.preventDefault();zone.classList.remove('over');if(!draggingId)return;
+ const items=[...zone.querySelectorAll('.stop:not(.dragging)')];let insert=items.length;
+ for(let i=0;i<items.length;i++){const r=items[i].getBoundingClientRect();if(e.clientY<r.top+r.height/2){insert=i;break;}}
+ let arr=itinerary.filter(x=>x!==draggingId);insert=Math.max(0,Math.min(insert,arr.length));arr.splice(insert,0,draggingId);itinerary=arr;draggingId=null;renderAll();
+});
+const candZone=document.getElementById('candidates');candZone.addEventListener('dragover',e=>e.preventDefault());
+candZone.addEventListener('drop',e=>{e.preventDefault();if(draggingSource==='route'&&draggingId&&!['apec','rosa'].includes(draggingId))itinerary=itinerary.filter(x=>x!==draggingId);draggingId=null;renderAll();});
+
+function clearRoutes(){routeLayers.forEach(l=>map.removeLayer(l));routeLayers=[];}
+function googleUrl(){if(itinerary.length<2)return'#';const pts=itinerary.map(id=>byId[id]);const origin=`${pts[0].lat},${pts[0].lng}`,dest=`${pts.at(-1).lat},${pts.at(-1).lng}`,wp=pts.slice(1,-1).map(p=>`${p.lat},${p.lng}`).join('|');let u=`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(dest)}&travelmode=driving`;if(wp)u+=`&waypoints=${encodeURIComponent(wp)}`;return u;}
+document.getElementById('googleAll').onclick=()=>window.open(googleUrl(),'_blank','noopener');
+document.getElementById('clearRoute').onclick=()=>{itinerary=['apec','rosa'];activePreset=null;setPresetUI(null);const box=document.getElementById('presetCurrent');if(box)box.textContent='현재 경로: APEC → Rosa Alba 기본 경로';renderAll();};
+document.querySelectorAll('.preset-btn').forEach(btn=>btn.addEventListener('click',()=>applyPreset(btn.dataset.preset)));
+function fmtKm(m){return(m/1000).toFixed(m<10000?1:0)+' km'}
+function fmtMin(s){const m=Math.round(s/60);return m<60?m+'분':Math.floor(m/60)+'시간 '+(m%60)+'분'}
+
+async function drawRoute(){
+ clearRoutes();const my=++routeToken,pts=itinerary.map(id=>byId[id]);if(pts.length<2)return;
+ const info=document.getElementById('routeInfo');info.innerHTML='도로 경로를 계산하는 중...';let totalD=0,totalT=0,segs=[];
+ try{
+  for(let i=0;i<pts.length-1;i++){
+   const a=pts[i],b=pts[i+1],url=`https://router.project-osrm.org/route/v1/driving/${a.lng},${a.lat};${b.lng},${b.lat}?overview=full&geometries=geojson`;
+   const res=await fetch(url),data=await res.json();if(my!==routeToken)return;if(data.code!=='Ok'||!data.routes?.length)throw new Error();
+   const r=data.routes[0];totalD+=r.distance;totalT+=r.duration;
+   const layer=L.geoJSON(r.geometry,{interactive:false,style:{color:i%2===0?'#2563eb':'#0ea5e9',weight:6,opacity:.78}}).addTo(map);routeLayers.push(layer);layer.bringToBack();
+   const gu=`https://www.google.com/maps/dir/?api=1&origin=${a.lat},${a.lng}&destination=${b.lat},${b.lng}&travelmode=driving`;
+   segs.push(`<div class="segment"><span>${i+1} → ${i+2} &nbsp;${a.name} → ${b.name}<br><a href="${gu}" target="_blank" style="color:#7dd3fc">Google 추천경로 확인</a></span><span class="seg-right">${fmtKm(r.distance)} · ${fmtMin(r.duration)}</span></div>`);
+  }
+  info.innerHTML=`<b>미리보기 합계</b> · ${fmtKm(totalD)} · 약 ${fmtMin(totalT)}${segs.join('')}`;
+  const bounds=L.latLngBounds(pts.map(p=>[p.lat,p.lng]));routeLayers.forEach(l=>bounds.extend(l.getBounds()));map.fitBounds(bounds.pad(.12));
+ }catch(e){if(my!==routeToken)return;info.innerHTML='도로 경로 미리보기를 불러오지 못했습니다. Google Maps 전체 경로 버튼은 계속 사용할 수 있습니다.';}
+}
+
+let pickingLocation=false;
+let selectedLocation=null;
+let tempPickMarker=null;
+let lastSearchAt=0;
+const modal=document.getElementById('placeModal');
+const searchInput=document.getElementById('placeSearch');
+const searchResults=document.getElementById('searchResults');
+const searchStatus=document.getElementById('searchStatus');
+const selectedPlace=document.getElementById('selectedPlace');
+const savePlaceBtn=document.getElementById('savePlace');
+const SEARCH_CACHE_KEY='tuyhoaPlaceSearchCacheV32';
+
+function loadSearchCache(){
+  try{return JSON.parse(localStorage.getItem(SEARCH_CACHE_KEY)||'{}')}catch(e){return {}}
+}
+function saveSearchCache(cache){
+  try{localStorage.setItem(SEARCH_CACHE_KEY,JSON.stringify(cache))}catch(e){}
+}
+function resetSelectedLocation(){
+  selectedLocation=null;
+  savePlaceBtn.disabled=true;
+  selectedPlace.style.display='none';
+  selectedPlace.innerHTML='';
+  if(tempPickMarker){map.removeLayer(tempPickMarker);tempPickMarker=null;}
+}
+function showSelectedLocation(loc){
+  selectedLocation=loc;
+  savePlaceBtn.disabled=false;
+  selectedPlace.style.display='block';
+  const g=`https://www.google.com/maps/search/?api=1&query=${loc.lat},${loc.lng}`;
+  selectedPlace.innerHTML=`<strong>선택됨 · ${escHtml(loc.name)}</strong><div>${escHtml(loc.address||'주소 정보 없음')}</div><a href="${g}" target="_blank" rel="noopener">Google Maps에서 위치 확인 ↗</a>`;
+  if(tempPickMarker) map.removeLayer(tempPickMarker);
+  tempPickMarker=L.circleMarker([loc.lat,loc.lng],{radius:9,weight:3,color:'#0f172a',fillColor:'#38bdf8',fillOpacity:.9}).addTo(map);
+}
+function escHtml(s){
+  return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+}
+function openModal(){
+  modal.style.display='flex';
+  searchInput.value='';
+  searchResults.innerHTML='';
+  searchStatus.textContent='장소명을 입력하고 검색하세요. 검색 결과는 OpenStreetMap 장소 데이터를 사용합니다.';
+  document.getElementById('newDesc').value='';
+  resetSelectedLocation();
+  setTimeout(()=>searchInput.focus(),50);
+}
+function closeModal(){
+  modal.style.display='none';
+  pickingLocation=false;
+  map.getContainer().style.cursor='';
+  if(tempPickMarker){map.removeLayer(tempPickMarker);tempPickMarker=null;}
+}
+document.getElementById('addPlaceBtn').onclick=openModal;
+document.getElementById('cancelPlace').onclick=closeModal;
+modal.addEventListener('click',e=>{if(e.target===modal)closeModal();});
+
+async function runPlaceSearch(){
+  const raw=searchInput.value.trim();
+  if(!raw){searchStatus.textContent='검색할 장소명을 입력해 주세요.';return;}
+  const query=/tuy hoa|tuy hòa|phú yên|phu yen|뚜이호아/i.test(raw)?raw:`${raw}, Tuy Hòa, Việt Nam`;
+  const cache=loadSearchCache();
+  const key=query.toLowerCase();
+
+  if(cache[key]?.items?.length){
+    renderSearchResults(cache[key].items);
+    searchStatus.textContent=`저장된 검색 결과 ${cache[key].items.length}개를 표시합니다.`;
+    return;
+  }
+
+  const wait=Math.max(0,1100-(Date.now()-lastSearchAt));
+  if(wait) await new Promise(r=>setTimeout(r,wait));
+  lastSearchAt=Date.now();
+
+  searchStatus.textContent='장소를 검색하는 중...';
+  searchResults.innerHTML='';
+  const params=new URLSearchParams({
+    q:query,
+    format:'jsonv3.6',
+    addressdetails:'1',
+    namedetails:'1',
+    limit:'6',
+    countrycodes:'vn',
+    viewbox:'109.20,13.40,109.52,12.80',
+    bounded:'0',
+    'accept-language':'ko,vi,en'
+  });
+
+  try{
+    const res=await fetch(`https://nominatim.openstreetmap.org/search?${params.toString()}`,{
+      method:'GET',
+      headers:{'Accept':'application/json'}
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    const items=data.map(x=>({
+      name:(x.namedetails && (x.namedetails['name:ko']||x.namedetails['name:vi']||x.namedetails.name)) || x.name || String(x.display_name||'').split(',')[0],
+      address:x.display_name||'',
+      lat:Number(x.lat),
+      lng:Number(x.lon),
+      type:x.type||x.addresstype||''
+    })).filter(x=>Number.isFinite(x.lat)&&Number.isFinite(x.lng));
+    cache[key]={ts:Date.now(),items};
+    saveSearchCache(cache);
+    renderSearchResults(items);
+    searchStatus.textContent=items.length?`검색 결과 ${items.length}개 · 원하는 장소를 클릭하세요.`:'검색 결과가 없습니다. 검색어를 바꾸거나 지도에서 직접 위치를 선택하세요.';
+  }catch(e){
+    searchStatus.textContent='장소 검색을 불러오지 못했습니다. 잠시 후 다시 검색하거나 지도에서 직접 위치를 선택하세요.';
+  }
+}
+function renderSearchResults(items){
+  searchResults.innerHTML='';
+  items.forEach((x,i)=>{
+    const btn=document.createElement('button');
+    btn.type='button';
+    btn.className='search-result';
+    btn.innerHTML=`<div class="sr-name">${escHtml(x.name||'이름 없음')}</div><div class="sr-address">${escHtml(x.address)}</div>`;
+    btn.onclick=()=>{
+      [...searchResults.children].forEach(el=>el.classList.remove('selected'));
+      btn.classList.add('selected');
+      showSelectedLocation(x);
+      map.setView([x.lat,x.lng],16);
+    };
+    searchResults.appendChild(btn);
+  });
+}
+document.getElementById('searchPlaceBtn').onclick=runPlaceSearch;
+searchInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();runPlaceSearch();}});
+
+document.getElementById('pickOnMap').onclick=()=>{
+  pickingLocation=true;
+  modal.style.display='none';
+  map.getContainer().style.cursor='crosshair';
+};
+
+map.on('click',async e=>{
+  if(!pickingLocation)return;
+  pickingLocation=false;
+  map.getContainer().style.cursor='';
+  const loc={name:searchInput.value.trim()||'사용자 지정 장소',address:'지도에서 직접 지정한 위치',lat:e.latlng.lat,lng:e.latlng.lng};
+  showSelectedLocation(loc);
+  modal.style.display='flex';
+  searchStatus.textContent='지도에서 위치를 선택했습니다. 장소명은 검색창의 내용을 사용합니다.';
+});
+
+document.getElementById('savePlace').onclick=()=>{
+  if(!selectedLocation){alert('검색 결과에서 장소를 선택해 주세요.');return;}
+  const cat=document.getElementById('newCat').value;
+  const desc=document.getElementById('newDesc').value.trim();
+  const p={
+    id:'custom_'+Date.now(),
+    name:selectedLocation.name||searchInput.value.trim()||'사용자 추가 장소',
+    en:selectedLocation.name||searchInput.value.trim()||'Custom place',
+    cat,plan:'사용자 추가',
+    lat:selectedLocation.lat,lng:selectedLocation.lng,
+    address:selectedLocation.address||'사용자 지정 위치',
+    role:desc||'사용자 추가 후보지',
+    hours:'여행 전 확인',
+    stay:'미정',
+    rating:'사용자 추가',
+    tip:'사용자가 직접 추가한 장소입니다. 최종 일정에 넣기 전 운영 여부와 정확한 위치를 확인하세요.',
+    desc:desc||'사용자가 직접 추가한 장소입니다.',
+    custom:true
+  };
+  P.push(p);
+  byId[p.id]=p;
+  addMarker(p);
+  localStorage.setItem('tuyhoaCustomPlaces',JSON.stringify(P.filter(x=>x.custom)));
+  closeModal();
+  renderAll();
+  map.setView([p.lat,p.lng],16);
+  setTimeout(()=>markers[p.id].fire('click'),80);
+};
+
+function renderAll(){renderLists();refreshMarkerIcons();drawRoute();}
+renderAll();
+
+// ===== v12 mobile responsive behavior =====
+(function(){
+  const mq=window.matchMedia('(max-width: 850px)');
+  const sidebar=document.getElementById('sidebar') || document.querySelector('.side,.sidebar,.left-panel,.panel-left');
+  const handle=document.getElementById('mobileHandle');
+  const toggle=document.getElementById('mobilePanelToggle');
+  const tabs=document.getElementById('mobileTabs');
+
+  function invalidateMapSoon(){
+    try{setTimeout(()=>map.invalidateSize(),120);}catch(e){}
+  }
+
+  function setPanel(state){
+    if(!sidebar) return;
+    sidebar.classList.remove('mobile-expanded','mobile-collapsed');
+    if(state==='expanded') sidebar.classList.add('mobile-expanded');
+    if(state==='collapsed') sidebar.classList.add('mobile-collapsed');
+    if(toggle){
+      toggle.textContent = state==='collapsed' ? '일정 열기' : (state==='expanded' ? '지도 보기' : '접기');
+    }
+    invalidateMapSoon();
+  }
+
+  function currentState(){
+    if(!sidebar) return 'normal';
+    if(sidebar.classList.contains('mobile-expanded')) return 'expanded';
+    if(sidebar.classList.contains('mobile-collapsed')) return 'collapsed';
+    return 'normal';
+  }
+
+  function cyclePanel(){
+    if(!mq.matches || !sidebar) return;
+    const s=currentState();
+    setPanel(s==='collapsed' ? 'normal' : (s==='normal' ? 'expanded' : 'collapsed'));
+  }
+
+  handle?.addEventListener('click',cyclePanel);
+  toggle?.addEventListener('click',()=>{
+    if(!mq.matches || !sidebar) return;
+    setPanel(currentState()==='collapsed' ? 'normal' : 'collapsed');
+  });
+
+  // Swipe on handle: up expands, down collapses.
+  let startY=null;
+  handle?.addEventListener('touchstart',e=>{startY=e.touches[0].clientY},{passive:true});
+  handle?.addEventListener('touchend',e=>{
+    if(startY==null) return;
+    const dy=e.changedTouches[0].clientY-startY;
+    startY=null;
+    if(Math.abs(dy)<24) return;
+    setPanel(dy<0?'expanded':'collapsed');
+  },{passive:true});
+
+  // Tabs: scroll/focus the corresponding list area instead of hiding data.
+  tabs?.addEventListener('click',e=>{
+    const btn=e.target.closest('button[data-mobile-tab]');
+    if(!btn) return;
+    tabs.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b===btn));
+    const tab=btn.dataset.mobileTab;
+    const routeTarget=document.getElementById('itinerary') || document.getElementById('routeList') || document.querySelector('.route-list');
+    const candTarget=document.getElementById('candidates') || document.getElementById('candidateList') || document.querySelector('.candidate-list');
+    const target=tab==='route'?routeTarget:candTarget;
+    if(sidebar && currentState()==='collapsed') setPanel('normal');
+    setTimeout(()=>target?.scrollIntoView({behavior:'smooth',block:'start'}),80);
+  });
+
+  function applyMode(){
+    if(!sidebar) return;
+    if(mq.matches){
+      if(!sidebar.classList.contains('mobile-expanded')&&!sidebar.classList.contains('mobile-collapsed')) setPanel('normal');
+    }else{
+      sidebar.classList.remove('mobile-expanded','mobile-collapsed');
+      if(toggle) toggle.textContent='일정 열기';
+      invalidateMapSoon();
+    }
+  }
+  mq.addEventListener?.('change',applyMode);
+  window.addEventListener('orientationchange',invalidateMapSoon);
+  window.addEventListener('resize',invalidateMapSoon);
+  applyMode();
+})();
+
+</script></body></html>
