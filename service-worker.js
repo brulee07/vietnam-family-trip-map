@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vietnam-family-trip-v7';
+const CACHE_NAME = 'vietnam-family-trip-v8-alpha';
 const APP_SHELL = [
   './',
   './index.html',
@@ -7,6 +7,7 @@ const APP_SHELL = [
   './quy_nhon.html',
   './tuy_hoa.html',
   './nha_trang.html',
+  './nha_trang_json_alpha.html',
   './icons/icon-192.png',
   './icons/icon-512.png'
 ,

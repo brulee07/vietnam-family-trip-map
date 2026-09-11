@@ -75,3 +75,14 @@
 
 이번 v7은 지도 UI를 크게 바꾸지 않고, AI 여행비서 확장을 위한 데이터 기반을 추가한 버전입니다.
 GitHub에 업로드할 때 기존 저장소 루트에 전체 덮어쓰기 후 `Add travel database v7`로 커밋하면 됩니다.
+
+
+## v8-alpha 변경 사항
+
+- 기존 도시 지도는 유지합니다.
+- `nha_trang_json_alpha.html`을 추가했습니다.
+- 이 테스트 지도는 `data/places.json`에서 `city = nha_trang`인 장소를 읽고, `data/itineraries.json`에서 나트랑 프리셋을 읽습니다.
+- JSON을 불러오지 못하면 HTML 내장 데이터를 fallback으로 사용합니다.
+- 테스트 후 성공하면 v8 정식 단계에서 4개 도시 전체를 JSON 연동 구조로 전환합니다.
+
+권장 커밋 메시지: `Add Nha Trang JSON alpha v8`
