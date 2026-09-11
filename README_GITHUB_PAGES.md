@@ -46,3 +46,11 @@ Promote JSON maps to official v9.3
 - Travel Context Engine reads trip/cities/places/safety JSON and live map itinerary
 - No API key is stored in browser code
 - Optional secure backend endpoint can be set with localStorage key `travelAiEndpoint`
+
+
+## v9.4.1 AI Route Context Hotfix
+
+- Fix AI assistant access to city-map itinerary state isolated inside ES modules.
+- Add `window.getTravelAiRoute()` bridge on all four city maps.
+- Refresh AI context when the assistant opens and whenever a question is asked.
+- Bump service-worker cache to `vietnam-family-trip-v9-4-1`.

@@ -450,6 +450,7 @@ const savedCustom=JSON.parse(localStorage.getItem('danangCustomPlaces')||'[]');
 P=P.concat(savedCustom);
 let byId=Object.fromEntries(P.map(p=>[p.id,p]));
 let itinerary=['airport','hotel'],draggingId=null,draggingSource=null,routeLayers=[],routeToken=0,activePreset=null;
+window.getTravelAiRoute=()=>itinerary.map(id=>byId[id]).filter(Boolean).map(p=>({id:p.id,name:p.name||p.title||id,category:p.cat||p.category||'',lat:p.lat,lng:p.lng,address:p.address||'',role:p.role||'',stay:p.stay||'',rating:p.rating||''}));
 let DAY_PRESETS={
   arrival:{label:'1/11 도착 · 공항→호텔',ids:['airport','hotel']},
   day12a:{label:'1/12 A안 · 시내·실내 여유 일정',ids:['hotel','museum','miquang','con','aeon','night','dragon','moc']},

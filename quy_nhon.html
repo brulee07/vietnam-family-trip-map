@@ -457,6 +457,7 @@ const __firstPreset=Object.values(window.__JSON_DAY_PRESETS||{})[0];
 let __defaultItinerary=((__firstPreset&&__firstPreset.ids)||[]).filter(id=>byId[id]);
 if(__defaultItinerary.length===0) __defaultItinerary=P.slice(0,2).map(p=>p.id);
 let itinerary=[...__defaultItinerary],draggingId=null,draggingSource=null,routeLayers=[],routeToken=0;
+window.getTravelAiRoute=()=>itinerary.map(id=>byId[id]).filter(Boolean).map(p=>({id:p.id,name:p.name||p.title||id,category:p.cat||p.category||'',lat:p.lat,lng:p.lng,address:p.address||'',role:p.role||'',stay:p.stay||'',rating:p.rating||''}));
 let DAY_PRESETS={
   arrival:{label:'1/21 나트랑 도착',ids:['tuyhoaroute','costa','nhatrangcenter','nhatrangbeach','nemonhatrang'],note:'뚜이호아에서 나트랑으로 이동 → The Costa 후보지 체크인 → Nha Trang Center/해변 산책 → 컨디션이 좋으면 Nemo에서 가족식사'},
   day22:{label:'1/22 I-Resort 물놀이 1순위',ids:['costa','phela','buncatuyetha','laundry2h','iresort','honchongviewcafe','mocseafood','costa'],note:'숙소 근처 커피 또는 국수 아침 → 필요 시 2H Laundry 세탁 맡김 → I-Resort 온천·머드스파·물놀이 → Hòn Chồng View 카페 선택 → 해산물 저녁'},
