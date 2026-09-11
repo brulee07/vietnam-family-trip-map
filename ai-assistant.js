@@ -3,7 +3,7 @@ const GLOBAL_CFG=window.TRAVEL_AI_CONFIG||{};
 const CFG={
   endpoint:(localStorage.getItem('travelAiEndpoint')||GLOBAL_CFG.endpoint||'').replace(/\/$/,''),
   city:document.body.dataset.city||inferCity(),
-  appVersion:GLOBAL_CFG.appVersion||'9.5'
+  appVersion:GLOBAL_CFG.appVersion||'9.5.1'
 };
 const history=[];
 function inferCity(){const f=(location.pathname.split('/').pop()||'').replace('.html','');return ['da_nang','quy_nhon','tuy_hoa','nha_trang'].includes(f)?f:'hub'}
@@ -27,7 +27,7 @@ function mount(){
   document.body.insertAdjacentHTML('beforeend',`
   <button id="travelAiFab" aria-label="AI 여행 비서 열기">✨ AI 여행 비서</button>
   <aside id="travelAiPanel" aria-label="AI 여행 비서">
-    <div class="tai-head"><div><b>✨ AI 여행 비서 <span class="tai-badge">v9.5</span></b><small>우리 가족 여행 데이터 + 현재 지도 경로</small></div><div class="tai-head-actions"><button class="tai-settings" aria-label="AI 서버 설정">⚙️</button><button class="tai-close" aria-label="닫기">×</button></div></div>
+    <div class="tai-head"><div><b>✨ AI 여행 비서 <span class="tai-badge">v9.5.1</span></b><small>우리 가족 여행 데이터 + 현재 지도 경로</small></div><div class="tai-head-actions"><button class="tai-settings" aria-label="AI 서버 설정">⚙️</button><button class="tai-close" aria-label="닫기">×</button></div></div>
     <div class="tai-context">컨텍스트 준비 중…</div>
     <div class="tai-server"></div>
     <div class="tai-messages"><div class="tai-msg ai">안녕하세요. 현재 여행 일정과 지도 경로를 읽어 답변합니다. 동선, 가족 일정, 장소 선택, 식사를 물어보세요.</div></div>
