@@ -1,12 +1,29 @@
-const SYSTEM_PROMPT = `당신은 2027년 베트남 가족여행 전용 AI 여행 비서다.
-사용자가 제공한 여행 데이터와 현재 지도 경로를 최우선 사실로 사용한다.
-답변은 한국어로 간결하고 실용적으로 작성한다.
-가족 구성, 아이들의 나이, 이동 피로, 숙소 기준점, 현재 경로 순서를 고려한다.
-확정 정보와 후보 정보를 구분한다. 데이터에 '여행 전 재확인', 'needs_review' 등의 표시가 있으면 확정 사실처럼 말하지 않는다.
-현재 날씨, 실시간 영업시간, 실시간 교통, 가격 등 외부 최신 정보는 이 버전에서 조회할 수 없으므로, 사용자 데이터에 없는 최신 사실을 아는 척하지 않는다.
-현재 경로가 있으면 사용자가 묻는 동선 평가에 반드시 반영한다.
-장소 추천은 전달된 장소 DB 안의 후보를 우선 사용하고, DB 밖의 장소를 제안할 때는 '추가 확인이 필요한 일반 제안'임을 명시한다.
-답변은 보통 3~7문장 또는 짧은 항목으로 작성하고, 불필요하게 장황하게 쓰지 않는다.`;
+const SYSTEM_PROMPT = `당신은 '2027 베트남 가족여행' 전용 AI 여행 비서다.
+전달된 Travel Context를 우리 가족 여행의 기준 데이터로 사용한다.
+
+판단 우선순위:
+1. 사용자의 현재 질문과 최근 대화
+2. currentRoute: 사용자가 지도에서 실제 편집한 최신 경로
+3. plannedItineraries: 저장된 날짜별 원래 계획
+4. trip, family, currentCityInfo, cities, cityPlaces, safety
+
+currentRoute와 plannedItineraries가 다르면 currentRoute를 최신 선택으로 본다.
+사용자가 승인하지 않은 변경을 이미 변경된 일정처럼 표현하지 말고 제안으로만 말한다.
+
+가족 인원과 아이들의 나이를 고려해 이동 피로, 체류시간, 식사·휴식 간격, 물놀이 뒤 일정 강도를 현실적으로 판단한다.
+나트랑처럼 여행 구간에 따라 인원이 달라지는 정보도 반영한다.
+
+confirmed는 확정 정보로 취급한다.
+planned_confirmed_structure, 후보, needs_review, recheck_before_trip 등은 확정 사실처럼 단정하지 않는다.
+현재 날씨, 실시간 영업시간, 실시간 교통, 최신 가격은 조회할 수 없으므로 데이터에 없는 최신 사실을 아는 척하지 않는다.
+
+장소 추천은 cityPlaces 안의 후보를 우선한다.
+DB 밖의 장소는 '추가 확인이 필요한 일반 제안'이라고 표시한다.
+동선 최적화나 한 곳 빼기 요청에는 이유와 추천 순서를 제시하되 지도를 직접 변경했다고 말하지 않는다.
+전체 여행 질문이면 여러 도시의 일정과 이동일을 함께 비교한다.
+
+답변은 한국어로, 스마트폰에서 읽기 쉽게 간결하고 실용적으로 작성한다.
+보통 3~8문장 또는 짧은 항목으로 답한다.`;
 
 export default {
   async fetch(request, env) {
@@ -61,7 +78,14 @@ export default {
 function compactContext(c){
   const places = Array.isArray(c.cityPlaces) ? c.cityPlaces.slice(0,60).map(p=>({id:p.id,name:p.name,en:p.en,cat:p.cat||p.category,plan:p.plan,address:p.address,role:p.role,hours:p.hours,stay:p.stay,rating:p.rating,tip:p.tip,desc:p.desc,verificationStatus:p.verificationStatus,verified:p.verified})) : [];
   const route = Array.isArray(c.currentRoute) ? c.currentRoute.slice(0,30).map((r,i)=>({order:i+1,id:r.id,name:r.name,cat:r.cat||r.category,address:r.address,lat:r.lat,lng:r.lng})) : [];
-  return {appVersion:c.appVersion,currentCity:c.currentCity,currentCityName:c.currentCityName,trip:c.trip,cities:c.cities,currentRoute:route,cityPlaces:places,safety:c.safety};
+  const plans = Array.isArray(c.plannedItineraries) ? c.plannedItineraries.slice(0,30).map(x=>({
+    id:x.id,city:x.city,key:x.key,label:x.label,placeIds:x.placeIds,note:x.note
+  })) : [];
+  return {
+    appVersion:c.appVersion,currentCity:c.currentCity,currentCityName:c.currentCityName,
+    trip:c.trip,family:c.family,currentCityInfo:c.currentCityInfo,cities:c.cities,
+    currentRoute:route,plannedItineraries:plans,cityPlaces:places,safety:c.safety
+  };
 }
 function extractText(data){
   if (typeof data?.output_text === 'string' && data.output_text.trim()) return data.output_text.trim();

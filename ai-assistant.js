@@ -3,21 +3,29 @@ const GLOBAL_CFG=window.TRAVEL_AI_CONFIG||{};
 const CFG={
   endpoint:(localStorage.getItem('travelAiEndpoint')||GLOBAL_CFG.endpoint||'').replace(/\/$/,''),
   city:document.body.dataset.city||inferCity(),
-  appVersion:GLOBAL_CFG.appVersion||'9.5.1'
+  appVersion:GLOBAL_CFG.appVersion||'10.0'
 };
 const history=[];
 function inferCity(){const f=(location.pathname.split('/').pop()||'').replace('.html','');return ['da_nang','quy_nhon','tuy_hoa','nha_trang'].includes(f)?f:'hub'}
 const cityNames={da_nang:'다낭',quy_nhon:'꾸이년',tuy_hoa:'뚜이호아',nha_trang:'나트랑',hub:'전체 여행'};
 async function j(path){try{const r=await fetch(path,{cache:'no-store'});return r.ok?await r.json():null}catch(e){return null}}
 async function context(){
-  const [trip,cities,places,safety]=await Promise.all([j('./data/trip.json'),j('./data/cities.json'),j('./data/places.json'),j('./data/safety.json')]);
+  const [trip,cities,places,itineraries,safety]=await Promise.all([
+    j('./data/trip.json'),j('./data/cities.json'),j('./data/places.json'),
+    j('./data/itineraries.json'),j('./data/safety.json')
+  ]);
   const cid=CFG.city;let route=[];
   try{if(typeof window.getTravelAiRoute==='function')route=window.getTravelAiRoute()||[]}catch(e){}
   return {
     appVersion:CFG.appVersion,
     currentCity:cid,
     currentCityName:cityNames[cid],
-    trip,cities,currentRoute:route,
+    trip,
+    family:trip?.travelers||null,
+    cities,
+    currentCityInfo:Array.isArray(cities)?cities.find(x=>x.id===cid)||null:null,
+    currentRoute:route,
+    plannedItineraries:Array.isArray(itineraries)?itineraries.filter(x=>cid==='hub'||x.city===cid):[],
     cityPlaces:Array.isArray(places)?places.filter(p=>cid==='hub'||p.city===cid):[],
     safety
   };
@@ -27,11 +35,11 @@ function mount(){
   document.body.insertAdjacentHTML('beforeend',`
   <button id="travelAiFab" aria-label="AI 여행 비서 열기">✨ AI 여행 비서</button>
   <aside id="travelAiPanel" aria-label="AI 여행 비서">
-    <div class="tai-head"><div><b>✨ AI 여행 비서 <span class="tai-badge">v9.5.1</span></b><small>우리 가족 여행 데이터 + 현재 지도 경로</small></div><div class="tai-head-actions"><button class="tai-settings" aria-label="AI 서버 설정">⚙️</button><button class="tai-close" aria-label="닫기">×</button></div></div>
+    <div class="tai-head"><div><b>✨ AI 여행 비서 <span class="tai-badge">v10.0</span></b><small>우리 가족 여행 데이터 + 현재 지도 경로</small></div><div class="tai-head-actions"><button class="tai-settings" aria-label="AI 서버 설정">⚙️</button><button class="tai-close" aria-label="닫기">×</button></div></div>
     <div class="tai-context">컨텍스트 준비 중…</div>
     <div class="tai-server"></div>
-    <div class="tai-messages"><div class="tai-msg ai">안녕하세요. 현재 여행 일정과 지도 경로를 읽어 답변합니다. 동선, 가족 일정, 장소 선택, 식사를 물어보세요.</div></div>
-    <div class="tai-quick"><button>현재 동선 점검</button><button>아이들과 갈 곳 추천</button><button>식사 장소 추천</button></div>
+    <div class="tai-messages"><div class="tai-msg ai">안녕하세요. 우리 가족의 2027 베트남 여행 전체 일정, 가족 구성, 도시별 계획과 현재 지도 경로를 함께 읽어 답변합니다.</div></div>
+    <div class="tai-quick"><button>현재 동선 점검</button><button>오늘 일정</button><button>동선 최적화</button><button>아이들과 괜찮아?</button><button>한 곳 빼기</button></div>
     <form class="tai-form"><input maxlength="700" placeholder="예: 이 동선 너무 빡빡해?" aria-label="질문"><button>전송</button></form>
     <div class="tai-settings-panel" hidden>
       <b>AI 서버 연결</b><p>Cloudflare Worker의 <code>/chat</code> 주소를 입력하세요. 이 값은 이 기기의 브라우저에만 저장됩니다.</p>
