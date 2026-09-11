@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vietnam-family-trip-pwa-v5';
+const CACHE_NAME = 'vietnam-family-trip-pwa-v6';
 const APP_SHELL = [
   './',
   './index.html',
@@ -28,7 +28,7 @@ self.addEventListener('fetch', event => {
   const req = event.request;
   const accept = req.headers.get('accept') || '';
 
-  // v5: 마커 이름 ON/OFF 기능 추가. HTML 문서는 최신 배포가 바로 반영되도록 network-first로 처리합니다.
+  // v6: 응급·약국·숙소 주소 카드 추가. HTML 문서는 최신 배포가 바로 반영되도록 network-first로 처리합니다.
   if (req.mode === 'navigate' || accept.includes('text/html')) {
     event.respondWith(
       fetch(req).then(response => {
