@@ -47,7 +47,7 @@ function placesView(){const saved=tab==='saved';$('#main').innerHTML=`<div class
 function addPlace(){selected=null;const cityName=cityInfo().nameKo;openSheet(`${cityName} 일정에 장소 추가`,`<span class="eyebrow">${dateLabel(date)}</span><label class="field"><span>${cityName} 장소 검색</span><input id="add-search" type="search" placeholder="기존 장소 이름 검색"></label><div id="add-results"></div><p class="notice section">기존 장소 105곳에서 먼저 찾습니다. 없는 장소는 온라인으로 검색할 수 있습니다.</p><button class="btn" id="external-search">새 장소 온라인 검색</button>`,`<button class="btn primary" id="confirm-add" disabled>장소를 선택해 주세요</button>`);const update=()=>{const q=$('#add-search').value.trim().toLowerCase();const rows=[...db.places,...local.custom].filter(p=>p.city===city&&(p.name+' '+p.en).toLowerCase().includes(q));$('#add-results').innerHTML=rows.map(p=>`<button class="result" data-select="${esc(key(p))}"><b>${esc(p.name)}</b><small>${esc(p.cat)}</small></button>`).join('')||'<p>검색 결과가 없습니다.</p>';document.querySelectorAll('[data-select]').forEach(b=>b.onclick=()=>{selected=b.dataset.select;document.querySelectorAll('[data-select]').forEach(x=>x.classList.toggle('selected',x===b));$('#confirm-add').disabled=false;$('#confirm-add').textContent='이 일정에 추가';});};$('#add-search').oninput=update;$('#external-search').onclick=externalSearch;$('#confirm-add').onclick=()=>{if(!selected)return;if(route().includes(selected)){toast('이미 이 일정에 있는 장소입니다.');return;}local.routes[routeKey()]=[...route(),selected];save();closeSheet();render();toast('일정에 장소를 추가했습니다.');};update();}
 function externalSearch(){const cid=city,c=cityInfo();let found=[];selected=null;openSheet('새 장소 찾기',`<label class="field"><span>${c.nameKo} 장소 검색</span><input id="online-query" placeholder="장소명 입력" maxlength="150"></label><button class="btn" id="search-online">검색</button><div id="online-results" aria-live="polite"></div><label class="field section"><span>분류</span><select id="online-cat">${['관광','음식','카페','숙소','쇼핑','세탁','마사지','교통'].map(v=>`<option>${v}</option>`).join('')}</select></label><label class="field"><span>간단한 메모</span><textarea id="online-memo" maxlength="1000"></textarea></label><p class="notice">OpenStreetMap 검색 결과입니다. 주소가 방문하려는 지역과 맞는지 확인해 주세요.</p>`,`<button class="btn primary" id="online-save" disabled>장소를 선택해 주세요</button>`);$('#search-online').onclick=async()=>{const q=$('#online-query').value.trim();if(!q)return;const button=$('#search-online');button.disabled=true;$('#online-results').textContent='검색 중…';selected=null;$('#online-save').disabled=true;try{const u=new URL('https://nominatim.openstreetmap.org/search');u.search=new URLSearchParams({format:'jsonv2',q:q+', '+c.name+', Vietnam',countrycodes:'vn',limit:'5','accept-language':'ko,en'});const r=await fetch(u,{signal:AbortSignal.timeout(12000)});if(!r.ok)throw Error();found=await r.json();if(!$('#online-results'))return;$('#online-results').innerHTML=found.map((p,i)=>`<button class="result" data-online="${i}"><b>${esc(p.name||q)}</b><small>${esc(p.display_name)}</small></button>`).join('')||'<p>검색 결과가 없습니다. 다른 이름으로 검색해 주세요.</p>';document.querySelectorAll('[data-online]').forEach(b=>b.onclick=()=>{selected=+b.dataset.online;document.querySelectorAll('[data-online]').forEach(x=>x.classList.toggle('selected',x===b));$('#online-save').disabled=false;$('#online-save').textContent='장소 저장하고 일정에 추가';});}catch{if($('#online-results'))$('#online-results').textContent='온라인 검색에 연결하지 못했습니다. 기존 장소 검색은 계속 이용할 수 있습니다.';}finally{button.disabled=false;}};$('#online-save').onclick=()=>{if(selected===null)return;const x=found[selected];const p={id:'custom-'+crypto.randomUUID(),city:cid,name:x.name||$('#online-query').value.trim(),en:x.name||'',lat:Number(x.lat),lng:Number(x.lon),address:x.display_name,cat:$('#online-cat').value,tip:$('#online-memo').value.trim(),desc:'사용자가 온라인 검색으로 추가한 장소',custom:true};local.custom.push(p);local.routes[routeKey()]=[...route(),key(p)];save();closeSheet();render();toast('새 장소를 저장했습니다.');};}
 function mapView(){$('#main').innerHTML=`<div class="heading"><div><span class="eyebrow">${dateLabel(date)}</span><h1>${cityInfo().nameKo} 동선</h1></div><button class="textbtn" id="back-schedule">일정 보기</button></div>${citySelect()}<p class="map-warning">번호는 일정 순서입니다. 선은 실제 도로 경로가 아니며, 이동 안내는 장소의 길찾기를 이용해 주세요.</p><div class="map" id="map"></div><div class="actions"><button class="btn" id="all-points">도시의 모든 장소</button><button class="btn" id="route-points">일정 장소만</button></div><div id="map-order"></div>`;$('#back-schedule').onclick=()=>go('schedule');const draw=all=>{if(map){map.remove();map=null;}if(!window.L){$('#map').innerHTML='<div class="empty">지도를 불러오지 못했습니다. 인터넷 연결을 확인해 주세요. 일정과 장소 정보는 계속 볼 수 있습니다.</div>';return;}const rows=all?[...db.places,...local.custom].filter(p=>p.city===city):route().map(place).filter(Boolean);$('#map-order').innerHTML=all?'':`<h2 class="map-order-title">방문 순서</h2><div class="map-order-list">${rows.map((p,i)=>`<button data-place="${esc(key(p))}"><span>${i+1}</span><b>${esc(p.name)}</b></button>`).join('')}</div>`;bindPlaces();map=L.map('map');L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors',maxZoom:19}).addTo(map);const coords=[];rows.forEach((p,i)=>{if(!Number.isFinite(p.lat)||!Number.isFinite(p.lng))return;coords.push([p.lat,p.lng]);const marker=L.marker([p.lat,p.lng],{icon:L.divIcon({className:'map-marker',html:String(i+1),iconSize:[32,32]})}).addTo(map);marker.bindTooltip(esc(p.name),{permanent:false,direction:'top'}).on('click',()=>quick(key(p)));});if(coords.length){map.fitBounds(coords,{paddingTopLeft:[55,75],paddingBottomRight:[55,55],maxZoom:14});if(!all)L.polyline(coords,{color:'#2579ef',weight:3,dashArray:'8 9'}).addTo(map);}else{const p=db.places.find(p=>p.city===city);map.setView([p.lat,p.lng],12);}};$('#all-points').onclick=()=>draw(true);$('#route-points').onclick=()=>draw(false);draw(false);}
-function toolsView(){$('#main').innerHTML=`<div class="heading"><div><span class="eyebrow">필요할 때 꺼내 보는</span><h1>여행 도구</h1></div></div>${citySelect()}<div class="place-list"><button class="card" id="ai-open"><b>✦ AI 여행 비서</b><small>선택한 도시와 날짜의 동선 상담</small></button><button class="card" id="weather"><b>현재 날씨</b><small>${cityInfo().nameKo} · 여행 날짜의 예보와 구분해 표시</small></button></div><div id="weather-result" class="weather-result" aria-live="polite"></div><details class="section"><summary>숙소·긴급 연락처 · 기존 기록</summary>${db.safety.accommodations.filter(p=>p.city===city).map(p=>`<div class="info"><b>${esc(p.name)}</b><p>${esc(p.address)}</p></div>`).join('')}${db.safety.emergencyNumbers.map(p=>`<div class="info"><b>${esc(p.label)}</b><a href="tel:${esc(p.number)}">${esc(p.number)}</a></div>`).join('')}<p class="notice">기존 파일의 연락처입니다. 이번 제작에서 최신 여부를 재확인하지 않았습니다.</p></details><details class="section"><summary>내 일정 백업·복원</summary><p class="notice">편집한 일정·메모·저장 장소는 이 기기에 저장됩니다. 가족 휴대폰과 자동 동기화되지 않습니다. 백업 파일을 전달한 뒤 다른 기기에서 복원할 수 있습니다.</p><div class="actions"><button class="btn" id="export">백업 내려받기</button><button class="btn" id="import">백업 복원</button></div><input type="file" id="import-file" accept=".json" hidden></details><p class="notice">v11.7 시범판 · 기존 장소 ${db.places.length}곳 · 로컬 사진 슬롯 ${db.places.length}곳 · 외부 대체사진 13곳<br>기존 앱의 기기별 추가 장소·편집 일정은 아직 자동 이전하지 않습니다.</p>`;$('#ai-open').onclick=()=>go('ai');$('#weather').onclick=weather;$('#export').onclick=()=>{const blob=new Blob([JSON.stringify({version:11,data:local},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='family-trip-v11-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};$('#import').onclick=()=>$('#import-file').click();$('#import-file').onchange=async e=>{try{const file=e.target.files[0];if(!file)return;if(file.size>5e6)throw Error();const v=JSON.parse(await file.text());if(v.version!==11||!v.data||!Array.isArray(v.data.custom)||!Array.isArray(v.data.saved)||!v.data.routes||!v.data.notes)throw Error();if(!v.data.custom.every(p=>db.cities.some(c=>c.id===p.city)&&typeof p.id==='string'&&typeof p.name==='string'&&Number.isFinite(p.lat)&&Number.isFinite(p.lng))||!Object.values(v.data.routes).every(a=>Array.isArray(a)&&a.every(k=>typeof k==='string'))||!Object.values(v.data.notes).every(n=>typeof n==='string')||!v.data.saved.every(k=>typeof k==='string'))throw Error();openSheet('백업 복원','<p>이 기기의 v11 편집 내용을 백업 파일로 교체할까요? 기존 v10 데이터는 변경하지 않습니다.</p>','<button class="btn primary" id="restore">교체하고 복원</button>');$('#restore').onclick=()=>{local=v.data;if(!local.aiUndo||typeof local.aiUndo!=='object'||Array.isArray(local.aiUndo))local.aiUndo={};save();closeSheet();render();toast('복원했습니다.');};}catch{toast('올바른 v11 백업 파일이 아닙니다.');}};}
+function toolsView(){$('#main').innerHTML=`<div class="heading"><div><span class="eyebrow">필요할 때 꺼내 보는</span><h1>여행 도구</h1></div></div>${citySelect()}<div class="place-list"><button class="card" id="ai-open"><b>✦ AI 여행 비서</b><small>선택한 도시와 날짜의 동선 상담</small></button><button class="card" id="weather"><b>현재 날씨</b><small>${cityInfo().nameKo} · 여행 날짜의 예보와 구분해 표시</small></button></div><div id="weather-result" class="weather-result" aria-live="polite"></div><details class="section"><summary>숙소·긴급 연락처 · 기존 기록</summary>${db.safety.accommodations.filter(p=>p.city===city).map(p=>`<div class="info"><b>${esc(p.name)}</b><p>${esc(p.address)}</p></div>`).join('')}${db.safety.emergencyNumbers.map(p=>`<div class="info"><b>${esc(p.label)}</b><a href="tel:${esc(p.number)}">${esc(p.number)}</a></div>`).join('')}<p class="notice">기존 파일의 연락처입니다. 이번 제작에서 최신 여부를 재확인하지 않았습니다.</p></details><details class="section"><summary>내 일정 백업·복원</summary><p class="notice">편집한 일정·메모·저장 장소는 이 기기에 저장됩니다. 가족 휴대폰과 자동 동기화되지 않습니다. 백업 파일을 전달한 뒤 다른 기기에서 복원할 수 있습니다.</p><div class="actions"><button class="btn" id="export">백업 내려받기</button><button class="btn" id="import">백업 복원</button></div><input type="file" id="import-file" accept=".json" hidden></details><p class="notice">v11.7.1 시범판 · 기존 장소 ${db.places.length}곳 · 로컬 사진 슬롯 ${db.places.length}곳 · 외부 대체사진 13곳<br>기존 앱의 기기별 추가 장소·편집 일정은 아직 자동 이전하지 않습니다.</p>`;$('#ai-open').onclick=()=>go('ai');$('#weather').onclick=weather;$('#export').onclick=()=>{const blob=new Blob([JSON.stringify({version:11,data:local},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='family-trip-v11-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};$('#import').onclick=()=>$('#import-file').click();$('#import-file').onchange=async e=>{try{const file=e.target.files[0];if(!file)return;if(file.size>5e6)throw Error();const v=JSON.parse(await file.text());if(v.version!==11||!v.data||!Array.isArray(v.data.custom)||!Array.isArray(v.data.saved)||!v.data.routes||!v.data.notes)throw Error();if(!v.data.custom.every(p=>db.cities.some(c=>c.id===p.city)&&typeof p.id==='string'&&typeof p.name==='string'&&Number.isFinite(p.lat)&&Number.isFinite(p.lng))||!Object.values(v.data.routes).every(a=>Array.isArray(a)&&a.every(k=>typeof k==='string'))||!Object.values(v.data.notes).every(n=>typeof n==='string')||!v.data.saved.every(k=>typeof k==='string'))throw Error();openSheet('백업 복원','<p>이 기기의 v11 편집 내용을 백업 파일로 교체할까요? 기존 v10 데이터는 변경하지 않습니다.</p>','<button class="btn primary" id="restore">교체하고 복원</button>');$('#restore').onclick=()=>{local=v.data;if(!local.aiUndo||typeof local.aiUndo!=='object'||Array.isArray(local.aiUndo))local.aiUndo={};save();closeSheet();render();toast('복원했습니다.');};}catch{toast('올바른 v11 백업 파일이 아닙니다.');}};}
 let liveWeather=null;
 function weatherCodeLabel(code){
   if(code===0)return '맑음';
@@ -97,6 +97,53 @@ function aiQuickActions(){return [
   {label:'준비물',question:'오늘 일정에서 꼭 확인해야 할 준비물과 주의사항을 정리해줘.'}
 ];}
 function aiQuickPrompts(){return aiQuickActions().map(a=>a.question);}
+function aiPlaceSummary(p){
+  if(!p)return null;
+  return {id:p.id,name:p.name,en:p.en||'',cat:p.cat||'',stay:p.stay||'',role:p.role||'',tip:p.tip||'',lat:p.lat,lng:p.lng,address:p.address||''};
+}
+function sleep(ms){return new Promise(resolve=>setTimeout(resolve,ms));}
+async function requestAI(endpoint,payload,{timeoutMs=30000,retryOnce=true}={}){
+  let lastError;
+  const attempts=retryOnce?2:1;
+  for(let attempt=0;attempt<attempts;attempt++){
+    try{
+      const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},signal:AbortSignal.timeout(timeoutMs),body:JSON.stringify(payload)});
+      if(!r.ok){const e=new Error('HTTP '+r.status);e.status=r.status;throw e;}
+      return await r.json();
+    }catch(e){
+      lastError=e;
+      const retryable=!e?.status||e.status===429||e.status>=500||e.name==='AbortError'||e.name==='TimeoutError';
+      if(attempt+1<attempts&&retryable){
+        toast('AI 연결이 지연되어 한 번 더 시도합니다.');
+        await sleep(1200);
+        continue;
+      }
+      throw e;
+    }
+  }
+  throw lastError;
+}
+function buildAIContext({cid,day,rows,transfer,snapshot,weatherForRequest,adaptive}){
+  const base={
+    appVersion:'11.7.1-preview',currentCity:cid,currentDate:day,travelDayNumber:Number(day.slice(-2))-10,
+    currentCityName:cityInfo().nameKo,familyLabel:aiFamilyLabel(),familyContext:aiFamilyContext(),
+    trip:db.trip,family:db.trip.travelers,weatherMatchesSelectedDate:weatherDateMatches(day,weatherForRequest),
+    cities:db.cities,currentCityInfo:cityInfo(),currentRoute:rows,currentRouteNote:local.notes[snapshot.routeKey]||'',
+    currentTransfer:transfer||null,plannedItineraries:plans(),cityPlaces:[...db.places,...local.custom].filter(p=>p.city===cid),
+    savedPlaces:local.saved.map(place).filter(p=>p?.city===cid),safety:db.safety,liveWeather:liveWeather?.cityId===cid?liveWeather:null
+  };
+  if(!adaptive)return base;
+  // 맞춤 조정은 현재 일정에 필요한 정보만 전달해 요청 크기와 응답 지연을 줄입니다.
+  return {...base,
+    trip:{title:db.trip.title,dates:db.trip.dates,travelers:db.trip.travelers,route:db.trip.route.filter(r=>r.date===day)},
+    cities:[cityInfo()],
+    currentRoute:rows.map(aiPlaceSummary).filter(Boolean),
+    plannedItineraries:plans().map(x=>({id:x.id,label:x.label,note:x.note||'',placeIds:x.placeIds||[]})),
+    cityPlaces:rows.map(aiPlaceSummary).filter(Boolean),
+    savedPlaces:[],
+    safety:{accommodations:db.safety.accommodations.filter(x=>x.city===cid),emergencyNumbers:[]}
+  };
+}
 function sameOrder(a,b){return Array.isArray(a)&&Array.isArray(b)&&a.length===b.length&&a.every((v,i)=>v===b[i]);}
 function sameRouteMembers(a,b){
   if(!Array.isArray(a)||!Array.isArray(b)||a.length!==b.length)return false;
@@ -252,7 +299,7 @@ function parseRouteSuggestion(answer,snapshot){
 async function recoverRouteSuggestion(endpoint,answer,snapshot){
   const mapping=snapshot.original.map((k,i)=>`${i+1}. ${place(k)?.name||k}`).join('\n');
   const prompt=`아래 여행 조언에서 실제로 제안한 방문 순서를 현재 일정 번호로 변환해줘. 현재 일정의 모든 장소를 정확히 한 번씩 포함해야 하며, 새 장소를 만들거나 빼면 안 돼. 답변은 설명 없이 번호만 | 로 연결한 한 줄이어야 해. 예: 2|1|3\n\n현재 일정:\n${mapping}\n\n분석할 여행 조언:\n${String(answer||'')}`;
-  const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},signal:AbortSignal.timeout(20000),body:JSON.stringify({message:prompt,history:[],context:{appVersion:'11.7-route-recovery',currentCity:snapshot.city,currentDate:snapshot.date,currentRoute:snapshot.original.map(place).filter(Boolean)}})});
+  const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},signal:AbortSignal.timeout(20000),body:JSON.stringify({message:prompt,history:[],context:{appVersion:'11.7.1-route-recovery',currentCity:snapshot.city,currentDate:snapshot.date,currentRoute:snapshot.original.map(place).filter(Boolean)}})});
   if(!r.ok)return null;
   const d=await r.json();
   return parseRouteIndexOrder(d.answer||'',snapshot.original);
@@ -340,9 +387,8 @@ async function sendAIQuestion(q,options={}){
   document.querySelectorAll('#send,[data-ai-prompt]').forEach(b=>b.disabled=true);
   renderChat();
   try{
-    const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},signal:AbortSignal.timeout(30000),body:JSON.stringify({message:wireQuestion,history,context:{appVersion:'11.7-preview',currentCity:cid,currentDate:day,travelDayNumber:Number(day.slice(-2))-10,currentCityName:cityInfo().nameKo,familyLabel:aiFamilyLabel(),familyContext:aiFamilyContext(),trip:db.trip,family:db.trip.travelers,weatherMatchesSelectedDate:weatherDateMatches(day,weatherForRequest),cities:db.cities,currentCityInfo:cityInfo(),currentRoute:rows,currentRouteNote:local.notes[snapshot.routeKey]||'',currentTransfer:transfer||null,plannedItineraries:plans(),cityPlaces:[...db.places,...local.custom].filter(p=>p.city===cid),savedPlaces:local.saved.map(place).filter(p=>p?.city===cid),safety:db.safety,liveWeather:liveWeather?.cityId===cid?liveWeather:null}})});
-    if(!r.ok)throw Error();
-    const d=await r.json();
+    const context=buildAIContext({cid,day,rows,transfer,snapshot,weatherForRequest,adaptive});
+    const d=await requestAI(endpoint,{message:wireQuestion,history,context},{timeoutMs:adaptive?35000:30000,retryOnce:true});
     if(reorder){
       const parsed=parseRouteSuggestion(d.answer||'',snapshot);
       if(parsed.suggestion.parseFailed){
@@ -353,7 +399,10 @@ async function sendAIQuestion(q,options={}){
       }
       chat.push({role:'assistant',content:parsed.content||'표시할 답변이 없습니다.',routeSuggestion:parsed.suggestion});
     }else chat.push({role:'assistant',content:d.answer||'표시할 답변이 없습니다.'});
-  }catch{chat.push({role:'assistant',content:'AI 서버에 연결하지 못했습니다. 기존 Worker 주소와 인터넷 연결을 확인해 주세요.'});}
+  }catch(e){
+    const detail=e?.status?` (HTTP ${e.status})`:(e?.name==='AbortError'||e?.name==='TimeoutError'?' (응답 시간 초과)':'');
+    chat.push({role:'assistant',content:`AI 연결이 일시적으로 실패했습니다${detail}. 자동 재시도도 완료했습니다. 잠시 후 다시 시도해 주세요.`});
+  }
   finally{
     busy=false;
     document.querySelectorAll('#send,[data-ai-prompt]').forEach(b=>b.disabled=false);
