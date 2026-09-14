@@ -1,0 +1,104 @@
+{
+  "schemaVersion": "safety-v1",
+  "emergencyNumbers": [
+    {
+      "country": "Vietnam",
+      "number": "115",
+      "label": "구급차",
+      "note": "대부분 베트남어 대응 가능성. 호텔/기사 도움 요청 권장"
+    },
+    {
+      "country": "Vietnam",
+      "number": "114",
+      "label": "화재·구조",
+      "note": "대부분 베트남어 대응 가능성"
+    },
+    {
+      "country": "Vietnam",
+      "number": "113",
+      "label": "경찰",
+      "note": "대부분 베트남어 대응 가능성"
+    },
+    {
+      "country": "Korea",
+      "number": "+82-2-3210-0404",
+      "label": "영사콜센터",
+      "note": "해외 위급 상황 상담"
+    }
+  ],
+  "accommodations": [
+    {
+      "city": "da_nang",
+      "name": "New Orient Hotel Da Nang",
+      "address": "20 Đống Đa, Hải Châu, Đà Nẵng"
+    },
+    {
+      "city": "quy_nhon",
+      "name": "Sala Quy Nhon Beach Hotel",
+      "address": "124 Phan Chu Trinh, Quy Nhon"
+    },
+    {
+      "city": "tuy_hoa",
+      "name": "APEC Mandala Phú Yên",
+      "address": "Tòa nhà Apec Mandala, Đại lộ Hùng Vương, Tuy Hòa"
+    },
+    {
+      "city": "tuy_hoa",
+      "name": "Rosa Alba Resort & Villas",
+      "address": "88 Lê Duẩn Street, Tuy Hoa"
+    },
+    {
+      "city": "nha_trang",
+      "name": "The Costa Nha Trang Residences",
+      "address": "32–34 Trần Phú, Nha Trang"
+    }
+  ],
+  "hospitals": [
+    {
+      "city": "da_nang",
+      "name": "Family Medical Practice Da Nang",
+      "address": "96–98 Nguyễn Văn Linh, Đà Nẵng",
+      "mapQuery": "Family Medical Practice Da Nang"
+    },
+    {
+      "city": "quy_nhon",
+      "name": "Bình Định Provincial General Hospital",
+      "address": "106 Nguyễn Huệ, Quy Nhon",
+      "mapQuery": "Binh Dinh Provincial General Hospital Quy Nhon"
+    },
+    {
+      "city": "tuy_hoa",
+      "name": "Bệnh viện Đa khoa Phú Yên",
+      "address": "15 Nguyễn Hữu Thọ, Tuy Hòa",
+      "mapQuery": "Bệnh viện Đa khoa Phú Yên"
+    },
+    {
+      "city": "nha_trang",
+      "name": "Vinmec Nha Trang International Hospital",
+      "address": "42A Trần Phú, Nha Trang",
+      "mapQuery": "Vinmec Nha Trang International Hospital"
+    }
+  ],
+  "pharmacySearches": [
+    {
+      "city": "da_nang",
+      "label": "FPT Long Châu 약국 검색",
+      "mapQuery": "FPT Long Châu Đà Nẵng"
+    },
+    {
+      "city": "quy_nhon",
+      "label": "FPT Long Châu 약국 검색",
+      "mapQuery": "FPT Long Châu Quy Nhon"
+    },
+    {
+      "city": "tuy_hoa",
+      "label": "FPT Long Châu 약국 검색",
+      "mapQuery": "FPT Long Châu Tuy Hòa"
+    },
+    {
+      "city": "nha_trang",
+      "label": "FPT Long Châu 약국 검색",
+      "mapQuery": "FPT Long Châu Nha Trang"
+    }
+  ]
+}
