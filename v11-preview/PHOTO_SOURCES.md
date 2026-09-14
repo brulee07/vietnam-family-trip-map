@@ -1,4 +1,4 @@
-# Photo sources — v11.2 preview
+# Photo sources — v11.3 preview
 
 아래 사진은 장소 상세 화면에서 원본 출처와 라이선스를 함께 표시합니다. 앱 코드는 별도이며, 각 사진은 아래 라이선스를 따릅니다.
 

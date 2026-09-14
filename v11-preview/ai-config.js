@@ -3,5 +3,5 @@
 // 예: endpoint: 'https://vietnam-family-trip-ai.YOUR_SUBDOMAIN.workers.dev/chat'
 window.TRAVEL_AI_CONFIG = {
   endpoint: 'https://vietnam-family-trip-ai.brulee07.workers.dev/chat',
-  appVersion: '11.2-preview'
+  appVersion: '11.3-preview'
 };
