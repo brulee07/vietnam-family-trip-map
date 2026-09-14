@@ -20,3 +20,8 @@
 
 /* v11.7.2 adaptive AI retry and compact context */
 .ai-chip.adaptive{border-color:#9fc4f6;background:#eaf3ff;font-weight:750}.ai-chip.adaptive::before{content:'✦ ';}.ai-route-proposal.adaptive{border-color:#9fc4f6;background:#f4f8ff}.ai-route-proposal.adaptive .ai-route-proposal-head b{color:#285c9f}.ai-route-proposal.adaptive .recommended{background:#eaf3ff;border-color:#9fc4f6}
+
+
+/* v11.8 stability, recovery and diagnostics */
+.stability-card{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:22px 0;padding:16px 18px;border:1px solid var(--line);border-radius:16px;background:#f8fbff}.stability-card>div{min-width:0}.stability-card b{display:block;font-size:1rem;margin:3px 0 5px}.stability-card small{display:block;color:var(--muted);line-height:1.5}.stability-card .btn{flex:0 0 auto;min-height:40px;padding:8px 12px}.restore-preview{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:16px 0}.restore-preview span{padding:12px;border:1px solid var(--line);border-radius:12px;background:#f8fbff}.restore-preview small{display:block;color:var(--muted);font-size:.76rem;margin-bottom:3px}.restore-preview b{display:block;font-size:.96rem}.chat-retry{margin-top:7px;min-height:38px;padding:7px 12px;background:#f3f8ff;border-color:#cfe0f7;color:#1764c8}.ai-settings .actions{margin-top:10px}.ai-settings #ai-test-status{margin:9px 0 0}.offline-note{color:#8a5a00}
+@media(max-width:720px){.stability-card{align-items:stretch;flex-direction:column;padding:14px}.stability-card .btn{width:100%}.restore-preview{grid-template-columns:repeat(2,minmax(0,1fr))}.chat-retry{width:auto}}
