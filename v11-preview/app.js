@@ -47,7 +47,7 @@ function placesView(){const saved=tab==='saved';$('#main').innerHTML=`<div class
 function addPlace(){selected=null;const cityName=cityInfo().nameKo;openSheet(`${cityName} 일정에 장소 추가`,`<span class="eyebrow">${dateLabel(date)}</span><label class="field"><span>${cityName} 장소 검색</span><input id="add-search" type="search" placeholder="기존 장소 이름 검색"></label><div id="add-results"></div><p class="notice section">기존 장소 105곳에서 먼저 찾습니다. 없는 장소는 온라인으로 검색할 수 있습니다.</p><button class="btn" id="external-search">새 장소 온라인 검색</button>`,`<button class="btn primary" id="confirm-add" disabled>장소를 선택해 주세요</button>`);const update=()=>{const q=$('#add-search').value.trim().toLowerCase();const rows=[...db.places,...local.custom].filter(p=>p.city===city&&(p.name+' '+p.en).toLowerCase().includes(q));$('#add-results').innerHTML=rows.map(p=>`<button class="result" data-select="${esc(key(p))}"><b>${esc(p.name)}</b><small>${esc(p.cat)}</small></button>`).join('')||'<p>검색 결과가 없습니다.</p>';document.querySelectorAll('[data-select]').forEach(b=>b.onclick=()=>{selected=b.dataset.select;document.querySelectorAll('[data-select]').forEach(x=>x.classList.toggle('selected',x===b));$('#confirm-add').disabled=false;$('#confirm-add').textContent='이 일정에 추가';});};$('#add-search').oninput=update;$('#external-search').onclick=externalSearch;$('#confirm-add').onclick=()=>{if(!selected)return;if(route().includes(selected)){toast('이미 이 일정에 있는 장소입니다.');return;}local.routes[routeKey()]=[...route(),selected];save();closeSheet();render();toast('일정에 장소를 추가했습니다.');};update();}
 function externalSearch(){const cid=city,c=cityInfo();let found=[];selected=null;openSheet('새 장소 찾기',`<label class="field"><span>${c.nameKo} 장소 검색</span><input id="online-query" placeholder="장소명 입력" maxlength="150"></label><button class="btn" id="search-online">검색</button><div id="online-results" aria-live="polite"></div><label class="field section"><span>분류</span><select id="online-cat">${['관광','음식','카페','숙소','쇼핑','세탁','마사지','교통'].map(v=>`<option>${v}</option>`).join('')}</select></label><label class="field"><span>간단한 메모</span><textarea id="online-memo" maxlength="1000"></textarea></label><p class="notice">OpenStreetMap 검색 결과입니다. 주소가 방문하려는 지역과 맞는지 확인해 주세요.</p>`,`<button class="btn primary" id="online-save" disabled>장소를 선택해 주세요</button>`);$('#search-online').onclick=async()=>{const q=$('#online-query').value.trim();if(!q)return;const button=$('#search-online');button.disabled=true;$('#online-results').textContent='검색 중…';selected=null;$('#online-save').disabled=true;try{const u=new URL('https://nominatim.openstreetmap.org/search');u.search=new URLSearchParams({format:'jsonv2',q:q+', '+c.name+', Vietnam',countrycodes:'vn',limit:'5','accept-language':'ko,en'});const r=await fetch(u,{signal:AbortSignal.timeout(12000)});if(!r.ok)throw Error();found=await r.json();if(!$('#online-results'))return;$('#online-results').innerHTML=found.map((p,i)=>`<button class="result" data-online="${i}"><b>${esc(p.name||q)}</b><small>${esc(p.display_name)}</small></button>`).join('')||'<p>검색 결과가 없습니다. 다른 이름으로 검색해 주세요.</p>';document.querySelectorAll('[data-online]').forEach(b=>b.onclick=()=>{selected=+b.dataset.online;document.querySelectorAll('[data-online]').forEach(x=>x.classList.toggle('selected',x===b));$('#online-save').disabled=false;$('#online-save').textContent='장소 저장하고 일정에 추가';});}catch{if($('#online-results'))$('#online-results').textContent='온라인 검색에 연결하지 못했습니다. 기존 장소 검색은 계속 이용할 수 있습니다.';}finally{button.disabled=false;}};$('#online-save').onclick=()=>{if(selected===null)return;const x=found[selected];const p={id:'custom-'+crypto.randomUUID(),city:cid,name:x.name||$('#online-query').value.trim(),en:x.name||'',lat:Number(x.lat),lng:Number(x.lon),address:x.display_name,cat:$('#online-cat').value,tip:$('#online-memo').value.trim(),desc:'사용자가 온라인 검색으로 추가한 장소',custom:true};local.custom.push(p);local.routes[routeKey()]=[...route(),key(p)];save();closeSheet();render();toast('새 장소를 저장했습니다.');};}
 function mapView(){$('#main').innerHTML=`<div class="heading"><div><span class="eyebrow">${dateLabel(date)}</span><h1>${cityInfo().nameKo} 동선</h1></div><button class="textbtn" id="back-schedule">일정 보기</button></div>${citySelect()}<p class="map-warning">번호는 일정 순서입니다. 선은 실제 도로 경로가 아니며, 이동 안내는 장소의 길찾기를 이용해 주세요.</p><div class="map" id="map"></div><div class="actions"><button class="btn" id="all-points">도시의 모든 장소</button><button class="btn" id="route-points">일정 장소만</button></div><div id="map-order"></div>`;$('#back-schedule').onclick=()=>go('schedule');const draw=all=>{if(map){map.remove();map=null;}if(!window.L){$('#map').innerHTML='<div class="empty">지도를 불러오지 못했습니다. 인터넷 연결을 확인해 주세요. 일정과 장소 정보는 계속 볼 수 있습니다.</div>';return;}const rows=all?[...db.places,...local.custom].filter(p=>p.city===city):route().map(place).filter(Boolean);$('#map-order').innerHTML=all?'':`<h2 class="map-order-title">방문 순서</h2><div class="map-order-list">${rows.map((p,i)=>`<button data-place="${esc(key(p))}"><span>${i+1}</span><b>${esc(p.name)}</b></button>`).join('')}</div>`;bindPlaces();map=L.map('map');L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors',maxZoom:19}).addTo(map);const coords=[];rows.forEach((p,i)=>{if(!Number.isFinite(p.lat)||!Number.isFinite(p.lng))return;coords.push([p.lat,p.lng]);const marker=L.marker([p.lat,p.lng],{icon:L.divIcon({className:'map-marker',html:String(i+1),iconSize:[32,32]})}).addTo(map);marker.bindTooltip(esc(p.name),{permanent:false,direction:'top'}).on('click',()=>quick(key(p)));});if(coords.length){map.fitBounds(coords,{paddingTopLeft:[55,75],paddingBottomRight:[55,55],maxZoom:14});if(!all)L.polyline(coords,{color:'#2579ef',weight:3,dashArray:'8 9'}).addTo(map);}else{const p=db.places.find(p=>p.city===city);map.setView([p.lat,p.lng],12);}};$('#all-points').onclick=()=>draw(true);$('#route-points').onclick=()=>draw(false);draw(false);}
-function toolsView(){$('#main').innerHTML=`<div class="heading"><div><span class="eyebrow">필요할 때 꺼내 보는</span><h1>여행 도구</h1></div></div>${citySelect()}<div class="place-list"><button class="card" id="ai-open"><b>✦ AI 여행 비서</b><small>선택한 도시와 날짜의 동선 상담</small></button><button class="card" id="weather"><b>현재 날씨</b><small>${cityInfo().nameKo} · 여행 날짜의 예보와 구분해 표시</small></button></div><div id="weather-result" class="weather-result" aria-live="polite"></div><details class="section"><summary>숙소·긴급 연락처 · 기존 기록</summary>${db.safety.accommodations.filter(p=>p.city===city).map(p=>`<div class="info"><b>${esc(p.name)}</b><p>${esc(p.address)}</p></div>`).join('')}${db.safety.emergencyNumbers.map(p=>`<div class="info"><b>${esc(p.label)}</b><a href="tel:${esc(p.number)}">${esc(p.number)}</a></div>`).join('')}<p class="notice">기존 파일의 연락처입니다. 이번 제작에서 최신 여부를 재확인하지 않았습니다.</p></details><details class="section"><summary>내 일정 백업·복원</summary><p class="notice">편집한 일정·메모·저장 장소는 이 기기에 저장됩니다. 가족 휴대폰과 자동 동기화되지 않습니다. 백업 파일을 전달한 뒤 다른 기기에서 복원할 수 있습니다.</p><div class="actions"><button class="btn" id="export">백업 내려받기</button><button class="btn" id="import">백업 복원</button></div><input type="file" id="import-file" accept=".json" hidden></details><p class="notice">v11.7.1 시범판 · 기존 장소 ${db.places.length}곳 · 로컬 사진 슬롯 ${db.places.length}곳 · 외부 대체사진 13곳<br>기존 앱의 기기별 추가 장소·편집 일정은 아직 자동 이전하지 않습니다.</p>`;$('#ai-open').onclick=()=>go('ai');$('#weather').onclick=weather;$('#export').onclick=()=>{const blob=new Blob([JSON.stringify({version:11,data:local},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='family-trip-v11-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};$('#import').onclick=()=>$('#import-file').click();$('#import-file').onchange=async e=>{try{const file=e.target.files[0];if(!file)return;if(file.size>5e6)throw Error();const v=JSON.parse(await file.text());if(v.version!==11||!v.data||!Array.isArray(v.data.custom)||!Array.isArray(v.data.saved)||!v.data.routes||!v.data.notes)throw Error();if(!v.data.custom.every(p=>db.cities.some(c=>c.id===p.city)&&typeof p.id==='string'&&typeof p.name==='string'&&Number.isFinite(p.lat)&&Number.isFinite(p.lng))||!Object.values(v.data.routes).every(a=>Array.isArray(a)&&a.every(k=>typeof k==='string'))||!Object.values(v.data.notes).every(n=>typeof n==='string')||!v.data.saved.every(k=>typeof k==='string'))throw Error();openSheet('백업 복원','<p>이 기기의 v11 편집 내용을 백업 파일로 교체할까요? 기존 v10 데이터는 변경하지 않습니다.</p>','<button class="btn primary" id="restore">교체하고 복원</button>');$('#restore').onclick=()=>{local=v.data;if(!local.aiUndo||typeof local.aiUndo!=='object'||Array.isArray(local.aiUndo))local.aiUndo={};save();closeSheet();render();toast('복원했습니다.');};}catch{toast('올바른 v11 백업 파일이 아닙니다.');}};}
+function toolsView(){$('#main').innerHTML=`<div class="heading"><div><span class="eyebrow">필요할 때 꺼내 보는</span><h1>여행 도구</h1></div></div>${citySelect()}<div class="place-list"><button class="card" id="ai-open"><b>✦ AI 여행 비서</b><small>선택한 도시와 날짜의 동선 상담</small></button><button class="card" id="weather"><b>현재 날씨</b><small>${cityInfo().nameKo} · 여행 날짜의 예보와 구분해 표시</small></button></div><div id="weather-result" class="weather-result" aria-live="polite"></div><details class="section"><summary>숙소·긴급 연락처 · 기존 기록</summary>${db.safety.accommodations.filter(p=>p.city===city).map(p=>`<div class="info"><b>${esc(p.name)}</b><p>${esc(p.address)}</p></div>`).join('')}${db.safety.emergencyNumbers.map(p=>`<div class="info"><b>${esc(p.label)}</b><a href="tel:${esc(p.number)}">${esc(p.number)}</a></div>`).join('')}<p class="notice">기존 파일의 연락처입니다. 이번 제작에서 최신 여부를 재확인하지 않았습니다.</p></details><details class="section"><summary>내 일정 백업·복원</summary><p class="notice">편집한 일정·메모·저장 장소는 이 기기에 저장됩니다. 가족 휴대폰과 자동 동기화되지 않습니다. 백업 파일을 전달한 뒤 다른 기기에서 복원할 수 있습니다.</p><div class="actions"><button class="btn" id="export">백업 내려받기</button><button class="btn" id="import">백업 복원</button></div><input type="file" id="import-file" accept=".json" hidden></details><p class="notice">v11.7.2 시범판 · 기존 장소 ${db.places.length}곳 · 로컬 사진 슬롯 ${db.places.length}곳 · 외부 대체사진 13곳<br>기존 앱의 기기별 추가 장소·편집 일정은 아직 자동 이전하지 않습니다.</p>`;$('#ai-open').onclick=()=>go('ai');$('#weather').onclick=weather;$('#export').onclick=()=>{const blob=new Blob([JSON.stringify({version:11,data:local},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='family-trip-v11-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};$('#import').onclick=()=>$('#import-file').click();$('#import-file').onchange=async e=>{try{const file=e.target.files[0];if(!file)return;if(file.size>5e6)throw Error();const v=JSON.parse(await file.text());if(v.version!==11||!v.data||!Array.isArray(v.data.custom)||!Array.isArray(v.data.saved)||!v.data.routes||!v.data.notes)throw Error();if(!v.data.custom.every(p=>db.cities.some(c=>c.id===p.city)&&typeof p.id==='string'&&typeof p.name==='string'&&Number.isFinite(p.lat)&&Number.isFinite(p.lng))||!Object.values(v.data.routes).every(a=>Array.isArray(a)&&a.every(k=>typeof k==='string'))||!Object.values(v.data.notes).every(n=>typeof n==='string')||!v.data.saved.every(k=>typeof k==='string'))throw Error();openSheet('백업 복원','<p>이 기기의 v11 편집 내용을 백업 파일로 교체할까요? 기존 v10 데이터는 변경하지 않습니다.</p>','<button class="btn primary" id="restore">교체하고 복원</button>');$('#restore').onclick=()=>{local=v.data;if(!local.aiUndo||typeof local.aiUndo!=='object'||Array.isArray(local.aiUndo))local.aiUndo={};save();closeSheet();render();toast('복원했습니다.');};}catch{toast('올바른 v11 백업 파일이 아닙니다.');}};}
 let liveWeather=null;
 function weatherCodeLabel(code){
   if(code===0)return '맑음';
@@ -108,7 +108,7 @@ async function requestAI(endpoint,payload,{timeoutMs=30000,retryOnce=true}={}){
   for(let attempt=0;attempt<attempts;attempt++){
     try{
       const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},signal:AbortSignal.timeout(timeoutMs),body:JSON.stringify(payload)});
-      if(!r.ok){const e=new Error('HTTP '+r.status);e.status=r.status;throw e;}
+      if(!r.ok){let serverMessage='';try{serverMessage=(await r.text()).slice(0,240);}catch{}const e=new Error('HTTP '+r.status);e.status=r.status;e.serverMessage=serverMessage;throw e;}
       return await r.json();
     }catch(e){
       lastError=e;
@@ -124,23 +124,24 @@ async function requestAI(endpoint,payload,{timeoutMs=30000,retryOnce=true}={}){
   throw lastError;
 }
 function buildAIContext({cid,day,rows,transfer,snapshot,weatherForRequest,adaptive}){
-  const base={
-    appVersion:'11.7.1-preview',currentCity:cid,currentDate:day,travelDayNumber:Number(day.slice(-2))-10,
-    currentCityName:cityInfo().nameKo,familyLabel:aiFamilyLabel(),familyContext:aiFamilyContext(),
-    trip:db.trip,family:db.trip.travelers,weatherMatchesSelectedDate:weatherDateMatches(day,weatherForRequest),
-    cities:db.cities,currentCityInfo:cityInfo(),currentRoute:rows,currentRouteNote:local.notes[snapshot.routeKey]||'',
-    currentTransfer:transfer||null,plannedItineraries:plans(),cityPlaces:[...db.places,...local.custom].filter(p=>p.city===cid),
-    savedPlaces:local.saved.map(place).filter(p=>p?.city===cid),safety:db.safety,liveWeather:liveWeather?.cityId===cid?liveWeather:null
+  const common={
+    appVersion:'11.7.2-preview',currentCity:cid,currentDate:day,travelDayNumber:Number(day.slice(-2))-10,
+    currentCityName:cityInfo().nameKo,familyLabel:adaptive?aiFamilyContext():aiFamilyLabel(),
+    trip:db.trip,family:db.trip.travelers,cities:db.cities,currentCityInfo:cityInfo(),currentRoute:rows,
+    currentRouteNote:local.notes[snapshot.routeKey]||'',currentTransfer:transfer||null,plannedItineraries:plans(),
+    cityPlaces:[...db.places,...local.custom].filter(p=>p.city===cid),savedPlaces:local.saved.map(place).filter(p=>p?.city===cid),
+    safety:db.safety,liveWeather:liveWeather?.cityId===cid?liveWeather:null
   };
-  if(!adaptive)return base;
-  // 맞춤 조정은 현재 일정에 필요한 정보만 전달해 요청 크기와 응답 지연을 줄입니다.
-  return {...base,
-    trip:{title:db.trip.title,dates:db.trip.dates,travelers:db.trip.travelers,route:db.trip.route.filter(r=>r.date===day)},
-    cities:[cityInfo()],
-    currentRoute:rows.map(aiPlaceSummary).filter(Boolean),
-    plannedItineraries:plans().map(x=>({id:x.id,label:x.label,note:x.note||'',placeIds:x.placeIds||[]})),
-    cityPlaces:rows.map(aiPlaceSummary).filter(Boolean),
-    savedPlaces:[],
+  if(!adaptive)return common;
+  // 기존 Worker와 호환되는 context 키는 유지하되 값만 맞춤 조정에 필요한 범위로 축소합니다.
+  const compactPlace=p=>p?{id:p.id,name:p.name,cat:p.cat||'',stay:p.stay||'',role:p.role||''}:null;
+  const c=cityInfo();
+  return {...common,
+    trip:{title:db.trip.title,dates:db.trip.dates},
+    cities:[{id:c.id,name:c.name,nameKo:c.nameKo}],
+    currentCityInfo:{id:c.id,name:c.name,nameKo:c.nameKo,dates:c.dates},
+    currentRoute:rows.map(compactPlace).filter(Boolean),
+    plannedItineraries:[],cityPlaces:[],savedPlaces:[],
     safety:{accommodations:db.safety.accommodations.filter(x=>x.city===cid),emergencyNumbers:[]}
   };
 }
@@ -179,13 +180,10 @@ function buildRouteOptimizationPrompt(q,keys){
   return `${q}\n\n[앱 연동용 지시 — 아래 규칙을 반드시 지켜줘]\n현재 일정에 있는 장소만 순서를 바꿔 제안해줘. 새로운 장소를 추가하거나 기존 장소를 빼거나 같은 장소를 중복하지 마. 각 장소는 정확히 한 번씩 포함하고 장소 수는 현재 일정과 같아야 해. 일정이 무리해 보여도 설명에서는 별도 일정 운영을 제안할 수 있지만, 앱 적용용 순서는 반드시 현재 장소 전부를 한 번씩 포함한 순열이어야 해. 자연스러운 설명을 먼저 작성한 뒤 답변의 맨 마지막 줄에 현재 목록의 번호만 사용해 APP_ORDER= 형식으로 적어줘. 이 마지막 줄에는 다른 설명을 넣지 마. 예: APP_ORDER=${sample}\n현재 일정 번호와 장소는 다음과 같아.\n${mapping}`;
 }
 function buildAdaptiveSchedulePrompt(q,keys,w){
-  const mapping=keys.map((k,i)=>{const p=place(k)||{};return `${i+1}. ${p.name||k} | 분류 ${p.cat||'미분류'} | 체류 ${p.stay||'미정'} | 역할 ${p.role||'없음'} | 참고 ${p.tip||p.desc||'없음'}`;}).join('\n');
+  const mapping=keys.map((k,i)=>`${i+1}. ${place(k)?.name||k}`).join(' / ');
   const sample=keys.map((_,i)=>i+1).join('|');
-  const c=w?.current;
-  const weatherText=c?`${weatherCodeLabel(c.weather_code)}, ${c.temperature_2m}℃, 강수 ${c.precipitation}mm, 관측시각 ${c.time} (베트남 현지)`:'현재 날씨를 불러오지 못함';
-  const sameDay=weatherDateMatches(date,w);
-  const relevance=c?(sameDay?'선택한 여행 날짜와 같은 날짜의 현재 날씨이므로 현장 판단에 직접 참고해도 됨':'선택한 여행 날짜와 다른 날의 현재 날씨이므로 여행일 예보로 간주하지 말고, 날씨 상황별 배치 원칙을 설명하기 위한 참고값으로만 사용'):'날씨 수치 없이 가족 구성과 장소 특성 중심으로 조정';
-  return `${q}\n\n[가족·날씨 맞춤 일정 조정 규칙]\n가족 구성: ${aiFamilyContext()}\n선택한 여행 날짜: ${date}\n날씨 정보: ${weatherText}\n날씨 사용 원칙: ${relevance}\n\n아래 장소의 분류·체류시간·역할·팁을 참고해 가족의 피로, 식사와 휴식, 야외 노출, 이동 부담을 줄이는 순서로 조정해줘. 비·소나기·뇌우가 강하면 실내·식사·휴식 성격 장소를 우선 고려하고 장시간 야외 장소를 뒤로 미루는 원칙을 설명해줘. 더운 날은 한낮 장시간 야외 활동을 연속 배치하지 말고, 맑고 온화한 날은 야외 핵심 장소를 무리 없는 시간대에 배치하는 방향을 설명해줘. 숙소·공항·역·예약처럼 고정 성격이 강한 장소는 의미를 훼손하지 않도록 신중하게 다뤄줘. 데이터에 없는 가족의 건강 상태나 나이는 추정하지 마.\n\n앱에 적용되는 순서는 현재 일정에 있는 장소만 사용해야 해. 새로운 장소를 추가하거나 기존 장소를 빼거나 같은 장소를 중복하지 마. 각 장소를 정확히 한 번씩 포함해. 별도 대안이나 생략 제안은 설명에서만 할 수 있고 앱 적용용 순서에는 현재 장소 전부를 넣어야 해. 자연스러운 설명을 먼저 작성한 뒤 답변 맨 마지막 줄에 현재 목록의 번호만 사용해 APP_ORDER= 형식으로 적어줘. 이 마지막 줄에는 다른 설명을 넣지 마. 예: APP_ORDER=${sample}\n\n현재 일정 번호와 장소 정보:\n${mapping}`;
+  const weatherRule=w?.current?(weatherDateMatches(date,w)?'현재 날씨를 현장 참고값으로 사용해.':'현재 날씨 날짜가 여행일과 다르므로 미래 예보로 단정하지 말고 참고만 해.'):'날씨 수치가 없으면 가족 구성과 장소 특성 중심으로 판단해.';
+  return `${q}\n[맞춤 조정] context의 familyLabel, currentRoute, liveWeather를 참고해. ${weatherRule} 가족 피로·식사·휴식·야외 노출·이동 부담을 함께 고려해 설명해줘. 현재 장소를 추가·삭제·중복하지 말고 전부 정확히 한 번씩 사용해. 답변 마지막 줄은 번호만 APP_ORDER=${sample} 형식으로 적어줘. 현재 번호: ${mapping}`;
 }
 function parseRouteIndexOrder(raw,keys){
   const text=String(raw||'');
@@ -299,7 +297,7 @@ function parseRouteSuggestion(answer,snapshot){
 async function recoverRouteSuggestion(endpoint,answer,snapshot){
   const mapping=snapshot.original.map((k,i)=>`${i+1}. ${place(k)?.name||k}`).join('\n');
   const prompt=`아래 여행 조언에서 실제로 제안한 방문 순서를 현재 일정 번호로 변환해줘. 현재 일정의 모든 장소를 정확히 한 번씩 포함해야 하며, 새 장소를 만들거나 빼면 안 돼. 답변은 설명 없이 번호만 | 로 연결한 한 줄이어야 해. 예: 2|1|3\n\n현재 일정:\n${mapping}\n\n분석할 여행 조언:\n${String(answer||'')}`;
-  const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},signal:AbortSignal.timeout(20000),body:JSON.stringify({message:prompt,history:[],context:{appVersion:'11.7.1-route-recovery',currentCity:snapshot.city,currentDate:snapshot.date,currentRoute:snapshot.original.map(place).filter(Boolean)}})});
+  const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},signal:AbortSignal.timeout(20000),body:JSON.stringify({message:prompt,history:[],context:{appVersion:'11.7.2-route-recovery',currentCity:snapshot.city,currentDate:snapshot.date,currentRoute:snapshot.original.map(place).filter(Boolean)}})});
   if(!r.ok)return null;
   const d=await r.json();
   return parseRouteIndexOrder(d.answer||'',snapshot.original);
@@ -379,7 +377,7 @@ async function sendAIQuestion(q,options={}){
   const adaptive=!!options.adaptiveOptimization,reorder=(!!options.routeOptimization||adaptive)&&original.length>1;
   const weatherForRequest=liveWeather?.cityId===cid?liveWeather:null;
   const snapshot={city:cid,date:day,routeKey:routeKey(),original,mode:adaptive?'adaptive':'route',weatherUsed:!!weatherForRequest,weatherMatchesDate:weatherDateMatches(day,weatherForRequest)};
-  const history=chat.slice(-8).map(({role,content})=>({role,content}));
+  const history=adaptive?[]:chat.slice(-8).map(({role,content})=>({role,content}));
   const wireQuestion=adaptive&&original.length>1?buildAdaptiveSchedulePrompt(q,original,weatherForRequest):(options.routeOptimization&&original.length>1?buildRouteOptimizationPrompt(q,original):q);
   chat.push({role:'user',content:q});
   if($('#question'))$('#question').value='';
@@ -401,7 +399,8 @@ async function sendAIQuestion(q,options={}){
     }else chat.push({role:'assistant',content:d.answer||'표시할 답변이 없습니다.'});
   }catch(e){
     const detail=e?.status?` (HTTP ${e.status})`:(e?.name==='AbortError'||e?.name==='TimeoutError'?' (응답 시간 초과)':'');
-    chat.push({role:'assistant',content:`AI 연결이 일시적으로 실패했습니다${detail}. 자동 재시도도 완료했습니다. 잠시 후 다시 시도해 주세요.`});
+    const msg=e?.status===400?`AI 요청을 Worker가 처리하지 못했습니다${detail}. 요청 형식을 확인해 주세요.`:`AI 연결이 일시적으로 실패했습니다${detail}. 자동 재시도 후에도 응답하지 않았습니다. 잠시 후 다시 시도해 주세요.`;
+    chat.push({role:'assistant',content:msg});
   }
   finally{
     busy=false;

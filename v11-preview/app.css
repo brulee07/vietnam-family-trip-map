@@ -18,5 +18,5 @@
 .ai-undo-banner{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:-4px 0 20px;padding:14px 16px;border:1px solid #cfe0f7;border-radius:14px;background:#f3f8ff}.ai-undo-banner>div{min-width:0}.ai-undo-banner b{display:block;font-size:.92rem;color:#285c9f;margin-bottom:3px}.ai-undo-banner small{display:block;font-size:.78rem;line-height:1.5}.ai-undo-banner .btn{flex:0 0 auto;min-height:40px;padding:8px 12px}.ai-undo-banner.restored{background:#f7f9fc;border-color:#e3e8ef}.ai-undo-banner.restored b{color:#526074}.ai-route-actions{gap:8px;flex-wrap:wrap}
 @media(max-width:720px){.ai-undo-banner{align-items:stretch;flex-direction:column;margin-bottom:16px;padding:12px}.ai-undo-banner .btn{width:100%}.ai-route-actions .btn{width:auto;flex:1 1 140px}}
 
-/* v11.7.1 adaptive AI retry and compact context */
+/* v11.7.2 adaptive AI retry and compact context */
 .ai-chip.adaptive{border-color:#9fc4f6;background:#eaf3ff;font-weight:750}.ai-chip.adaptive::before{content:'✦ ';}.ai-route-proposal.adaptive{border-color:#9fc4f6;background:#f4f8ff}.ai-route-proposal.adaptive .ai-route-proposal-head b{color:#285c9f}.ai-route-proposal.adaptive .recommended{background:#eaf3ff;border-color:#9fc4f6}
