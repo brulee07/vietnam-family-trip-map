@@ -1,4 +1,4 @@
-const CACHE='family-travel-v11-preview-3';
+const CACHE='family-travel-v11-2-preview-1';
 const FILES=['./','./index.html','./app.css','./map-improvements.css','./home-improvements.css','./app.js','./ai-config.js','./manifest.json','./data/trip.json','./data/cities.json','./data/places.json','./data/itineraries.json','./data/safety.json','./icons/icon-192.png','./icons/icon-512.png'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));
