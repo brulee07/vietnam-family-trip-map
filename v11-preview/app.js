@@ -1,6 +1,6 @@
 'use strict';
 const $=s=>document.querySelector(s), esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const KEY='familyTravelV11', PRE_RESTORE_KEY='familyTravelV11PreRestore', APP_VERSION='11.9.1-preview';
+const KEY='familyTravelV11', PRE_RESTORE_KEY='familyTravelV11PreRestore', APP_VERSION='11.9.2-preview';
 let db, city='da_nang', date='2027-01-11', tab='home', edit=false, map=null, filter='전체', selected=null, chat=[], busy=false, swReg=null, todayMapMode=false;
 let local={routes:{},notes:{},saved:[],custom:[],aiUndo:{},todayProgress:{},checklists:{},meta:{}};
 try{const v=JSON.parse(localStorage.getItem(KEY)||'null');if(v&&Array.isArray(v.custom)&&Array.isArray(v.saved)&&v.routes&&v.notes)local=v;}catch{}
@@ -31,7 +31,8 @@ function setTripDay(d){const cs=citiesForDate(d);if(!cs.length)return false;date
 function syncToActualTripDate(){const d=vietnamToday();return tripDateList().includes(d)?setTripDay(d):false;}
 function todayProgress(rk=routeKey()){
   const current=route(),raw=local.todayProgress?.[rk],done=Array.isArray(raw?.done)?raw.done.filter(k=>current.includes(k)):[];
-  const enRoute=typeof raw?.enRoute==='string'&&current.includes(raw.enRoute)&&!done.includes(raw.enRoute)?raw.enRoute:null;
+  const updatedAt=Date.parse(raw?.updatedAt||''),freshEnRoute=Number.isFinite(updatedAt)&&(Date.now()-updatedAt)<12*60*60*1000;
+  const enRoute=freshEnRoute&&typeof raw?.enRoute==='string'&&current.includes(raw.enRoute)&&!done.includes(raw.enRoute)?raw.enRoute:null;
   return {done,enRoute};
 }
 function setTodayDone(k,done){const rk=routeKey(),p=todayProgress(rk),next=new Set(p.done);if(done)next.add(k);else next.delete(k);local.todayProgress[rk]={done:[...next],enRoute:(done&&p.enRoute===k)?null:p.enRoute,updatedAt:new Date().toISOString()};save();render();}
@@ -49,7 +50,7 @@ function removeChecklist(id){storeChecklist(checklistFor().filter(x=>x.id!==id))
 function addChecklistItem(){const input=$('#today-check-input'),text=input?.value.trim();if(!text)return;const a=checklistFor();a.push({id:'custom-'+Date.now(),text:text.slice(0,120),done:false});storeChecklist(a);}
 function todayView(){
   const dates=tripDateList(),actual=vietnamToday(),isLive=actual===date,rows=route().map(k=>({k,p:place(k)})).filter(x=>x.p),progress=todayProgress(),done=new Set(progress.done),doneCount=rows.filter(x=>done.has(x.k)).length;
-  const nextRow=rows.find(x=>!done.has(x.k)),nextIndex=nextRow?rows.findIndex(x=>x.k===nextRow.k):-1,allDone=rows.length>0&&doneCount===rows.length,departed=!!nextRow&&progress.enRoute===nextRow.k;
+  const nextRow=rows.find(x=>!done.has(x.k)),nextIndex=nextRow?rows.findIndex(x=>x.k===nextRow.k):-1,allDone=rows.length>0&&doneCount===rows.length,departed=isLive&&!!nextRow&&progress.enRoute===nextRow.k;
   const w=liveWeather?.cityId===city?liveWeather.current:null,transfer=db.trip.route.find(r=>r.date===date),cs=citiesForDate(date),checklist=checklistFor(),checkDone=checklist.filter(x=>x.done).length,checklistView=[...checklist].sort((a,b)=>Number(a.done)-Number(b.done));
   const dateOptions=dates.map((d,i)=>`<option value="${d}" ${d===date?'selected':''}>Day ${i+1} · ${dateLabel(d)}</option>`).join('');
   const cityPicker=cs.length>1?`<label class="today-city-switch"><span>이동일 도시</span><select id="today-city">${cs.map(c=>`<option value="${c.id}" ${c.id===city?'selected':''}>${c.nameKo}</option>`).join('')}</select></label>`:'';
@@ -62,9 +63,12 @@ function todayView(){
   }else if(nextRow){
     const tip=nextRow.p.tip?String(nextRow.p.tip):'',tipLong=tip.length>85;
     const tipHtml=tip?`<div class="today-tip"><p id="today-tip-text" class="${tipLong?'clamped':''}">${esc(tip)}</p>${tipLong?'<button class="textbtn today-tip-toggle" id="today-tip-toggle">더보기</button>':''}</div>`:'';
-    const actions=departed
-      ?`<div class="today-next-actions departed"><button class="btn primary" id="today-arrive">도착 완료</button><a class="btn" href="${esc(mapsURL(nextRow.p))}" target="_blank" rel="noopener">길찾기 다시 열기</a></div>`
-      :`<div class="today-next-actions single"><a class="btn primary" id="today-depart" href="${esc(mapsURL(nextRow.p))}" target="_blank" rel="noopener">지금 출발</a></div>`;
+    const previewOrigin=todayPreviewOrigin(rows,nextIndex,nextRow.p);
+    const actions=isLive
+      ?(departed
+        ?`<div class="today-next-actions departed"><button class="btn primary" id="today-arrive">도착 완료</button><a class="btn" href="${esc(mapsURL(nextRow.p))}" target="_blank" rel="noopener">길찾기 다시 열기</a></div>`
+        :`<div class="today-next-actions single"><a class="btn primary" id="today-depart" href="${esc(mapsURL(nextRow.p))}" target="_blank" rel="noopener">지금 출발</a></div>`)
+      :`<div class="today-next-actions preview"><a class="btn primary" href="${esc(mapPlaceURL(nextRow.p))}" target="_blank" rel="noopener">지도에서 보기</a>${previewOrigin?`<a class="btn" href="${esc(mapsURL(nextRow.p,previewOrigin))}" target="_blank" rel="noopener">경로 미리보기</a>`:''}</div><p class="today-preview-nav-note">미리보기에서는 현재 위치 길찾기를 실행하지 않습니다.</p>`;
     nextBlock=`<section class="today-next ${departed?'enroute':''}"><span class="eyebrow">${departed?'이동 중':nextIndex===0?'시작 장소':'다음 장소'}</span><h2>${esc(nextRow.p.name)}</h2><p>${esc(nextRow.p.cat)}${nextRow.p.stay?' · '+esc(nextRow.p.stay):''}</p>${tipHtml}${actions}</section>`;
   }else{
     nextBlock=`<section class="today-next"><span class="eyebrow">오늘 일정</span><h2>등록된 장소가 없습니다</h2><p>일정 화면에서 장소를 추가해 주세요.</p><button class="btn primary" id="today-edit-schedule">일정 만들기</button></section>`;
@@ -107,7 +111,17 @@ $('#open-map').onclick=()=>go('map');$('#edit').onclick=()=>{edit=!edit;render()
 function bindPlaces(){document.querySelectorAll('[data-place]').forEach(b=>b.onclick=()=>quick(b.dataset.place));}
 function openSheet(title,body,foot=''){const d=$('#sheet');d.innerHTML=`<div class="sheet-head"><h2 id="sheet-title">${esc(title)}</h2><button class="iconbtn" id="close-sheet" aria-label="닫기">×</button></div><div class="sheet-body">${body}</div>${foot?`<div class="sheet-foot">${foot}</div>`:''}`;$('#close-sheet').onclick=closeSheet;if(!d.open)d.showModal();d.scrollTop=0;}
 function closeSheet(){$('#sheet').close();selected=null;}
-function mapsURL(p){return 'https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(p.lat+','+p.lng);}
+function cityHotelPlace(){
+  const all=[...db.places,...local.custom].filter(p=>p.city===city),hotelText=String(cityInfo()?.hotel||'').toLowerCase().replace(' 후보','');
+  return all.find(p=>p.cat==='숙소'&&route().includes(key(p)))||all.find(p=>p.cat==='숙소'&&(hotelText.includes(String(p.name||'').toLowerCase())||String(p.name||'').toLowerCase().includes(hotelText)))||all.find(p=>p.cat==='숙소')||null;
+}
+function todayPreviewOrigin(rows,nextIndex,dest){
+  if(nextIndex>0&&rows[nextIndex-1]?.p)return rows[nextIndex-1].p;
+  const hotel=rows.map(x=>x.p).find(p=>p&&p!==dest&&p.cat==='숙소')||cityHotelPlace();
+  return hotel&&hotel!==dest?hotel:null;
+}
+function mapPlaceURL(p){return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(p.lat+','+p.lng);}
+function mapsURL(p,origin=null){let u='https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(p.lat+','+p.lng);if(origin&&Number.isFinite(origin.lat)&&Number.isFinite(origin.lng))u+='&origin='+encodeURIComponent(origin.lat+','+origin.lng);return u;}
 function safeLink(url,label){return `<a class="btn" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${label}</a>`;}
 function localPhotoPath(p){return p?.photoFile||(`photos/${p.city}/${p.id}.jpg`);}
 function photoFigure(p){if(!p)return '';const ph=p.photo||{},localSrc=localPhotoPath(p),fallback=ph.url||'';return `<figure class="place-photo"><img src="${esc(localSrc)}" data-fallback="${esc(fallback)}" alt="${esc(p.name)} 사진" loading="lazy" onload="const c=this.closest('figure').querySelector('figcaption');if(c)c.style.display=this.dataset.tried==='1'?'block':'none'" onerror="if(this.dataset.fallback&&this.dataset.tried!=='1'){this.dataset.tried='1';this.src=this.dataset.fallback}else{this.closest('figure').classList.add('photo-error')}"><figcaption ${fallback?'':'style="display:none"'}>사진: ${esc(ph.credit||ph.provider||'Wikimedia Commons')} · ${esc(ph.license||'라이선스 확인')} ${ph.source?`· <a href="${esc(ph.source)}" target="_blank" rel="noopener noreferrer">출처</a>`:''}</figcaption></figure>`;}
@@ -188,10 +202,10 @@ function rollbackPreRestore(){
 function toolsView(){
   const stats=backupStats(),snap=readPreRestore(),online=navigator.onLine!==false,lastBackup=local.meta?.lastBackupAt;
   $('#main').innerHTML=`<div class="heading"><div><span class="eyebrow">필요할 때 꺼내 보는</span><h1>여행 도구</h1></div></div>${citySelect()}<div class="place-list"><button class="card" id="ai-open"><b>✦ AI 여행 비서</b><small>선택한 도시와 날짜의 동선 상담</small></button><button class="card" id="weather"><b>현재 날씨</b><small>${cityInfo().nameKo} · 여행 날짜의 예보와 구분해 표시</small></button></div><div id="weather-result" class="weather-result" aria-live="polite"></div>
-  <div class="stability-card"><div><span class="eyebrow">앱 상태</span><b>v11.9.1 preview · ${online?'온라인':'오프라인'}</b><small>편집 일정 ${stats.editedDays}일 · 저장 장소 ${stats.saved}곳 · 추가 장소 ${stats.custom}곳</small></div><button class="btn" id="check-update">새 버전 확인</button></div>
+  <div class="stability-card"><div><span class="eyebrow">앱 상태</span><b>v11.9.2 preview · ${online?'온라인':'오프라인'}</b><small>편집 일정 ${stats.editedDays}일 · 저장 장소 ${stats.saved}곳 · 추가 장소 ${stats.custom}곳</small></div><button class="btn" id="check-update">새 버전 확인</button></div>
   <details class="section"><summary>숙소·긴급 연락처 · 기존 기록</summary>${db.safety.accommodations.filter(p=>p.city===city).map(p=>`<div class="info"><b>${esc(p.name)}</b><p>${esc(p.address)}</p></div>`).join('')}${db.safety.emergencyNumbers.map(p=>`<div class="info"><b>${esc(p.label)}</b><a href="tel:${esc(p.number)}">${esc(p.number)}</a></div>`).join('')}<p class="notice">기존 파일의 연락처입니다. 이번 제작에서 최신 여부를 재확인하지 않았습니다.</p></details>
   <details class="section"><summary>내 일정 백업·복원</summary><p class="notice">편집한 일정·메모·저장 장소·Today Mode 진행·체크리스트·AI 복원 기록은 이 기기에 저장됩니다. 가족 휴대폰과 자동 동기화되지 않습니다.<br>마지막 백업: ${esc(formatStamp(lastBackup))}</p><div class="actions"><button class="btn" id="export">백업 내려받기</button><button class="btn" id="import">백업 복원</button>${snap?'<button class="btn" id="rollback">복원 전 상태 되돌리기</button>':''}</div><input type="file" id="import-file" accept=".json,application/json" hidden></details>
-  <p class="notice">v11.9.1 시범판 · 기존 장소 ${db.places.length}곳 · 로컬 사진 슬롯 ${db.places.length}곳 · 외부 대체사진 13곳<br>Today Mode 현장 화면, 백업 복원 전 자동 임시 보관, AI 오류 재시도, 앱 캐시 갱신 확인을 지원합니다.</p>`;
+  <p class="notice">v11.9.2 시범판 · 기존 장소 ${db.places.length}곳 · 로컬 사진 슬롯 ${db.places.length}곳 · 외부 대체사진 13곳<br>Today Mode 현장 화면, 백업 복원 전 자동 임시 보관, AI 오류 재시도, 앱 캐시 갱신 확인을 지원합니다.</p>`;
   $('#ai-open').onclick=()=>go('ai');$('#weather').onclick=weather;$('#export').onclick=exportBackup;$('#import').onclick=chooseBackup;$('#import-file').onchange=e=>previewBackupFile(e.target.files?.[0]);if($('#rollback'))$('#rollback').onclick=rollbackPreRestore;
   $('#check-update').onclick=async()=>{const b=$('#check-update');b.disabled=true;b.textContent='확인 중…';try{if(swReg)await swReg.update();toast(navigator.onLine===false?'오프라인입니다. 캐시된 앱을 계속 사용할 수 있습니다.':'최신 앱 파일을 확인했습니다.');}catch{toast('새 버전 확인에 실패했습니다. 인터넷 연결 후 다시 시도해 주세요.');}finally{b.disabled=false;b.textContent='새 버전 확인';}};
 } 
