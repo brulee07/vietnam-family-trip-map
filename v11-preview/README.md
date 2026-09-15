@@ -113,3 +113,11 @@ Cloudflare D1 Console에서 `sync-worker/migration-v12.1.sql`을 한 번 실행�
 - iPhone/Android에서 손가락으로 끌어 장소 순서와 메모 위치를 같은 타임라인에서 변경할 수 있습니다.
 - 드롭 후 장소 번호가 자동 재계산됩니다.
 - 기존 위/아래 이동·삭제 버튼은 보조 조작으로 유지됩니다.
+
+
+## v12.6 photo update
+Integrated additional uploaded photos for Da Nang and Quy Nhon.
+- New files added from upload: 16
+- Replaced existing files: 52
+- Total local place photos now: 68 / 105
+- Remaining missing (excluding laundries): 32
