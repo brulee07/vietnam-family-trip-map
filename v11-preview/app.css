@@ -43,3 +43,24 @@
 @media(max-width:380px){.today-next-actions.preview{grid-template-columns:1fr}.today-preview-nav-note{text-align:left}}
 \n\n/* v12.4 route-positioned day memo */\n.route-memo-stop{position:relative;margin:-4px 0 22px}.route-memo-dot{position:absolute;left:-44px;top:13px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:#edf3fb;color:#1764c8;border:3px solid white;font-size:.72rem;font-weight:800}.route-memo-card{width:100%;min-height:58px;padding:13px 16px;border:1px dashed #c8d8ec;border-radius:14px;background:#f8fbff;text-align:left}.route-memo-card small,.route-memo-card b{display:block}.route-memo-card small{font-size:.72rem;color:#1764c8;font-weight:750;margin-bottom:4px}.route-memo-card b{font-size:.92rem;line-height:1.55;color:#526074;white-space:pre-wrap}.route-memo-edit-row{margin-bottom:2px}.today-route-memo{display:grid;grid-template-columns:29px minmax(0,1fr);column-gap:10px;align-items:center;width:100%;padding:10px 12px;border:1px dashed #c8d8ec;border-radius:12px;background:#f8fbff;text-align:left}.today-route-memo>span{grid-row:1/3;width:29px;height:29px;border-radius:50%;display:grid;place-items:center;background:#edf3fb;color:#1764c8;font-weight:800}.today-route-memo b{font-size:.86rem;color:#526074;white-space:pre-wrap;line-height:1.45}.today-route-memo small{font-size:.7rem;color:#7a8797;margin-top:2px}.field #memo-position{line-height:1.45}\n@media(max-width:760px){.route-memo-dot{left:-37px}.route-memo-card{padding:12px 14px}.route-memo-edit-row{flex-wrap:wrap}.route-memo-edit-row button{flex:1 1 auto}}\n
 .map-order-list .map-route-memo{border-style:dashed;background:#f8fbff;color:#526074}.map-order-list .map-route-memo span{background:#edf3fb;color:#1764c8}.map-order-list .map-route-memo b{font-weight:650;white-space:pre-wrap}
+
+/* v12.5 touch drag sorting for route places + memo */
+.route-drag-shell{display:flex;align-items:stretch;gap:8px;min-width:0}
+.route-drag-shell>.card,.route-drag-shell>.route-memo-card{min-width:0;flex:1}
+.route-drag-handle{flex:0 0 44px;width:44px;min-height:58px;border:1px solid #dbe4ef;border-radius:13px;background:#f7f9fc;color:#6e7d90;display:grid;place-items:center;font-size:1.5rem;font-weight:800;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab}
+.route-drag-handle:active{cursor:grabbing;background:#edf4ff;color:#1764c8}
+.route-drag-placeholder{margin:0 0 22px;border:2px dashed #78aef4;border-radius:16px;background:#edf5ff;position:relative;min-height:58px}
+.route-drag-placeholder::after{content:'여기에 놓기';position:absolute;inset:0;display:grid;place-items:center;color:#1764c8;font-size:.82rem;font-weight:750}
+.route-drag-ghost{position:fixed!important;z-index:3000!important;margin:0!important;pointer-events:none!important;opacity:.94;filter:drop-shadow(0 12px 24px #18324d33);transform:scale(.985);transform-origin:center;background:white;border-radius:18px}
+.route-drag-ghost .edit-row,.route-drag-ghost .route-drag-handle{display:none!important}
+.route-drag-source{opacity:.2}
+body.route-dragging{overflow-x:hidden;user-select:none;-webkit-user-select:none}
+body.route-dragging #nav{pointer-events:none}
+.route-sort-item{transition:transform .12s ease}
+@media(max-width:760px){
+  .route-drag-shell{gap:7px}
+  .route-drag-handle{flex-basis:40px;width:40px;border-radius:12px;font-size:1.35rem}
+  .route-drag-placeholder{margin-bottom:18px}
+}
+.route-drag-tip{display:flex;align-items:center;gap:8px;margin:-12px 0 18px;padding:10px 12px;border-radius:12px;background:#f3f7fc;color:#607086;font-size:.82rem;line-height:1.5}
+.route-drag-tip span{font-size:1.1rem;color:#1764c8;font-weight:800}
