@@ -29,21 +29,24 @@ function ensureMeta(){
 function sharedMemoPhotos(src=local){const out={};for(const [rk,p] of Object.entries(src.memoPhotos||{})){const remoteUrl=String(p?.remoteUrl||p?.url||'');if(p&&typeof p.remoteId==='string'&&/^https:\/\//.test(remoteUrl)){out[rk]={remoteId:p.remoteId,remoteUrl,width:Number(p.width||0),height:Number(p.height||0),size:Number(p.size||0),name:String(p.name||'memo-photo.jpg').slice(0,120),updatedAt:p.updatedAt||null};}}return out;}
 function sharedState(src=local){ensureMeta();return {routes:clone(src.routes||{}),notes:clone(src.notes||{}),notePositions:clone(src.notePositions||{}),memoPhotos:sharedMemoPhotos(src),saved:clone(src.saved||[]),custom:clone(src.custom||[]),todayProgress:clone(src.todayProgress||{}),checklists:clone(src.checklists||{}),syncMeta:clone(src.syncMeta||{})};}
 function stable(v){return JSON.stringify(v);}
+// Preserve ordering for rapid edits within the same millisecond.
+function nextStamp(previous,current){return new Date(Math.max(Date.parse(current),stamp(previous)+1)).toISOString();}
 function markObjectDiff(section,before={},after={}){
   const keys=new Set([...Object.keys(before||{}),...Object.keys(after||{})]);const stamp=nowIso();let changed=false;
-  for(const k of keys)if(stable(before?.[k])!==stable(after?.[k])){local.syncMeta[section][k]=stamp;changed=true;}
+  for(const k of keys)if(stable(before?.[k])!==stable(after?.[k])){local.syncMeta[section][k]=nextStamp(local.syncMeta[section][k],stamp);changed=true;}
   return changed;
 }
 function markDiff(before,after){
   ensureMeta();let changed=false;
   for(const s of ['routes','notes','notePositions','memoPhotos','todayProgress','checklists'])changed=markObjectDiff(s,before?.[s]||{},after?.[s]||{})||changed;
   const stamp=nowIso();
-  if(stable(before?.saved||[])!==stable(after?.saved||[])){local.syncMeta.saved=stamp;changed=true;}
-  if(stable(before?.custom||[])!==stable(after?.custom||[])){local.syncMeta.custom=stamp;changed=true;}
+  if(stable(before?.saved||[])!==stable(after?.saved||[])){local.syncMeta.saved=nextStamp(local.syncMeta.saved,stamp);changed=true;}
+  if(stable(before?.custom||[])!==stable(after?.custom||[])){local.syncMeta.custom=nextStamp(local.syncMeta.custom,stamp);changed=true;}
   return changed;
 }
 function hasCreds(){return !!(cfg.enabled&&cfg.endpoint&&cfg.roomCode&&cfg.token);}
-function schedulePush(){if(!hasCreds()||syncApplying)return;cfg.dirty=true;saveCfg();clearTimeout(syncPushTimer);syncPushTimer=setTimeout(()=>syncNow('push'),900);}
+function armPush(delay=900){clearTimeout(syncPushTimer);syncPushTimer=setTimeout(()=>syncNow('push'),delay);}
+function schedulePush(){if(!hasCreds()||syncApplying)return;cfg.dirty=true;saveCfg();armPush();}
 ensureMeta();syncShadow=sharedState();
 save=function(){
   const sharedChanged=!syncApplying&&markDiff(syncShadow,sharedState());
@@ -53,9 +56,10 @@ save=function(){
 };
 function stamp(v){const n=Date.parse(v||'');return Number.isFinite(n)?n:0;}
 function newer(lt,rt){return stamp(rt)>stamp(lt);}
+// Import legacy values only when there is no local value or deletion timestamp.
 function mergeMap(section,a,b,am,bm){
   const out={},meta={},keys=new Set([...Object.keys(a||{}),...Object.keys(b||{}),...Object.keys(am||{}),...Object.keys(bm||{})]);
-  for(const k of keys){const useRemote=newer(am?.[k],bm?.[k]);const source=useRemote?b:a;if(Object.prototype.hasOwnProperty.call(source||{},k))out[k]=clone(source[k]);meta[k]=useRemote?(bm?.[k]||''):(am?.[k]||bm?.[k]||'');}
+  for(const k of keys){const useRemote=newer(am?.[k],bm?.[k])||(!Object.prototype.hasOwnProperty.call(a||{},k)&&!am?.[k]&&Object.prototype.hasOwnProperty.call(b||{},k));const source=useRemote?b:a;if(Object.prototype.hasOwnProperty.call(source||{},k))out[k]=clone(source[k]);meta[k]=useRemote?(bm?.[k]||''):(am?.[k]||bm?.[k]||'');}
   return [out,meta];
 }
 function mergeShared(a,b){
@@ -81,7 +85,7 @@ function applyShared(state,{renderNow=true,clearUndo=true}={}){
   for(const k of SHARED_KEYS){if(k==='memoPhotos')continue;local[k]=clone(state[k]??(Array.isArray(local[k])?[]:{}));}
   const incoming=state.memoPhotos||{},photos={};
   for(const [rk,p] of Object.entries(incoming)){const old=oldPhotos[rk];photos[rk]={...clone(p)};if(old?.dataUrl&&old?.remoteId===p?.remoteId)photos[rk].dataUrl=old.dataUrl;}
-  for(const [rk,p] of Object.entries(oldPhotos)){if(!incoming[rk]&&p?.dataUrl&&!p?.remoteId)photos[rk]=p;}
+  for(const [rk,p] of Object.entries(oldPhotos)){if(p?.dataUrl&&!p?.remoteId)photos[rk]=p;}
   local.memoPhotos=photos;
   local.syncMeta=clone(state.syncMeta||{});ensureMeta();if(clearUndo)local.aiUndo={};
   const ok=baseSave();syncApplying=false;syncShadow=sharedState();if(renderNow)render();return ok;
@@ -100,7 +104,20 @@ async function uploadMemoPhoto(rk,photo){
 }
 function queuePhotoDelete(photo){const id=String(photo?.remoteId||'');if(!id)return;if(!cfg.pendingPhotoDeletes.includes(id))cfg.pendingPhotoDeletes.push(id);cfg.pendingPhotoDeletes=cfg.pendingPhotoDeletes.slice(-100);saveCfg();if(hasCreds()&&navigator.onLine!==false)flushPhotoDeletes();}
 async function flushPhotoDeletes(){if(!hasCreds()||navigator.onLine===false||!cfg.pendingPhotoDeletes.length)return;const pending=[...cfg.pendingPhotoDeletes];for(const id of pending){try{await api('/photo/delete',{...roomPayload(),remoteId:id},12000);cfg.pendingPhotoDeletes=cfg.pendingPhotoDeletes.filter(x=>x!==id);saveCfg();}catch{break;}}}
-async function syncPendingMemoPhotos(){if(!hasCreds()||navigator.onLine===false)return false;let changed=false;for(const [rk,p] of Object.entries(local.memoPhotos||{})){if(p?.dataUrl&&!p?.remoteId){try{local.memoPhotos[rk]=await uploadMemoPhoto(rk,p);ensureMeta();local.syncMeta.memoPhotos[rk]=nowIso();changed=true;}catch{}}}if(changed){cfg.dirty=true;baseSave();syncShadow=sharedState();saveCfg();}return changed;}
+function pendingMemoPhotos(){return Object.values(local.memoPhotos||{}).some(p=>p?.dataUrl&&!p?.remoteId);}
+async function syncPendingMemoPhotos(){
+  if(!hasCreds()||navigator.onLine===false)return;
+  for(const [rk,p] of Object.entries(local.memoPhotos||{})){
+    if(!p?.dataUrl||p.remoteId)continue;
+    try{
+      const uploaded=await uploadMemoPhoto(rk,p);
+      // An edit or deletion while uploading must not be replaced by the old photo.
+      if(stable(local.memoPhotos[rk])!==stable(p))continue;
+      if(!uploaded.remoteId||!/^https:\/\//.test(uploaded.remoteUrl||''))continue;
+      local.memoPhotos[rk]=uploaded;save();
+    }catch{/* Keep the local photo pending for the next online/poll/manual retry. */}
+  }
+}
 window.familyMemoPhotoUpload=async(rk,photo)=>uploadMemoPhoto(rk,photo);
 window.familyMemoPhotoDelete=photo=>queuePhotoDelete(photo);
 function syncErrorText(e){if(e?.data?.error==='max_devices')return `가족 공유는 최대 ${e.data.maxDevices||MAX_FAMILY_DEVICES}대의 휴대폰까지 참여할 수 있습니다.`;if(e?.status===401||e?.status===403)return '공유방 인증정보가 맞지 않습니다.';if(e?.status===404)return '공유방을 찾지 못했습니다.';if(e?.status===409)return '가족의 최신 변경사항과 합치는 중 충돌이 발생했습니다.';if(e?.name==='TimeoutError')return '동기화 서버 응답이 늦습니다.';if(navigator.onLine===false)return '현재 오프라인입니다.';return '가족 동기화 서버에 연결하지 못했습니다.';}
@@ -111,22 +128,24 @@ async function pullRemote(){
 async function pushState(state,baseRevision=cfg.revision){
   let current=clone(state),base=Number(baseRevision||0),last=null;
   for(let attempt=0;attempt<4;attempt++){
-    try{const d=await api('/sync/push',{...roomPayload(),baseRevision:base,state:current});updateDeviceCounts(d);return d;}
-    catch(e){last=e;if(!(e.status===409&&e.data?.state))throw e;validateRemoteState(e.data.state);current=mergeShared(current,e.data.state);applyShared(current,{renderNow:false});base=Number(e.data.revision||base);updateDeviceCounts(e.data);await new Promise(r=>setTimeout(r,120+Math.floor(Math.random()*240)));}
+    try{const d=await api('/sync/push',{...roomPayload(),baseRevision:base,state:current});updateDeviceCounts(d);return {...d,sentState:current};}
+    catch(e){last=e;if(!(e.status===409&&e.data?.state))throw e;validateRemoteState(e.data.state);current=mergeShared(sharedState(),e.data.state);applyShared(current);base=Number(e.data.revision||base);updateDeviceCounts(e.data);await new Promise(r=>setTimeout(r,120+Math.floor(Math.random()*240)));current=sharedState();}
   }
   throw last||Error('sync_conflict');
 }
 async function syncNow(mode='manual'){
   if(!hasCreds()||syncBusy||navigator.onLine===false)return false;syncBusy=true;cfg.lastError=null;saveCfg();renderSyncBits();let remoteChanged=false;
   try{
-    await flushPhotoDeletes();await syncPendingMemoPhotos();
+    // Send text and other shared changes before waiting for photo storage.
     const remote=await pullRemote();if(remote?.state){const merged=mergeShared(sharedState(),remote.state);if(stable(merged)!==stable(sharedState())){applyShared(merged,{renderNow:false});remoteChanged=true;}}
     if(cfg.dirty||mode==='push'){
-      const d=await pushState(sharedState(),cfg.revision);cfg.revision=Number(d.revision||cfg.revision);cfg.dirty=false;
+      const d=await pushState(sharedState(),cfg.revision);cfg.revision=Number(d.revision||cfg.revision);// Only acknowledge the snapshot actually accepted by the server.
+      cfg.dirty=stable(sharedState())!==stable(d.sentState);
     }
-    cfg.lastSyncAt=nowIso();cfg.lastError=null;saveCfg();if(tab==='tools'&&(Date.now()-devicesFetchedAt>15000))refreshDevices(true);if(remoteChanged||tab==='tools'||tab==='today')render();return true;
+    await syncPendingMemoPhotos();await flushPhotoDeletes();
+    cfg.lastSyncAt=nowIso();cfg.lastError=pendingMemoPhotos()?'메모 사진 업로드 대기 또는 실패: 텍스트 동기화와 별도로 다시 시도합니다.':null;saveCfg();if(tab==='tools'&&(Date.now()-devicesFetchedAt>15000))refreshDevices(true);if(remoteChanged||tab==='tools'||tab==='today')render();return true;
   }catch(e){cfg.lastError=syncErrorText(e);saveCfg();if(mode==='manual')toast(cfg.lastError);renderSyncBits();return false;}
-  finally{syncBusy=false;renderSyncBits();}
+  finally{syncBusy=false;if(cfg.dirty&&hasCreds()&&navigator.onLine!==false)armPush(cfg.lastError?15000:900);renderSyncBits();}
 }
 function previewStats(state){return {days:Object.keys(state.routes||{}).length,notes:new Set([...Object.keys(state.notes||{}),...Object.keys(state.memoPhotos||{})]).size,saved:(state.saved||[]).length,custom:(state.custom||[]).length,today:Object.keys(state.todayProgress||{}).length,checks:Object.keys(state.checklists||{}).length};}
 function statsHtml(s){return `<div class="sync-preview"><span><small>편집 일정</small><b>${s.days}일</b></span><span><small>메모</small><b>${s.notes}개</b></span><span><small>저장 장소</small><b>${s.saved}곳</b></span><span><small>추가 장소</small><b>${s.custom}곳</b></span><span><small>Today 진행</small><b>${s.today}일</b></span><span><small>체크리스트</small><b>${s.checks}일</b></span></div>`;}
