@@ -1,5 +1,6 @@
 const MAX_STATE_BYTES = 350_000;
 const MAX_DEVICES = 9;
+const MAX_PHOTO_BYTES = 260_000;
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
@@ -32,14 +33,35 @@ async function touchDevice(env,code,body,{sync=true,preview=false}={}){
   return {count:await deviceCount(env,code)};
 }
 async function listDevices(env,code){const r=await env.DB.prepare('SELECT device_id,device_name,joined_at,last_seen_at,last_sync_at FROM devices WHERE room_code=? ORDER BY last_seen_at DESC').bind(code).all();return r.results||[];}
+function b64url(bytes){return btoa(String.fromCharCode(...bytes)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
+function randomPhotoId(){const b=new Uint8Array(24);crypto.getRandomValues(b);return b64url(b);}
+function parseJpegDataUrl(v){const m=/^data:image\/jpeg;base64,([A-Za-z0-9+/=]+)$/.exec(String(v||''));if(!m)return null;try{const bin=atob(m[1]);if(bin.length>MAX_PHOTO_BYTES)return null;const out=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)out[i]=bin.charCodeAt(i);return out;}catch{return null;}}
+function photoObjectKey(code,id){return `rooms/${code}/memo/${id}.jpg`;}
+async function deleteRoomPhotos(env,code){if(!env.PHOTOS)return;let cursor=undefined;do{const listed=await env.PHOTOS.list({prefix:`rooms/${code}/`,cursor});const keys=(listed.objects||[]).map(x=>x.key);if(keys.length)await env.PHOTOS.delete(keys);cursor=listed.truncated?listed.cursor:undefined;}while(cursor);}
 export default {
   async fetch(req,env){
     if(req.method==='OPTIONS')return new Response(null,{status:204,headers:CORS});
     const url=new URL(req.url);
-    if(req.method==='GET'&&url.pathname==='/health')return json({ok:true,service:'vietnam-family-trip-sync',version:'12.1',maxDevices:MAX_DEVICES});
+    if(req.method==='GET'&&url.pathname==='/health')return json({ok:true,service:'vietnam-family-trip-sync',version:'12.8',maxDevices:MAX_DEVICES,photoSync:!!env.PHOTOS});
+    if(req.method==='GET'&&url.pathname.startsWith('/photo/view/')){const parts=url.pathname.split('/').filter(Boolean);if(parts.length!==4||parts[0]!=='photo'||parts[1]!=='view')return json({error:'not_found'},404);const code=String(parts[2]||'').toUpperCase(),id=String(parts[3]||'');if(!/^[A-Z2-9]{6}$/.test(code)||!/^[A-Za-z0-9_-]{20,80}$/.test(id)||!env.PHOTOS)return json({error:'not_found'},404);const obj=await env.PHOTOS.get(photoObjectKey(code,id));if(!obj)return json({error:'not_found'},404);return new Response(obj.body,{headers:{'Content-Type':obj.httpMetadata?.contentType||'image/jpeg','Cache-Control':'private, max-age=86400','ETag':obj.httpEtag||''}});}
     if(req.method!=='POST')return json({error:'method_not_allowed'},405);
     const body=await readBody(req);if(!body)return json({error:'invalid_json'},400);
     try{
+      if(url.pathname==='/photo/upload'){
+        if(!env.PHOTOS)return json({error:'photo_storage_not_configured'},503);
+        const r=await auth(env,body.code,body.token);if(!r)return json({error:'room_or_key_invalid'},403);
+        const bytes=parseJpegDataUrl(body.photo?.dataUrl);if(!bytes)return json({error:'invalid_or_too_large_photo'},400);
+        const id=randomPhotoId(),key=photoObjectKey(r.code,id),now=new Date().toISOString();
+        await env.PHOTOS.put(key,bytes,{httpMetadata:{contentType:'image/jpeg'},customMetadata:{room:r.code,uploadedAt:now}});
+        const publicUrl=`${url.origin}/photo/view/${r.code}/${id}`;
+        return json({ok:true,remoteId:id,url:publicUrl,size:bytes.byteLength,width:Number(body.photo?.width)||0,height:Number(body.photo?.height)||0,updatedAt:now});
+      }
+      if(url.pathname==='/photo/delete'){
+        if(!env.PHOTOS)return json({error:'photo_storage_not_configured'},503);
+        const r=await auth(env,body.code,body.token);if(!r)return json({error:'room_or_key_invalid'},403);
+        const id=String(body.remoteId||'');if(!/^[A-Za-z0-9_-]{20,80}$/.test(id))return json({error:'invalid_photo_id'},400);
+        await env.PHOTOS.delete(photoObjectKey(r.code,id));return json({ok:true});
+      }
       if(url.pathname==='/sync/create'){
         if(!validState(body.state))return json({error:'invalid_or_too_large_state'},400);
         let code='';for(let i=0;i<8;i++){const c=randomCode();if(!(await room(env,c))){code=c;break;}}if(!code)return json({error:'code_generation_failed'},500);
@@ -83,7 +105,7 @@ export default {
       if(url.pathname==='/sync/delete'){
         const r=await auth(env,body.code,body.token);if(!r)return json({error:'room_or_key_invalid'},403);
         await env.DB.prepare('DELETE FROM devices WHERE room_code=?').bind(r.code).run();
-        await env.DB.prepare('DELETE FROM rooms WHERE code=? AND token_hash=?').bind(r.code,r.token_hash).run();return json({ok:true});
+        await deleteRoomPhotos(env,r.code);await env.DB.prepare('DELETE FROM rooms WHERE code=? AND token_hash=?').bind(r.code,r.token_hash).run();return json({ok:true});
       }
       return json({error:'not_found'},404);
     }catch(e){if(e?.code==='max_devices'||String(e?.message||e).includes('max_devices'))return json({error:'max_devices',maxDevices:MAX_DEVICES},409);return json({error:'server_error',detail:String(e?.message||e).slice(0,180)},500);}

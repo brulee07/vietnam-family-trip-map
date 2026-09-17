@@ -3,5 +3,5 @@
 // 예: endpoint: 'https://vietnam-family-trip-sync.YOUR_SUBDOMAIN.workers.dev'
 window.TRAVEL_SYNC_CONFIG = {
   endpoint: 'https://vietnam-family-trip-sync.brulee07.workers.dev',
-  appVersion: '12.4-preview'
+  appVersion: '12.8-preview'
 };

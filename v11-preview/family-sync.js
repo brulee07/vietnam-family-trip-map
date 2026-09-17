@@ -1,7 +1,7 @@
 (()=>{
 'use strict';
 const CONFIG_KEY='familyTravelFamilySyncV12';
-const SHARED_KEYS=['routes','notes','notePositions','saved','custom','todayProgress','checklists'];
+const SHARED_KEYS=['routes','notes','notePositions','memoPhotos','saved','custom','todayProgress','checklists'];
 let baseSave=save, baseToolsView=toolsView, baseTodayView=todayView;
 let syncApplying=false,syncBusy=false,syncPushTimer=null,syncPollTimer=null;
 let syncShadow=null,syncDevices=[],devicesFetchedAt=0,deviceFetchBusy=false;
@@ -22,11 +22,12 @@ let cfg=loadConfig();
 function saveCfg(){try{localStorage.setItem(CONFIG_KEY,JSON.stringify(cfg));}catch{}}
 function ensureMeta(){
   if(!local.syncMeta||typeof local.syncMeta!=='object'||Array.isArray(local.syncMeta))local.syncMeta={};
-  for(const k of ['routes','notes','notePositions','todayProgress','checklists'])if(!local.syncMeta[k]||typeof local.syncMeta[k]!=='object'||Array.isArray(local.syncMeta[k]))local.syncMeta[k]={};
+  for(const k of ['routes','notes','notePositions','memoPhotos','todayProgress','checklists'])if(!local.syncMeta[k]||typeof local.syncMeta[k]!=='object'||Array.isArray(local.syncMeta[k]))local.syncMeta[k]={};
   if(typeof local.syncMeta.saved!=='string')local.syncMeta.saved='';
   if(typeof local.syncMeta.custom!=='string')local.syncMeta.custom='';
 }
-function sharedState(src=local){ensureMeta();return {routes:clone(src.routes||{}),notes:clone(src.notes||{}),notePositions:clone(src.notePositions||{}),saved:clone(src.saved||[]),custom:clone(src.custom||[]),todayProgress:clone(src.todayProgress||{}),checklists:clone(src.checklists||{}),syncMeta:clone(src.syncMeta||{})};}
+function sharedMemoPhotos(src=local){const out={};for(const [rk,x] of Object.entries(src.memoPhotos||{})){if(x&&typeof x.remoteId==='string'&&typeof x.remoteUrl==='string')out[rk]={remoteId:x.remoteId,remoteUrl:x.remoteUrl,width:Number(x.width)||0,height:Number(x.height)||0,size:Number(x.size)||0,name:String(x.name||'memo-photo.jpg').slice(0,120),updatedAt:x.updatedAt||nowIso()};}return out;}
+function sharedState(src=local){ensureMeta();return {routes:clone(src.routes||{}),notes:clone(src.notes||{}),notePositions:clone(src.notePositions||{}),memoPhotos:sharedMemoPhotos(src),saved:clone(src.saved||[]),custom:clone(src.custom||[]),todayProgress:clone(src.todayProgress||{}),checklists:clone(src.checklists||{}),syncMeta:clone(src.syncMeta||{})};}
 function stable(v){return JSON.stringify(v);}
 function markObjectDiff(section,before={},after={}){
   const keys=new Set([...Object.keys(before||{}),...Object.keys(after||{})]);const stamp=nowIso();let changed=false;
@@ -35,7 +36,7 @@ function markObjectDiff(section,before={},after={}){
 }
 function markDiff(before,after){
   ensureMeta();let changed=false;
-  for(const s of ['routes','notes','notePositions','todayProgress','checklists'])changed=markObjectDiff(s,before?.[s]||{},after?.[s]||{})||changed;
+  for(const s of ['routes','notes','notePositions','memoPhotos','todayProgress','checklists'])changed=markObjectDiff(s,before?.[s]||{},after?.[s]||{})||changed;
   const stamp=nowIso();
   if(stable(before?.saved||[])!==stable(after?.saved||[])){local.syncMeta.saved=stamp;changed=true;}
   if(stable(before?.custom||[])!==stable(after?.custom||[])){local.syncMeta.custom=stamp;changed=true;}
@@ -58,13 +59,13 @@ function mergeMap(section,a,b,am,bm){
   return [out,meta];
 }
 function mergeShared(a,b){
-  a=a||sharedState();b=b||{};const am=a.syncMeta||{},bm=b.syncMeta||{},out={syncMeta:{routes:{},notes:{},notePositions:{},todayProgress:{},checklists:{},saved:'',custom:''}};
-  for(const s of ['routes','notes','notePositions','todayProgress','checklists']){const [data,meta]=mergeMap(s,a[s]||{},b[s]||{},am[s]||{},bm[s]||{});out[s]=data;out.syncMeta[s]=meta;}
+  a=a||sharedState();b=b||{};const am=a.syncMeta||{},bm=b.syncMeta||{},out={syncMeta:{routes:{},notes:{},notePositions:{},memoPhotos:{},todayProgress:{},checklists:{},saved:'',custom:''}};
+  for(const s of ['routes','notes','notePositions','memoPhotos','todayProgress','checklists']){const [data,meta]=mergeMap(s,a[s]||{},b[s]||{},am[s]||{},bm[s]||{});out[s]=data;out.syncMeta[s]=meta;}
   for(const s of ['saved','custom']){const useRemote=newer(am[s],bm[s]);out[s]=clone((useRemote?b[s]:a[s])||[]);out.syncMeta[s]=useRemote?(bm[s]||''):(am[s]||bm[s]||'');}
   return out;
 }
 function seedMeta(state){
-  const s=clone(state),m=s.syncMeta||{routes:{},notes:{},notePositions:{},todayProgress:{},checklists:{},saved:'',custom:''},t=nowIso();
+  const s=clone(state),m=s.syncMeta||{routes:{},notes:{},notePositions:{},memoPhotos:{},todayProgress:{},checklists:{},saved:'',custom:''},t=nowIso();
   for(const sec of ['routes','notes','notePositions','todayProgress','checklists']){m[sec]=m[sec]||{};for(const k of Object.keys(s[sec]||{}))if(!m[sec][k])m[sec][k]=t;}
   if(!m.saved)m.saved=t;if(!m.custom)m.custom=t;s.syncMeta=m;return s;
 }
@@ -76,7 +77,7 @@ function validateRemoteState(state){
 }
 function applyShared(state,{renderNow=true,clearUndo=true}={}){
   validateRemoteState(state);syncApplying=true;
-  for(const k of SHARED_KEYS)local[k]=clone(state[k]??(Array.isArray(local[k])?[]:{}));
+  for(const k of SHARED_KEYS){if(k==='memoPhotos'){const incoming=clone(state.memoPhotos||{}),meta=state.syncMeta?.memoPhotos||{},existing=local.memoPhotos||{};for(const [rk,x] of Object.entries(existing)){const localOnly=x&&x.dataUrl&&!x.remoteUrl;if(localOnly&&!Object.prototype.hasOwnProperty.call(incoming,rk)&&!meta[rk])incoming[rk]=x;}local.memoPhotos=incoming;}else local[k]=clone(state[k]??(Array.isArray(local[k])?[]:{}));}
   local.syncMeta=clone(state.syncMeta||{});ensureMeta();if(clearUndo)local.aiUndo={};
   const ok=baseSave();syncApplying=false;syncShadow=sharedState();if(renderNow)render();return ok;
 }
@@ -87,6 +88,15 @@ async function api(path,payload,timeout=15000){
   if(!r.ok){const e=Error(d.error||'sync_http');e.status=r.status;e.data=d;throw e;}return d;
 }
 function roomPayload(){return {code:cfg.roomCode,token:cfg.token,deviceId:cfg.deviceId,deviceName:cfg.deviceName};}
+function familyPhotoReady(){return hasCreds()&&navigator.onLine!==false;}
+async function familyPhotoUpload(photo){
+  if(!familyPhotoReady())return null;
+  if(!photo?.dataUrl||!photo.dataUrl.startsWith('data:image/jpeg;base64,'))throw Error('photo_data');
+  const d=await api('/photo/upload',{...roomPayload(),photo:{dataUrl:photo.dataUrl,name:photo.name||'memo-photo.jpg',width:Number(photo.width)||0,height:Number(photo.height)||0,size:Number(photo.size)||0}},30000);
+  return {remoteId:String(d.remoteId||''),remoteUrl:String(d.url||''),width:Number(d.width||photo.width)||0,height:Number(d.height||photo.height)||0,size:Number(d.size||photo.size)||0,name:String(photo.name||'memo-photo.jpg'),updatedAt:d.updatedAt||nowIso()};
+}
+async function familyPhotoDelete(remoteId){if(!hasCreds()||!remoteId)return false;try{await api('/photo/delete',{...roomPayload(),remoteId:String(remoteId)},15000);return true;}catch{return false;}}
+window.familyPhotoSyncReady=familyPhotoReady;window.familyPhotoUpload=familyPhotoUpload;window.familyPhotoDelete=familyPhotoDelete;
 function syncErrorText(e){if(e?.data?.error==='max_devices')return `가족 공유는 최대 ${e.data.maxDevices||MAX_FAMILY_DEVICES}대의 휴대폰까지 참여할 수 있습니다.`;if(e?.status===401||e?.status===403)return '공유방 인증정보가 맞지 않습니다.';if(e?.status===404)return '공유방을 찾지 못했습니다.';if(e?.status===409)return '가족의 최신 변경사항과 합치는 중 충돌이 발생했습니다.';if(e?.name==='TimeoutError')return '동기화 서버 응답이 늦습니다.';if(navigator.onLine===false)return '현재 오프라인입니다.';return '가족 동기화 서버에 연결하지 못했습니다.';}
 function updateDeviceCounts(d){if(!d)return;cfg.deviceCount=Number(d.deviceCount??cfg.deviceCount??0);cfg.maxDevices=Number(d.maxDevices||cfg.maxDevices||MAX_FAMILY_DEVICES);saveCfg();}
 async function pullRemote(){
@@ -171,7 +181,7 @@ function renderSyncPanel(){
   const connected=hasCreds(),status=syncBusy?['busy','동기화 중']:cfg.lastError?['error','확인 필요']:connected?['connected','공유 중']:['','꺼짐'];
   const count=cfg.deviceCount||syncDevices.length||(connected?1:0),max=cfg.maxDevices||MAX_FAMILY_DEVICES;
   const dupCount=connected?duplicateNameCount(cfg.deviceName):0;
-  const html=`<section class="family-sync-card"><div class="family-sync-head"><div><span class="eyebrow">가족 공유</span><b>가족 일정 동기화</b><small>${connected?`최대 ${max}대의 휴대폰이 같은 일정·메모·체크리스트를 함께 사용합니다.`:'공유방을 만들거나 가족 초대 링크로 참여할 수 있습니다.'}</small></div><span class="sync-status ${status[0]}">${status[1]}</span></div>${connected?`<div class="family-sync-room"><span><small>공유방</small><b class="sync-code">${esc(cfg.roomCode)}</b></span><span><small>참여 기기</small><b>${count}/${max}대</b></span><span class="sync-device-name-cell"><small>이 기기</small><b>${esc(cfg.deviceName)}</b><button id="sync-rename" class="sync-rename-mini">이름 변경</button></span><span><small>마지막 동기화</small><b>${esc(fmt(cfg.lastSyncAt))}</b></span></div>${dupCount?`<p class="sync-name-warning">같은 이름의 기기가 ${dupCount+1}대 있습니다. 여행 전에 각 휴대폰 이름을 구분해 주세요.</p>`:''}${cfg.lastError?`<p class="family-sync-note">${esc(cfg.lastError)}</p>`:''}<div class="family-sync-actions"><button class="btn primary" id="sync-now">지금 동기화</button><button class="btn" id="sync-copy" ${count>=max?'disabled':''}>${count>=max?'9대 참여 중':'초대 링크 복사'}</button><button class="btn" id="sync-disconnect">이 기기 연결 해제</button></div>${devicesHtml()}`:`<div class="family-sync-actions"><button class="btn primary" id="sync-create">가족 공유 시작</button><button class="btn" id="sync-join">가족 공유 참여</button></div>`}<details class="sync-advanced"><summary>동기화 설정</summary><p class="family-sync-note">서버: ${esc(cfg.endpoint||'설정 안 됨')}<br>기기 이름: ${esc(cfg.deviceName)}</p><div class="family-sync-actions"><button class="btn" id="sync-server">서버·기기 설정</button>${connected?'<button class="btn danger" id="sync-delete-room">공유방 삭제</button>':''}</div></details><p class="family-sync-note">공유 대상: 일정 순서 · 하루 메모·표시 위치 · 저장/추가 장소 · Today 진행 · 체크리스트<br>AI 대화와 AI 복원 기록, 백업 기록, 기기별 설정은 공유하지 않습니다.</p></section>`;
+  const html=`<section class="family-sync-card"><div class="family-sync-head"><div><span class="eyebrow">가족 공유</span><b>가족 일정 동기화</b><small>${connected?`최대 ${max}대의 휴대폰이 같은 일정·메모·체크리스트를 함께 사용합니다.`:'공유방을 만들거나 가족 초대 링크로 참여할 수 있습니다.'}</small></div><span class="sync-status ${status[0]}">${status[1]}</span></div>${connected?`<div class="family-sync-room"><span><small>공유방</small><b class="sync-code">${esc(cfg.roomCode)}</b></span><span><small>참여 기기</small><b>${count}/${max}대</b></span><span class="sync-device-name-cell"><small>이 기기</small><b>${esc(cfg.deviceName)}</b><button id="sync-rename" class="sync-rename-mini">이름 변경</button></span><span><small>마지막 동기화</small><b>${esc(fmt(cfg.lastSyncAt))}</b></span></div>${dupCount?`<p class="sync-name-warning">같은 이름의 기기가 ${dupCount+1}대 있습니다. 여행 전에 각 휴대폰 이름을 구분해 주세요.</p>`:''}${cfg.lastError?`<p class="family-sync-note">${esc(cfg.lastError)}</p>`:''}<div class="family-sync-actions"><button class="btn primary" id="sync-now">지금 동기화</button><button class="btn" id="sync-copy" ${count>=max?'disabled':''}>${count>=max?'9대 참여 중':'초대 링크 복사'}</button><button class="btn" id="sync-disconnect">이 기기 연결 해제</button></div>${devicesHtml()}`:`<div class="family-sync-actions"><button class="btn primary" id="sync-create">가족 공유 시작</button><button class="btn" id="sync-join">가족 공유 참여</button></div>`}<details class="sync-advanced"><summary>동기화 설정</summary><p class="family-sync-note">서버: ${esc(cfg.endpoint||'설정 안 됨')}<br>기기 이름: ${esc(cfg.deviceName)}</p><div class="family-sync-actions"><button class="btn" id="sync-server">서버·기기 설정</button>${connected?'<button class="btn danger" id="sync-delete-room">공유방 삭제</button>':''}</div></details><p class="family-sync-note">공유 대상: 일정 순서 · 하루 메모·사진·표시 위치 · 저장/추가 장소 · Today 진행 · 체크리스트<br>AI 대화와 AI 복원 기록, 백업 기록, 기기별 설정은 공유하지 않습니다.</p></section>`;
   anchor.insertAdjacentHTML('afterend',html);
   if($('#sync-create'))$('#sync-create').onclick=createRoom;if($('#sync-rename'))$('#sync-rename').onclick=openRenameDeviceSheet;if($('#sync-join'))$('#sync-join').onclick=()=>openJoinSheet();if($('#sync-now'))$('#sync-now').onclick=()=>syncNow('manual').then(()=>refreshDevices(true));if($('#sync-copy'))$('#sync-copy').onclick=copyInvite;if($('#sync-disconnect'))$('#sync-disconnect').onclick=disconnect;if($('#sync-server'))$('#sync-server').onclick=openSyncServerSheet;if($('#sync-delete-room'))$('#sync-delete-room').onclick=deleteRoom;if($('#sync-device-refresh'))$('#sync-device-refresh').onclick=()=>refreshDevices(false);document.querySelectorAll('.device-remove').forEach(b=>b.onclick=()=>removeDevice(b.dataset.device,b.dataset.name));document.querySelectorAll('.device-rename-inline').forEach(b=>b.onclick=openRenameDeviceSheet);
   if(connected&&Date.now()-devicesFetchedAt>30000&&!deviceFetchBusy)setTimeout(()=>refreshDevices(true),0);
