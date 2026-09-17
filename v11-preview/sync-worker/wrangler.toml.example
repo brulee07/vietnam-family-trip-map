@@ -6,7 +6,3 @@ compatibility_date = "2026-09-01"
 binding = "DB"
 database_name = "vietnam-family-trip-sync"
 database_id = "PASTE_YOUR_D1_DATABASE_ID_HERE"
-
-[[r2_buckets]]
-binding = "PHOTOS"
-bucket_name = "vietnam-family-trip-photos"

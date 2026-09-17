@@ -16,7 +16,7 @@ const nameKey=v=>cleanDeviceName(v).toLocaleLowerCase('ko-KR');
 function loadConfig(){
   let v=null;try{v=JSON.parse(localStorage.getItem(CONFIG_KEY)||'null');}catch{}
   if(!v||typeof v!=='object')v={};
-  return {enabled:!!v.enabled,endpoint:String(v.endpoint||endpointDefault()),roomCode:String(v.roomCode||''),token:String(v.token||''),revision:Number(v.revision||0),deviceId:String(v.deviceId||makeId()),deviceName:cleanDeviceName(v.deviceName||'가족 휴대폰'),lastSyncAt:v.lastSyncAt||null,lastError:v.lastError||null,dirty:!!v.dirty,deviceCount:Number(v.deviceCount||0),maxDevices:Number(v.maxDevices||MAX_FAMILY_DEVICES)};
+  return {enabled:!!v.enabled,endpoint:String(v.endpoint||endpointDefault()),roomCode:String(v.roomCode||''),token:String(v.token||''),revision:Number(v.revision||0),deviceId:String(v.deviceId||makeId()),deviceName:cleanDeviceName(v.deviceName||'가족 휴대폰'),lastSyncAt:v.lastSyncAt||null,lastError:v.lastError||null,dirty:!!v.dirty,deviceCount:Number(v.deviceCount||0),maxDevices:Number(v.maxDevices||MAX_FAMILY_DEVICES),pendingPhotoDeletes:Array.isArray(v.pendingPhotoDeletes)?v.pendingPhotoDeletes.filter(x=>typeof x==='string').slice(-100):[]};
 }
 let cfg=loadConfig();
 function saveCfg(){try{localStorage.setItem(CONFIG_KEY,JSON.stringify(cfg));}catch{}}
@@ -26,7 +26,7 @@ function ensureMeta(){
   if(typeof local.syncMeta.saved!=='string')local.syncMeta.saved='';
   if(typeof local.syncMeta.custom!=='string')local.syncMeta.custom='';
 }
-function sharedMemoPhotos(src=local){const out={};for(const [rk,x] of Object.entries(src.memoPhotos||{})){if(x&&typeof x.remoteId==='string'&&typeof x.remoteUrl==='string')out[rk]={remoteId:x.remoteId,remoteUrl:x.remoteUrl,width:Number(x.width)||0,height:Number(x.height)||0,size:Number(x.size)||0,name:String(x.name||'memo-photo.jpg').slice(0,120),updatedAt:x.updatedAt||nowIso()};}return out;}
+function sharedMemoPhotos(src=local){const out={};for(const [rk,p] of Object.entries(src.memoPhotos||{})){const remoteUrl=String(p?.remoteUrl||p?.url||'');if(p&&typeof p.remoteId==='string'&&/^https:\/\//.test(remoteUrl)){out[rk]={remoteId:p.remoteId,remoteUrl,width:Number(p.width||0),height:Number(p.height||0),size:Number(p.size||0),name:String(p.name||'memo-photo.jpg').slice(0,120),updatedAt:p.updatedAt||null};}}return out;}
 function sharedState(src=local){ensureMeta();return {routes:clone(src.routes||{}),notes:clone(src.notes||{}),notePositions:clone(src.notePositions||{}),memoPhotos:sharedMemoPhotos(src),saved:clone(src.saved||[]),custom:clone(src.custom||[]),todayProgress:clone(src.todayProgress||{}),checklists:clone(src.checklists||{}),syncMeta:clone(src.syncMeta||{})};}
 function stable(v){return JSON.stringify(v);}
 function markObjectDiff(section,before={},after={}){
@@ -66,7 +66,7 @@ function mergeShared(a,b){
 }
 function seedMeta(state){
   const s=clone(state),m=s.syncMeta||{routes:{},notes:{},notePositions:{},memoPhotos:{},todayProgress:{},checklists:{},saved:'',custom:''},t=nowIso();
-  for(const sec of ['routes','notes','notePositions','todayProgress','checklists']){m[sec]=m[sec]||{};for(const k of Object.keys(s[sec]||{}))if(!m[sec][k])m[sec][k]=t;}
+  for(const sec of ['routes','notes','notePositions','memoPhotos','todayProgress','checklists']){m[sec]=m[sec]||{};for(const k of Object.keys(s[sec]||{}))if(!m[sec][k])m[sec][k]=t;}
   if(!m.saved)m.saved=t;if(!m.custom)m.custom=t;s.syncMeta=m;return s;
 }
 function validateRemoteState(state){
@@ -77,7 +77,12 @@ function validateRemoteState(state){
 }
 function applyShared(state,{renderNow=true,clearUndo=true}={}){
   validateRemoteState(state);syncApplying=true;
-  for(const k of SHARED_KEYS){if(k==='memoPhotos'){const incoming=clone(state.memoPhotos||{}),meta=state.syncMeta?.memoPhotos||{},existing=local.memoPhotos||{};for(const [rk,x] of Object.entries(existing)){const localOnly=x&&x.dataUrl&&!x.remoteUrl;if(localOnly&&!Object.prototype.hasOwnProperty.call(incoming,rk)&&!meta[rk])incoming[rk]=x;}local.memoPhotos=incoming;}else local[k]=clone(state[k]??(Array.isArray(local[k])?[]:{}));}
+  const oldPhotos=clone(local.memoPhotos||{});
+  for(const k of SHARED_KEYS){if(k==='memoPhotos')continue;local[k]=clone(state[k]??(Array.isArray(local[k])?[]:{}));}
+  const incoming=state.memoPhotos||{},photos={};
+  for(const [rk,p] of Object.entries(incoming)){const old=oldPhotos[rk];photos[rk]={...clone(p)};if(old?.dataUrl&&old?.remoteId===p?.remoteId)photos[rk].dataUrl=old.dataUrl;}
+  for(const [rk,p] of Object.entries(oldPhotos)){if(!incoming[rk]&&p?.dataUrl&&!p?.remoteId)photos[rk]=p;}
+  local.memoPhotos=photos;
   local.syncMeta=clone(state.syncMeta||{});ensureMeta();if(clearUndo)local.aiUndo={};
   const ok=baseSave();syncApplying=false;syncShadow=sharedState();if(renderNow)render();return ok;
 }
@@ -88,15 +93,16 @@ async function api(path,payload,timeout=15000){
   if(!r.ok){const e=Error(d.error||'sync_http');e.status=r.status;e.data=d;throw e;}return d;
 }
 function roomPayload(){return {code:cfg.roomCode,token:cfg.token,deviceId:cfg.deviceId,deviceName:cfg.deviceName};}
-function familyPhotoReady(){return hasCreds()&&navigator.onLine!==false;}
-async function familyPhotoUpload(photo){
-  if(!familyPhotoReady())return null;
-  if(!photo?.dataUrl||!photo.dataUrl.startsWith('data:image/jpeg;base64,'))throw Error('photo_data');
-  const d=await api('/photo/upload',{...roomPayload(),photo:{dataUrl:photo.dataUrl,name:photo.name||'memo-photo.jpg',width:Number(photo.width)||0,height:Number(photo.height)||0,size:Number(photo.size)||0}},30000);
-  return {remoteId:String(d.remoteId||''),remoteUrl:String(d.url||''),width:Number(d.width||photo.width)||0,height:Number(d.height||photo.height)||0,size:Number(d.size||photo.size)||0,name:String(photo.name||'memo-photo.jpg'),updatedAt:d.updatedAt||nowIso()};
+async function uploadMemoPhoto(rk,photo){
+  if(!hasCreds()||navigator.onLine===false||!photo?.dataUrl)return photo;
+  const d=await api('/photo/upload',{...roomPayload(),routeKey:rk,photo:{dataUrl:photo.dataUrl,width:Number(photo.width||0),height:Number(photo.height||0),size:Number(photo.size||0),name:String(photo.name||'memo-photo.jpg')}},25000);
+  return {...photo,remoteId:String(d.remoteId||''),remoteUrl:String(d.url||''),updatedAt:d.updatedAt||nowIso()};
 }
-async function familyPhotoDelete(remoteId){if(!hasCreds()||!remoteId)return false;try{await api('/photo/delete',{...roomPayload(),remoteId:String(remoteId)},15000);return true;}catch{return false;}}
-window.familyPhotoSyncReady=familyPhotoReady;window.familyPhotoUpload=familyPhotoUpload;window.familyPhotoDelete=familyPhotoDelete;
+function queuePhotoDelete(photo){const id=String(photo?.remoteId||'');if(!id)return;if(!cfg.pendingPhotoDeletes.includes(id))cfg.pendingPhotoDeletes.push(id);cfg.pendingPhotoDeletes=cfg.pendingPhotoDeletes.slice(-100);saveCfg();if(hasCreds()&&navigator.onLine!==false)flushPhotoDeletes();}
+async function flushPhotoDeletes(){if(!hasCreds()||navigator.onLine===false||!cfg.pendingPhotoDeletes.length)return;const pending=[...cfg.pendingPhotoDeletes];for(const id of pending){try{await api('/photo/delete',{...roomPayload(),remoteId:id},12000);cfg.pendingPhotoDeletes=cfg.pendingPhotoDeletes.filter(x=>x!==id);saveCfg();}catch{break;}}}
+async function syncPendingMemoPhotos(){if(!hasCreds()||navigator.onLine===false)return false;let changed=false;for(const [rk,p] of Object.entries(local.memoPhotos||{})){if(p?.dataUrl&&!p?.remoteId){try{local.memoPhotos[rk]=await uploadMemoPhoto(rk,p);ensureMeta();local.syncMeta.memoPhotos[rk]=nowIso();changed=true;}catch{}}}if(changed){cfg.dirty=true;baseSave();syncShadow=sharedState();saveCfg();}return changed;}
+window.familyMemoPhotoUpload=async(rk,photo)=>uploadMemoPhoto(rk,photo);
+window.familyMemoPhotoDelete=photo=>queuePhotoDelete(photo);
 function syncErrorText(e){if(e?.data?.error==='max_devices')return `가족 공유는 최대 ${e.data.maxDevices||MAX_FAMILY_DEVICES}대의 휴대폰까지 참여할 수 있습니다.`;if(e?.status===401||e?.status===403)return '공유방 인증정보가 맞지 않습니다.';if(e?.status===404)return '공유방을 찾지 못했습니다.';if(e?.status===409)return '가족의 최신 변경사항과 합치는 중 충돌이 발생했습니다.';if(e?.name==='TimeoutError')return '동기화 서버 응답이 늦습니다.';if(navigator.onLine===false)return '현재 오프라인입니다.';return '가족 동기화 서버에 연결하지 못했습니다.';}
 function updateDeviceCounts(d){if(!d)return;cfg.deviceCount=Number(d.deviceCount??cfg.deviceCount??0);cfg.maxDevices=Number(d.maxDevices||cfg.maxDevices||MAX_FAMILY_DEVICES);saveCfg();}
 async function pullRemote(){
@@ -113,6 +119,7 @@ async function pushState(state,baseRevision=cfg.revision){
 async function syncNow(mode='manual'){
   if(!hasCreds()||syncBusy||navigator.onLine===false)return false;syncBusy=true;cfg.lastError=null;saveCfg();renderSyncBits();let remoteChanged=false;
   try{
+    await flushPhotoDeletes();await syncPendingMemoPhotos();
     const remote=await pullRemote();if(remote?.state){const merged=mergeShared(sharedState(),remote.state);if(stable(merged)!==stable(sharedState())){applyShared(merged,{renderNow:false});remoteChanged=true;}}
     if(cfg.dirty||mode==='push'){
       const d=await pushState(sharedState(),cfg.revision);cfg.revision=Number(d.revision||cfg.revision);cfg.dirty=false;
@@ -121,7 +128,7 @@ async function syncNow(mode='manual'){
   }catch(e){cfg.lastError=syncErrorText(e);saveCfg();if(mode==='manual')toast(cfg.lastError);renderSyncBits();return false;}
   finally{syncBusy=false;renderSyncBits();}
 }
-function previewStats(state){return {days:Object.keys(state.routes||{}).length,notes:Object.keys(state.notes||{}).length,saved:(state.saved||[]).length,custom:(state.custom||[]).length,today:Object.keys(state.todayProgress||{}).length,checks:Object.keys(state.checklists||{}).length};}
+function previewStats(state){return {days:Object.keys(state.routes||{}).length,notes:new Set([...Object.keys(state.notes||{}),...Object.keys(state.memoPhotos||{})]).size,saved:(state.saved||[]).length,custom:(state.custom||[]).length,today:Object.keys(state.todayProgress||{}).length,checks:Object.keys(state.checklists||{}).length};}
 function statsHtml(s){return `<div class="sync-preview"><span><small>편집 일정</small><b>${s.days}일</b></span><span><small>메모</small><b>${s.notes}개</b></span><span><small>저장 장소</small><b>${s.saved}곳</b></span><span><small>추가 장소</small><b>${s.custom}곳</b></span><span><small>Today 진행</small><b>${s.today}일</b></span><span><small>체크리스트</small><b>${s.checks}일</b></span></div>`;}
 function normalizeEndpoint(v){v=String(v||'').trim().replace(/\/$/,'');if(!v)return '';const u=new URL(v);if(u.protocol!=='https:')throw Error();return v;}
 function endpointReady(){if(cfg.endpoint)return true;openSyncServerSheet();return false;}
@@ -145,7 +152,7 @@ async function previewJoin(code,token,deviceName){
   catch(e){cfg.roomCode=old.roomCode;cfg.token=old.token;cfg.revision=old.revision;toast(syncErrorText(e));}
 }
 function finishJoin(d,mode){const state=mode==='merge'?mergeShared(sharedState(),d.state):d.state;applyShared(state);cfg.enabled=true;cfg.revision=Number(d.revision||0);cfg.dirty=mode==='merge';cfg.lastSyncAt=nowIso();cfg.lastError=null;updateDeviceCounts(d);saveCfg();closeSheet();history.replaceState(null,'',location.pathname+location.search);startPolling();render();toast('가족 공유방에 연결했습니다.');syncNow(cfg.dirty?'push':'manual').then(()=>refreshDevices(true));}
-async function disconnect(skipConfirm=false){if(!skipConfirm&&!confirm('이 기기만 가족 동기화에서 연결 해제할까요? 기기에 저장된 일정은 그대로 남습니다.'))return;if(hasCreds()){try{await api('/sync/device/leave',roomPayload(),8000);}catch{}}cfg={...cfg,enabled:false,roomCode:'',token:'',revision:0,dirty:false,lastError:null,lastSyncAt:null,deviceCount:0};syncDevices=[];devicesFetchedAt=0;saveCfg();clearInterval(syncPollTimer);render();toast('이 기기의 가족 동기화를 해제했습니다.');}
+async function disconnect(skipConfirm=false){if(!skipConfirm&&!confirm('이 기기만 가족 동기화에서 연결 해제할까요? 기기에 저장된 일정은 그대로 남습니다.'))return;if(hasCreds()){try{await api('/sync/device/leave',roomPayload(),8000);}catch{}}cfg={...cfg,enabled:false,roomCode:'',token:'',revision:0,dirty:false,lastError:null,lastSyncAt:null,deviceCount:0,pendingPhotoDeletes:[]};syncDevices=[];devicesFetchedAt=0;saveCfg();clearInterval(syncPollTimer);render();toast('이 기기의 가족 동기화를 해제했습니다.');}
 async function deleteRoom(){if(!hasCreds())return;if(!confirm('가족 공유방을 서버에서 삭제할까요? 다른 가족 기기도 더 이상 동기화할 수 없습니다.'))return;try{await api('/sync/delete',roomPayload());await disconnect(true);}catch(e){toast(syncErrorText(e));}}
 function fmt(v){if(!v)return '아직 없음';try{return new Date(v).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});}catch{return String(v);}}
 function relativeTime(v){const n=Date.parse(v||'');if(!Number.isFinite(n))return '기록 없음';const sec=Math.max(0,Math.floor((Date.now()-n)/1000));if(sec<45)return '방금';if(sec<90)return '1분 전';if(sec<3600)return `${Math.floor(sec/60)}분 전`;if(sec<86400)return `${Math.floor(sec/3600)}시간 전`;return `${Math.floor(sec/86400)}일 전`;}

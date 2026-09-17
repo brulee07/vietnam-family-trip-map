@@ -132,9 +132,9 @@ Integrated additional uploaded photos for Da Nang and Quy Nhon.
 - 현재 메모 사진은 로컬 기기에만 저장되며 가족 사진 동기화는 후속 단계
 
 
-## v12.8 preview — 가족 메모 사진 동기화
-- 메모 사진을 Cloudflare R2에 업로드하고 가족 공유방 9대 기기에서 동일 사진을 표시합니다.
-- D1 상태에는 이미지 자체가 아니라 `remoteId`, `remoteUrl` 등 메타데이터만 저장합니다.
-- 사진 교체/삭제 시 R2 객체도 삭제합니다.
-- R2가 설정되지 않았거나 오프라인이면 사진은 현재 기기에만 저장됩니다.
-- 기존 v12.7 로컬 사진은 메모를 열고 다시 저장하면 R2 업로드를 시도합니다.
+## v12.8 Supabase family memo photo sync
+- Memo photo files upload through the existing Cloudflare Sync Worker to Supabase Storage bucket `memo-photos`.
+- Shared state contains only `remoteId` and public `remoteUrl`; Base64 image data remains local to the device and is not stored in D1.
+- Existing v12.7 local-only memo photos are uploaded automatically on the next successful family sync when online.
+- Offline photo additions remain local and are retried when sync runs after reconnecting.
+- Photo deletion is queued if temporarily offline.
