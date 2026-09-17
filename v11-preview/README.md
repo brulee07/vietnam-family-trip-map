@@ -121,3 +121,12 @@ Integrated additional uploaded photos for Da Nang and Quy Nhon.
 - Replaced existing files: 52
 - Total local place photos now: 68 / 105
 - Remaining missing (excluding laundries): 32
+
+## v12.7 preview - memo photo attachment
+- 하루/경로 메모에 사진 1장 첨부 지원
+- 사진 선택 시 긴 변 최대 960px, JPEG로 자동 압축
+- 텍스트만 / 사진만 / 텍스트+사진 저장 지원
+- 경로 메모 카드에 썸네일 표시 및 크게 보기
+- 기존 메모 드래그 순서 변경 유지
+- 사진 삭제 / 메모 전체 삭제 지원
+- 현재 메모 사진은 로컬 기기에만 저장되며 가족 사진 동기화는 후속 단계
