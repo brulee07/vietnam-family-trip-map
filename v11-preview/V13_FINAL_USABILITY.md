@@ -31,9 +31,15 @@ Base: `88d48b2c81e17e9b491802f311a79d2cd5d6361c`, branch `work-v13-integration`.
 - All 81 local representative JPEGs decode; photo files and all Freeze audit reports unchanged. Only the app's outdated photo-count label was corrected to the existing frozen total 81.
 - Cache identifiers/asset query versions bumped to 13.1 so old data/code caches cannot be confused with this revision. No cache strategy redesign.
 
-## Deployment preparation
+## Deployment — completed 2026-09-18
 
-- A root-layout static ZIP is prepared outside the repository for a new `v13-final-preview` deployment in `vietnam-family-v11-sync-test`.
+- Deployed source commit: `0d6cd1f922b12d065d3dfd7f06999b81c1c1005f`. Cloudflare Pages project `vietnam-family-v11-sync-test`, **Preview** environment, new name `v13-final-preview`.
+- Preview: https://v13-final-preview.vietnam-family-v11-sync-test.pages.dev/
+- Immutable deployment: https://7891dd29.vietnam-family-v11-sync-test.pages.dev/ ; deployment ID `7891dd29-d0a1-4536-acee-9a660884e303`.
+- Browser Direct Upload accepted all 106 files from the prepared `v13-final-upload` directory. The initial 35 MB ZIP exceeded the single-file limit; the same assets were uploaded as a directory without modifying photos. The local upload directory remains intact. No `access_programs`, native Windows file-picker control or alternate deployment method was used.
 - Deployment-only `_headers` reproduce the existing v13 Preview's CSP and noindex/no-referrer policy, including existing Sync/AI Workers, weather/maps and Supabase image reads. Actual checked-in `sync-config.js` points to the existing real Worker; the UI test override is not packaged.
-- Cloudflare dashboard currently requires login on this home PC. At this commit, **new Preview deployment and remote Preview validation are pending authentication**. The old Preview and production site have not been replaced.
+- After the user logged in, the dashboard reported deployment success. HTTP checks verified the root page plus all 105 publicly served packaged assets: HTTP 200 and byte-for-byte equality with the prepared upload. `_headers` is deployment configuration, not a public asset. All 81 referenced representative JPEGs are included; the photos folder also retains its pre-existing unused file and four `.gitkeep` files.
+- Remote `places.json` has exactly 100 places; app home displays 100. Browser checks verified the family sharing panel and a synthetic invitation's name-only participation sheet, with its fragment removed. The synthetic invitation was cancelled without submitting credentials or altering an existing family room.
+- Response headers contain the expected CSP, `noindex, nofollow, noarchive` and `no-referrer`. Real Sync Worker configuration is retained. Successful authenticated joining/reconnection was tested locally with the isolated server; actual two-phone testing of the user's existing room remains a user verification step.
+- Dashboard deployment list confirms the previous `v13-integration` (`8cce1919`) and project production (`f612ded0`) deployments remain unchanged. The new Preview is separate.
 - No main merge/rebase/push, root promotion, legacy deletion or server/schema change.
