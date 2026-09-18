@@ -1,62 +1,56 @@
 'use strict';
 const {test}=require('node:test');
-const assert=require('node:assert/strict');
-const fs=require('node:fs'),vm=require('node:vm');
-const source=fs.readFileSync('v11-preview/family-sync.js','utf8').replace('waitForApp();','globalThis.apiTest={syncNow,sharedState,mergeShared,cfg,startPolling};');
-const clone=x=>JSON.parse(JSON.stringify(x));
-const blank=()=>({routes:{},notes:{},notePositions:{},memoPhotos:{},saved:[],custom:[],todayProgress:{},checklists:{},syncMeta:{routes:{},notes:{},notePositions:{},memoPhotos:{},todayProgress:{},checklists:{},saved:'',custom:''}});
-const rk='da_nang:2027-01-12';
-let clock=Date.now();
-class Clock extends Date{constructor(...a){super(...(a.length?a:[++clock]));}static now(){return ++clock;}}
-function fixture(){
- const server={state:blank(),revision:1,fail:false,photoFail:false,hook:null,calls:[]};
- function client(id){
-  const timers=new Map(),storage=new Map();let timerId=0;
-  const c={local:blank(),window:{},crypto:require('node:crypto').webcrypto,Date:Clock,AbortSignal,URL,URLSearchParams,navigator:{onLine:true},tab:'schedule',document:{querySelector:()=>null},toolsView(){},todayView(){},render(){},toast(){},validateBackup(v){assert.ok(v.data.notes)},setInterval:()=>0,clearInterval(){},setTimeout(f,ms){if(ms<400){queueMicrotask(f);return 0;}timers.set(++timerId,f);return timerId;},clearTimeout(id){timers.delete(id)},localStorage:{getItem:()=>JSON.stringify({enabled:true,endpoint:'https://mock.invalid',roomCode:'TEST',token:'TEST',revision:1,deviceId:id}),setItem:(k,v)=>storage.set(k,v)}};
-  c.save=()=>{storage.set('familyTravelV11',JSON.stringify(c.local));return true;};
-  c.fetch=async(url,opts)=>{
-   const path=new URL(url).pathname,p=JSON.parse(opts.body);server.calls.push({id,path,p});
-   if(server.hook)await server.hook(id,path,p);
-   if(server.fail)throw Error('offline');
-   let d,status=200;
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const model=fs.readFileSync('v11-preview/memo-cards.js','utf8');
+const app=fs.readFileSync('v11-preview/app.js','utf8').replace(/\ninit\(\);\s*$/,'');
+const sync=fs.readFileSync('v11-preview/family-sync.js','utf8').replace('waitForApp();','globalThis.syncTest={syncNow,sharedState,mergeShared,cfg,startPolling};');
+const db=Object.fromEntries(['trip','cities','places','itineraries','safety'].map(n=>[n,JSON.parse(fs.readFileSync(`v11-preview/data/${n}.json`,'utf8'))]));
+const rk='da_nang:2027-01-12',pk='da_nang:hotel',clone=x=>JSON.parse(JSON.stringify(x));
+const blank=()=>({routes:{},notes:{},notePositions:{},memoPhotos:{},saved:[],custom:[],todayProgress:{},checklists:{},aiUndo:{},meta:{}});
+let clock=Date.now();class Clock extends Date{constructor(...a){super(...(a.length?a:[++clock]));}static now(){return ++clock;}}
+function fixture(initial=blank()){
+ const server={state:clone(initial),revision:1,photoFail:false,fail:false,hook:null,calls:[]};let photoSeq=0;
+ function client(id,state=initial){
+  const timers=new Map(),storage=new Map(),nodes={};let seq=0;
+  storage.set('familyTravelV11',JSON.stringify(state));storage.set('familyTravelFamilySyncV12',JSON.stringify({enabled:true,endpoint:'https://mock.invalid',roomCode:'TEST',token:'TEST',revision:0,deviceId:id}));
+  const c={fixtureDb:clone(db),window:{},crypto:require('node:crypto').webcrypto,Date:Clock,AbortSignal,URL,URLSearchParams,navigator:{onLine:true},console,document:{querySelector:s=>nodes[s]||null,querySelectorAll:()=>[],body:{dataset:{}}},setInterval:()=>0,clearInterval(){},setTimeout(f,ms){if(ms<400){queueMicrotask(f);return 0;}timers.set(++seq,f);return seq;},clearTimeout:id=>timers.delete(id),localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)}};
+  c.fetch=async(url,options)=>{
+   const path=new URL(url).pathname,p=JSON.parse(options.body);server.calls.push({id,path,p});if(server.hook)await server.hook(id,path,p);if(server.fail)throw Error('network');let d,status=200;
    if(path==='/sync/pull')d=p.revision===server.revision?{notModified:true,revision:server.revision}:{state:clone(server.state),revision:server.revision};
-   else if(path==='/sync/push'){
-    if(p.baseRevision!==server.revision){status=409;d={error:'revision_conflict',revision:server.revision,state:clone(server.state)};}
-    else{server.state=clone(p.state);d={revision:++server.revision};}
-   }else if(path==='/photo/upload'){
-    if(server.photoFail){status=503;d={error:'photo_storage_not_configured'};}
-    else d={remoteId:'abcdefghijklmnopqrstuv',url:'https://mock.invalid/photo.jpg'};
-   }else d={ok:true};
-   return {ok:status===200,status,json:async()=>d};
+   else if(path==='/sync/push'){if(p.baseRevision!==server.revision){status=409;d={state:clone(server.state),revision:server.revision,error:'revision_conflict'};}else{server.state=clone(p.state);d={revision:++server.revision};}}
+   else if(path==='/photo/upload'){if(server.photoFail){status=500;d={error:'server_error'};}else{const remoteId='photo-'+String(++photoSeq).padStart(25,'0');d={remoteId,url:'https://mock.invalid/'+remoteId+'.jpg'};}}
+   else d={ok:true};return {ok:status===200,status,json:async()=>d};
   };
-  vm.createContext(c);vm.runInContext(source,c);
-  return {c,storage,timers,edit(section,key,value){c.local[section][key]=value;c.save();},sync:mode=>c.apiTest.syncNow(mode||'poll'),async scheduled(){const jobs=[...timers.values()];timers.clear();await Promise.all(jobs.map(f=>f()));}};
+  vm.createContext(c);vm.runInContext(model,c);vm.runInContext(app,c);
+  vm.runInContext(`db=fixtureDb;city='da_nang';date='2027-01-12';tab='schedule';render=()=>{};toast=()=>{};closeSheet=()=>{};globalThis.appTest={state:()=>local,replace:v=>{local=v;save();},save:()=>save(),patch:(id,v)=>{patchMemo(id,v);save();},list:()=>routeMemos(),delete:id=>deleteMemo(id),move:moveMemo,timeline:scheduleTimeline,drag:commitRouteDrag,validate:validateBackup,backup:()=>backupPackage(),edit:editMemo,model:MemoCards};`,c);
+  vm.runInContext(sync,c);
+  return {c,storage,timers,nodes,state:()=>c.appTest.state(),card(id,text,extra={}){c.appTest.patch(id,{routeKey:rk,text,position:1,order:0,photo:null,deleted:false,...extra});},patch:(id,v)=>c.appTest.patch(id,v),sync:()=>c.syncTest.syncNow('poll'),async scheduled(){const jobs=[...timers.values()];timers.clear();await Promise.all(jobs.map(f=>f()));}};
  }
  const A=client('A'),B=client('B');
- async function converge(){for(let i=0;i<4;i++){await A.scheduled();await B.scheduled();await A.sync();await B.sync();}assert.deepEqual(clone(A.c.apiTest.sharedState()),server.state);assert.deepEqual(clone(B.c.apiTest.sharedState()),server.state);}
+ async function converge(){for(let i=0;i<5;i++){await A.scheduled();await B.scheduled();await A.sync();await B.sync();}const sa=clone(A.c.syncTest.sharedState()),sb=clone(B.c.syncTest.sharedState());assert.deepEqual(sa,sb);assert.deepEqual(sa,server.state);assert.equal(A.c.syncTest.cfg.dirty,false);assert.equal(B.c.syncTest.cfg.dirty,false);}
  function gate(id,path){let release,enter;const entered=new Promise(r=>enter=r),wait=new Promise(r=>release=r);let used=false;server.hook=async(i,p)=>{if(!used&&i===id&&p===path){used=true;enter();await wait;}};return {entered,release};}
- return {A,B,server,converge,gate};
+ return {A,B,server,converge,gate,client};
 }
-test('ordinary memo A to B',async()=>{const f=fixture();f.A.edit('notes',rk,'hello');await f.converge();assert.equal(f.server.state.notes[rk],'hello');});
-test('memo while route push busy survives consumed timer',async()=>{const f=fixture();f.A.edit('routes',rk,['hotel']);const g=f.gate('A','/sync/push'),job=f.A.sync();await g.entered;f.A.edit('notes',rk,'during push');await f.A.scheduled();g.release();await job;assert.equal(f.A.c.apiTest.cfg.dirty,true);await f.converge();assert.equal(f.server.state.notes[rk],'during push');});
-test('consecutive memo edits',async()=>{const f=fixture();f.A.edit('notes',rk,'one');const g=f.gate('A','/sync/push'),job=f.A.sync();await g.entered;for(const x of ['two','three','four'])f.A.edit('notes',rk,x);g.release();await job;await f.converge();assert.equal(f.server.state.notes[rk],'four');});
-test('simultaneous A B edits and conflict with new local edit',async()=>{const f=fixture();f.A.edit('notes',rk,'A first');const g=f.gate('A','/sync/push'),job=f.A.sync();await g.entered;f.B.edit('notes','da_nang:2027-01-13','B');await f.B.sync();f.A.edit('notes',rk,'A newest');g.release();await job;await f.converge();assert.equal(f.server.state.notes[rk],'A newest');assert.equal(f.server.state.notes['da_nang:2027-01-13'],'B');});
-test('offline then recovery',async()=>{const f=fixture();f.A.c.navigator.onLine=false;f.A.edit('notes',rk,'offline');await f.A.scheduled();assert.equal(f.A.c.apiTest.cfg.dirty,true);f.A.c.navigator.onLine=true;await f.converge();assert.equal(f.server.state.notes[rk],'offline');});
-test('push failure retries',async()=>{const f=fixture();f.A.edit('notes',rk,'retry');f.server.hook=async(id,path)=>{if(path==='/sync/push')throw Error('failed push')};await f.A.sync();assert.equal(f.A.c.apiTest.cfg.dirty,true);assert.ok(f.A.timers.size);f.server.hook=null;await f.converge();assert.equal(f.server.state.notes[rk],'retry');});
-test('local edit during polling',async()=>{const f=fixture();const g=f.gate('A','/sync/pull'),job=f.A.sync();await g.entered;f.A.edit('notes',rk,'during poll');g.release();await job;await f.converge();assert.equal(f.server.state.notes[rk],'during poll');});
-test('photo failure does not block text; retry converges',async()=>{const f=fixture();f.server.photoFail=true;f.A.edit('memoPhotos',rk,{dataUrl:'data:image/jpeg;base64,/9j/',width:1,height:1});f.A.edit('notes',rk,'text before photo');await f.A.sync();await f.B.sync();assert.equal(f.B.c.local.notes[rk],'text before photo');assert.ok(f.A.c.apiTest.cfg.lastError);assert.ok(f.A.c.local.memoPhotos[rk].dataUrl);assert.equal(f.server.state.memoPhotos[rk],undefined);const paths=f.server.calls.filter(x=>x.id==='A').map(x=>x.path);assert.ok(paths.indexOf('/sync/push')<paths.indexOf('/photo/upload'));f.server.photoFail=false;await f.converge();assert.ok(f.server.state.memoPhotos[rk].remoteId);assert.equal(f.A.c.apiTest.cfg.lastError,null);});
-test('deleted pending photo is not resurrected by upload result',async()=>{const f=fixture();f.A.edit('memoPhotos',rk,{dataUrl:'data:image/jpeg;base64,/9j/'});const g=f.gate('A','/photo/upload'),job=f.A.sync();await g.entered;delete f.A.c.local.memoPhotos[rk];f.A.c.save();g.release();await job;await f.converge();assert.equal(f.server.state.memoPhotos[rk],undefined);});
-test('legacy unstamped remote value accepted only without local value or tombstone',()=>{const f=fixture(),a=blank(),b=blank();b.notes[rk]='legacy';assert.equal(f.A.c.apiTest.mergeShared(a,b).notes[rk],'legacy');a.syncMeta={notes:{[rk]:'2026-01-01T00:00:00Z'}};assert.equal(f.A.c.apiTest.mergeShared(a,b).notes[rk],undefined);a.notes[rk]='local';a.syncMeta={};assert.equal(f.A.c.apiTest.mergeShared(a,b).notes[rk],'local');});
-
-test('simultaneous edits of the same memo converge to newer edit',async()=>{const f=fixture();f.A.edit('notes',rk,'older');const g=f.gate('A','/sync/push'),job=f.A.sync();await g.entered;f.B.edit('notes',rk,'newer');await f.B.sync();g.release();await job;await f.converge();assert.equal(f.server.state.notes[rk],'newer');});
-test('pending replacement survives incoming old remote photo',async()=>{const f=fixture();const old={remoteId:'abcdefghijklmnopqrstuv',remoteUrl:'https://mock.invalid/old.jpg'};f.B.edit('memoPhotos',rk,old);await f.B.sync();f.server.photoFail=true;f.A.edit('memoPhotos',rk,{dataUrl:'data:image/jpeg;base64,/9j/',width:1,height:1});await f.A.sync();assert.ok(f.A.c.local.memoPhotos[rk].dataUrl);assert.equal(f.A.c.local.memoPhotos[rk].remoteId,undefined);f.server.photoFail=false;await f.converge();assert.equal(f.server.state.memoPhotos[rk].remoteUrl,'https://mock.invalid/photo.jpg');});
-
-test('memo editor saves text locally without waiting for photo upload',async()=>{
- const app=fs.readFileSync('v11-preview/app.js','utf8');
- const start=app.indexOf('function editMemo(){'),end=app.indexOf('\nfunction ',start+1);
- const nodes={'#save-memo':{},'#day-memo':{value:'local text'},'#memo-position':{value:'bottom'},'#memo-photo-preview':{},'#memo-photo-add':{},'#memo-photo-input':{}};
- let saved=false;
- const c={local:{notes:{},notePositions:{},memoPhotos:{}},route:()=>[],routeKey:()=>rk,memoPhoto:()=>({dataUrl:'data:image/jpeg;base64,/9j/'}),hasRouteMemo:()=>false,date:'2027-01-12',dateLabel:x=>x,esc:x=>x,openSheet(){},closeSheet(){},render(){},toast(){},notePlacementOptions:()=>'',memoPhotoSrc:p=>p.dataUrl,$:k=>nodes[k],window:{familyMemoPhotoUpload:()=>{throw Error('editor must not await upload')}},save(){saved=true;return true;}};
- vm.createContext(c);vm.runInContext(app.slice(start,end)+';editMemo();',c);
- await nodes['#save-memo'].onclick();assert.equal(saved,true);assert.equal(c.local.notes[rk],'local text');assert.ok(c.local.memoPhotos[rk].dataUrl);
-});
+const photo=()=>({dataUrl:'data:image/jpeg;base64,/9j/',pendingId:require('node:crypto').randomUUID(),width:1,height:1});
+test('ordinary card A to B',async()=>{const f=fixture();f.A.card('a','hello');await f.converge();assert.equal(f.B.state().memoCards.a.text,'hello');});
+test('route push busy then memo edit survives timer',async()=>{const f=fixture();f.A.state().routes[rk]=[pk];f.A.c.appTest.save();const g=f.gate('A','/sync/push'),job=f.A.sync();await g.entered;f.A.card('a','during push');await f.A.scheduled();g.release();await job;assert.equal(f.A.c.syncTest.cfg.dirty,true);await f.converge();assert.equal(f.server.state.memoCards.a.text,'during push');});
+test('rapid successive edits',async()=>{const f=fixture();f.A.card('a','one');const g=f.gate('A','/sync/push'),job=f.A.sync();await g.entered;for(const text of ['two','three','four'])f.A.patch('a',{text});g.release();await job;await f.converge();assert.equal(f.server.state.memoCards.a.text,'four');});
+test('simultaneous different card adds on same date',async()=>{const f=fixture();f.A.card('a','A');const g=f.gate('A','/sync/push'),job=f.A.sync();await g.entered;f.B.card('b','B');await f.B.sync();f.A.patch('a',{text:'A latest'});g.release();await job;await f.converge();assert.equal(f.server.state.memoCards.a.text,'A latest');assert.equal(f.server.state.memoCards.b.text,'B');});
+test('simultaneous different card edits preserve both',async()=>{const f=fixture();f.A.card('a','A');f.A.card('b','B');await f.converge();f.A.patch('a',{text:'A edited'});f.B.patch('b',{text:'B edited'});await Promise.all([f.A.sync(),f.B.sync()]);await f.converge();assert.equal(f.server.state.memoCards.a.text,'A edited');assert.equal(f.server.state.memoCards.b.text,'B edited');});
+test('offline then recovery',async()=>{const f=fixture();f.A.c.navigator.onLine=false;f.A.card('a','offline');await f.A.scheduled();f.A.c.navigator.onLine=true;await f.converge();assert.equal(f.B.state().memoCards.a.text,'offline');});
+test('failed push remains dirty and retries',async()=>{const f=fixture();f.A.card('a','retry');f.server.hook=async(id,path)=>{if(path==='/sync/push')throw Error('failed')};await f.A.sync();assert.ok(f.A.c.syncTest.cfg.dirty);f.server.hook=null;await f.converge();assert.equal(f.B.state().memoCards.a.text,'retry');});
+test('local add during poll',async()=>{const f=fixture();const g=f.gate('A','/sync/pull'),job=f.A.sync();await g.entered;f.A.card('a','during poll');g.release();await job;await f.converge();assert.equal(f.B.state().memoCards.a.text,'during poll');});
+test('photo failure leaves text and pending marker; retry converges',async()=>{const f=fixture();f.server.photoFail=true;f.A.card('a','text',{photo:photo()});await f.A.sync();await f.B.sync();assert.equal(f.B.state().memoCards.a.text,'text');assert.ok(f.A.c.syncTest.cfg.lastError);assert.ok(f.B.state().memoCards.a.photo.pendingId);assert.equal(f.server.state.memoCards.a.photo.dataUrl,undefined);f.server.photoFail=false;await f.converge();assert.ok(f.B.state().memoCards.a.photo.remoteId);assert.ok(f.A.state().memoCards.a.photo.dataUrl);});
+test('different card photo uploads each retain own reference',async()=>{const f=fixture();f.A.card('a','A',{photo:photo()});f.B.card('b','B',{photo:photo()});await Promise.all([f.A.sync(),f.B.sync()]);await f.converge();assert.notEqual(f.server.state.memoCards.a.photo.remoteId,f.server.state.memoCards.b.photo.remoteId);});
+test('delete during upload cannot resurrect a card',async()=>{const f=fixture();f.A.card('a','A',{photo:photo()});const g=f.gate('A','/photo/upload'),job=f.A.sync();await g.entered;f.A.c.appTest.delete('a');g.release();await job;await f.converge();assert.ok(f.server.state.memoCards.a.deleted);assert.equal(f.B.c.appTest.list().length,0);});
+test('text edit during upload is retained',async()=>{const f=fixture();f.A.card('a','old',{photo:photo()});const g=f.gate('A','/photo/upload'),job=f.A.sync();await g.entered;f.A.patch('a',{text:'new'});g.release();await job;await f.converge();assert.equal(f.server.state.memoCards.a.text,'new');assert.ok(f.server.state.memoCards.a.photo.remoteId);});
+test('photo replacement during upload ignores stale result',async()=>{const f=fixture();f.A.card('a','A',{photo:photo()});const g=f.gate('A','/photo/upload'),job=f.A.sync();await g.entered;const replacement=photo();f.A.patch('a',{photo:replacement});g.release();await job;await f.converge();assert.equal(f.A.state().memoCards.a.photo.pendingId,replacement.pendingId);assert.ok(f.server.state.memoCards.a.photo.remoteId.endsWith('2'));});
+test('legacy migration deterministic, preserves raw text, position and photo',async()=>{const old=blank();old.notes[rk]='legacy';old.notePositions[rk]=2;old.memoPhotos[rk]={remoteId:'abcdefghijklmnopqrstuv',remoteUrl:'https://mock.invalid/legacy.jpg',width:2,height:3};const f=fixture(old);await f.converge();const cards=f.A.c.appTest.list();assert.equal(cards.length,1);assert.equal(cards[0].id,'legacy:'+rk);assert.equal(cards[0].position,2);assert.equal(cards[0].photo.remoteUrl,old.memoPhotos[rk].remoteUrl);assert.deepEqual(clone(f.A.state().notes),old.notes);f.A.c.appTest.model.migrate(f.A.state());assert.equal(f.A.c.appTest.list().length,1);});
+test('legacy local-only photo migrates and uploads',async()=>{const old=blank();old.memoPhotos[rk]=photo();const f=fixture(old);await f.converge();assert.ok(f.server.state.memoCards['legacy:'+rk].photo.remoteId);});
+test('deleted migrated card is not resurrected by old backup fields',async()=>{const old=blank();old.notes[rk]='legacy';const f=fixture(old);await f.converge();f.A.c.appTest.delete('legacy:'+rk);await f.converge();f.B.c.appTest.model.migrate(f.B.state());assert.equal(f.B.c.appTest.list().length,0);});
+test('delete one card while B edits a different card',async()=>{const f=fixture();f.A.card('a','A');f.A.card('b','B');await f.converge();f.A.c.appTest.delete('a');f.B.patch('b',{text:'kept'});await Promise.all([f.A.sync(),f.B.sync()]);await f.converge();assert.equal(f.B.c.appTest.list().length,1);assert.equal(f.server.state.memoCards.b.text,'kept');});
+test('same timestamp conflict uses deterministic winner',async()=>{const f=fixture();f.A.card('a','A');f.B.card('a','B');for(const c of [f.A,f.B]){c.state().memoCards.a.updatedAt='2026-09-18T00:00:00.000Z';c.c.appTest.save();}await Promise.all([f.A.sync(),f.B.sync()]);await f.converge();assert.equal(f.server.state.memoCards.a.text,'B');});
+test('multiple cards at one gap render and move independently',()=>{const f=fixture();f.A.state().routes[rk]=[pk,pk];f.A.card('a','A',{position:1,order:0});f.A.card('b','B',{position:1,order:1});const html=f.A.c.appTest.timeline([pk,pk]);assert.equal((html.match(/data-sort-kind="memo"/g)||[]).length,2);assert.ok(html.indexOf('data-memo-edit="a"')<html.indexOf('data-memo-edit="b"'));f.A.c.appTest.move('b',-1);assert.deepEqual(clone(f.A.c.appTest.list().map(x=>x.id)),['b','a']);});
+test('drag sequence persists positions for every card',async()=>{const f=fixture();f.A.card('a','A');f.A.card('b','B');const seq=[['memo','a'],['place',pk],['memo','b']];f.A.c.appTest.drag({querySelectorAll:()=>seq.map(([sortKind,sortKey])=>({dataset:{sortKind,sortKey}}))},'memo');assert.equal(f.A.state().memoCards.a.position,0);assert.equal(f.A.state().memoCards.b.position,1);await f.converge();});
+test('backup validates multiple cards and migration without loss',()=>{const f=fixture();f.A.card('a','A',{photo:photo()});f.A.card('b','B');const backup=clone(f.A.c.appTest.backup());assert.equal(backup.schemaVersion,3);const checked=f.B.c.appTest.validate(backup);assert.equal(checked.stats.notes,2);assert.equal(checked.stats.memoPhotos,1);assert.deepEqual(clone(checked.data.memoCards),clone(f.A.state().memoCards));const bad=clone(backup);bad.data.memoCards.a.routeKey='bad';assert.throws(()=>f.B.c.appTest.validate(bad));});
+test('restore omission becomes tombstone and converges',async()=>{const f=fixture();f.A.card('a','A');f.A.card('b','B');await f.converge();const snap=clone(f.A.state());delete snap.memoCards.a;f.A.c.appTest.replace(snap);await f.converge();assert.ok(f.B.state().memoCards.a.deleted);});

@@ -1,7 +1,7 @@
 (()=>{
 'use strict';
 const CONFIG_KEY='familyTravelFamilySyncV12';
-const SHARED_KEYS=['routes','notes','notePositions','memoPhotos','saved','custom','todayProgress','checklists'];
+const SHARED_KEYS=['memoCards','routes','notes','notePositions','memoPhotos','saved','custom','todayProgress','checklists'];
 let baseSave=save, baseToolsView=toolsView, baseTodayView=todayView;
 let syncApplying=false,syncBusy=false,syncPushTimer=null,syncPollTimer=null;
 let syncShadow=null,syncDevices=[],devicesFetchedAt=0,deviceFetchBusy=false;
@@ -19,26 +19,27 @@ function loadConfig(){
   return {enabled:!!v.enabled,endpoint:String(v.endpoint||endpointDefault()),roomCode:String(v.roomCode||''),token:String(v.token||''),revision:Number(v.revision||0),deviceId:String(v.deviceId||makeId()),deviceName:cleanDeviceName(v.deviceName||'가족 휴대폰'),lastSyncAt:v.lastSyncAt||null,lastError:v.lastError||null,dirty:!!v.dirty,deviceCount:Number(v.deviceCount||0),maxDevices:Number(v.maxDevices||MAX_FAMILY_DEVICES),pendingPhotoDeletes:Array.isArray(v.pendingPhotoDeletes)?v.pendingPhotoDeletes.filter(x=>typeof x==='string').slice(-100):[]};
 }
 let cfg=loadConfig();
+if(typeof memoMigrationPending!=='undefined'&&memoMigrationPending&&hasCreds()){cfg.dirty=true;saveCfg();}
 function saveCfg(){try{localStorage.setItem(CONFIG_KEY,JSON.stringify(cfg));}catch{}}
 function ensureMeta(){
   if(!local.syncMeta||typeof local.syncMeta!=='object'||Array.isArray(local.syncMeta))local.syncMeta={};
-  for(const k of ['routes','notes','notePositions','memoPhotos','todayProgress','checklists'])if(!local.syncMeta[k]||typeof local.syncMeta[k]!=='object'||Array.isArray(local.syncMeta[k]))local.syncMeta[k]={};
+  for(const k of ['memoCards','routes','notes','notePositions','memoPhotos','todayProgress','checklists'])if(!local.syncMeta[k]||typeof local.syncMeta[k]!=='object'||Array.isArray(local.syncMeta[k]))local.syncMeta[k]={};
   if(typeof local.syncMeta.saved!=='string')local.syncMeta.saved='';
   if(typeof local.syncMeta.custom!=='string')local.syncMeta.custom='';
 }
 function sharedMemoPhotos(src=local){const out={};for(const [rk,p] of Object.entries(src.memoPhotos||{})){const remoteUrl=String(p?.remoteUrl||p?.url||'');if(p&&typeof p.remoteId==='string'&&/^https:\/\//.test(remoteUrl)){out[rk]={remoteId:p.remoteId,remoteUrl,width:Number(p.width||0),height:Number(p.height||0),size:Number(p.size||0),name:String(p.name||'memo-photo.jpg').slice(0,120),updatedAt:p.updatedAt||null};}}return out;}
-function sharedState(src=local){ensureMeta();return {routes:clone(src.routes||{}),notes:clone(src.notes||{}),notePositions:clone(src.notePositions||{}),memoPhotos:sharedMemoPhotos(src),saved:clone(src.saved||[]),custom:clone(src.custom||[]),todayProgress:clone(src.todayProgress||{}),checklists:clone(src.checklists||{}),syncMeta:clone(src.syncMeta||{})};}
+function sharedState(src=local){MemoCards.migrate(src);ensureMeta();return {memoCards:MemoCards.shared(src),routes:clone(src.routes||{}),notes:clone(src.notes||{}),notePositions:clone(src.notePositions||{}),memoPhotos:sharedMemoPhotos(src),saved:clone(src.saved||[]),custom:clone(src.custom||[]),todayProgress:clone(src.todayProgress||{}),checklists:clone(src.checklists||{}),syncMeta:clone(src.syncMeta||{})};}
 function stable(v){return JSON.stringify(v);}
 // Preserve ordering for rapid edits within the same millisecond.
 function nextStamp(previous,current){return new Date(Math.max(Date.parse(current),stamp(previous)+1)).toISOString();}
 function markObjectDiff(section,before={},after={}){
   const keys=new Set([...Object.keys(before||{}),...Object.keys(after||{})]);const stamp=nowIso();let changed=false;
-  for(const k of keys)if(stable(before?.[k])!==stable(after?.[k])){local.syncMeta[section][k]=nextStamp(local.syncMeta[section][k],stamp);changed=true;}
+  for(const k of keys)if(stable(before?.[k])!==stable(after?.[k])){local.syncMeta[section][k]=section==='memoCards'&&after[k]?after[k].updatedAt:nextStamp(local.syncMeta[section][k],stamp);changed=true;}
   return changed;
 }
 function markDiff(before,after){
   ensureMeta();let changed=false;
-  for(const s of ['routes','notes','notePositions','memoPhotos','todayProgress','checklists'])changed=markObjectDiff(s,before?.[s]||{},after?.[s]||{})||changed;
+  for(const s of ['memoCards','routes','notes','notePositions','memoPhotos','todayProgress','checklists'])changed=markObjectDiff(s,before?.[s]||{},after?.[s]||{})||changed;
   const stamp=nowIso();
   if(stable(before?.saved||[])!==stable(after?.saved||[])){local.syncMeta.saved=nextStamp(local.syncMeta.saved,stamp);changed=true;}
   if(stable(before?.custom||[])!==stable(after?.custom||[])){local.syncMeta.custom=nextStamp(local.syncMeta.custom,stamp);changed=true;}
@@ -49,6 +50,9 @@ function armPush(delay=900){clearTimeout(syncPushTimer);syncPushTimer=setTimeout
 function schedulePush(){if(!hasCreds()||syncApplying)return;cfg.dirty=true;saveCfg();armPush();}
 ensureMeta();syncShadow=sharedState();
 save=function(){
+  MemoCards.migrate(local);
+  // A backup replacement may omit cards; retain synchronized deletion records.
+  if(!syncApplying)for(const [id,m] of Object.entries(syncShadow?.memoCards||{}))if(!Object.prototype.hasOwnProperty.call(local.memoCards,id)){local.memoCards[id]=clone(m);MemoCards.patch(local,id,{deleted:true});}
   const sharedChanged=!syncApplying&&markDiff(syncShadow,sharedState());
   const ok=baseSave();
   if(ok){syncShadow=sharedState();if(sharedChanged)schedulePush();}
@@ -63,30 +67,32 @@ function mergeMap(section,a,b,am,bm){
   return [out,meta];
 }
 function mergeShared(a,b){
-  a=a||sharedState();b=b||{};const am=a.syncMeta||{},bm=b.syncMeta||{},out={syncMeta:{routes:{},notes:{},notePositions:{},memoPhotos:{},todayProgress:{},checklists:{},saved:'',custom:''}};
-  for(const s of ['routes','notes','notePositions','memoPhotos','todayProgress','checklists']){const [data,meta]=mergeMap(s,a[s]||{},b[s]||{},am[s]||{},bm[s]||{});out[s]=data;out.syncMeta[s]=meta;}
+  a=clone(a||sharedState());b=clone(b||{});MemoCards.migrate(a);MemoCards.migrate(b);const am=a.syncMeta||{},bm=b.syncMeta||{},out={syncMeta:{routes:{},notes:{},notePositions:{},memoPhotos:{},todayProgress:{},checklists:{},saved:'',custom:''}};
+  for(const s of ['memoCards','routes','notes','notePositions','memoPhotos','todayProgress','checklists']){if(s==='memoCards'){out[s]=MemoCards.merge(a[s],b[s]);out.syncMeta[s]=Object.fromEntries(Object.entries(out[s]).map(([id,m])=>[id,m.updatedAt]));continue;}const [data,meta]=mergeMap(s,a[s]||{},b[s]||{},am[s]||{},bm[s]||{});out[s]=data;out.syncMeta[s]=meta;}
   for(const s of ['saved','custom']){const useRemote=newer(am[s],bm[s]);out[s]=clone((useRemote?b[s]:a[s])||[]);out.syncMeta[s]=useRemote?(bm[s]||''):(am[s]||bm[s]||'');}
   return out;
 }
 function seedMeta(state){
   const s=clone(state),m=s.syncMeta||{routes:{},notes:{},notePositions:{},memoPhotos:{},todayProgress:{},checklists:{},saved:'',custom:''},t=nowIso();
-  for(const sec of ['routes','notes','notePositions','memoPhotos','todayProgress','checklists']){m[sec]=m[sec]||{};for(const k of Object.keys(s[sec]||{}))if(!m[sec][k])m[sec][k]=t;}
+  for(const sec of ['memoCards','routes','notes','notePositions','memoPhotos','todayProgress','checklists']){m[sec]=m[sec]||{};for(const k of Object.keys(s[sec]||{}))if(!m[sec][k])m[sec][k]=t;}
   if(!m.saved)m.saved=t;if(!m.custom)m.custom=t;s.syncMeta=m;return s;
 }
 function validateRemoteState(state){
   if(!state||typeof state!=='object')throw Error('sync_data');
+  MemoCards.migrate(state);
   const candidate={...local,...state,aiUndo:{},meta:local.meta||{}};
   validateBackup({version:11,data:candidate});
   return state;
 }
 function applyShared(state,{renderNow=true,clearUndo=true}={}){
   validateRemoteState(state);syncApplying=true;
-  const oldPhotos=clone(local.memoPhotos||{});
-  for(const k of SHARED_KEYS){if(k==='memoPhotos')continue;local[k]=clone(state[k]??(Array.isArray(local[k])?[]:{}));}
+  const oldPhotos=clone(local.memoPhotos||{}),oldCards=local.memoCards;
+  for(const k of SHARED_KEYS){if(k==='memoPhotos'||k==='memoCards')continue;local[k]=clone(state[k]??(Array.isArray(local[k])?[]:{}));}
   const incoming=state.memoPhotos||{},photos={};
   for(const [rk,p] of Object.entries(incoming)){const old=oldPhotos[rk];photos[rk]={...clone(p)};if(old?.dataUrl&&old?.remoteId===p?.remoteId)photos[rk].dataUrl=old.dataUrl;}
   for(const [rk,p] of Object.entries(oldPhotos)){if(p?.dataUrl&&!p?.remoteId)photos[rk]=p;}
   local.memoPhotos=photos;
+  local.memoCards=MemoCards.hydrate(state.memoCards,oldCards);
   local.syncMeta=clone(state.syncMeta||{});ensureMeta();if(clearUndo)local.aiUndo={};
   const ok=baseSave();syncApplying=false;syncShadow=sharedState();if(renderNow)render();return ok;
 }
@@ -104,18 +110,18 @@ async function uploadMemoPhoto(rk,photo){
 }
 function queuePhotoDelete(photo){const id=String(photo?.remoteId||'');if(!id)return;if(!cfg.pendingPhotoDeletes.includes(id))cfg.pendingPhotoDeletes.push(id);cfg.pendingPhotoDeletes=cfg.pendingPhotoDeletes.slice(-100);saveCfg();if(hasCreds()&&navigator.onLine!==false)flushPhotoDeletes();}
 async function flushPhotoDeletes(){if(!hasCreds()||navigator.onLine===false||!cfg.pendingPhotoDeletes.length)return;const pending=[...cfg.pendingPhotoDeletes];for(const id of pending){try{await api('/photo/delete',{...roomPayload(),remoteId:id},12000);cfg.pendingPhotoDeletes=cfg.pendingPhotoDeletes.filter(x=>x!==id);saveCfg();}catch{break;}}}
-function pendingMemoPhotos(){return Object.values(local.memoPhotos||{}).some(p=>p?.dataUrl&&!p?.remoteId);}
+function pendingMemoPhotos(){return MemoCards.list(local).some(m=>m.photo&&!m.photo.remoteId);}
 async function syncPendingMemoPhotos(){
   if(!hasCreds()||navigator.onLine===false)return;
-  for(const [rk,p] of Object.entries(local.memoPhotos||{})){
-    if(!p?.dataUrl||p.remoteId)continue;
+  for(const m of MemoCards.list(local)){
+    const p=m.photo;if(!p?.dataUrl||p.remoteId)continue;
     try{
-      const uploaded=await uploadMemoPhoto(rk,p);
-      // An edit or deletion while uploading must not be replaced by the old photo.
-      if(stable(local.memoPhotos[rk])!==stable(p))continue;
+      const uploaded=await uploadMemoPhoto(m.routeKey,p);
+      const current=local.memoCards[m.id];
+      if(!current||current.deleted||stable(current.photo)!==stable(p))continue;
       if(!uploaded.remoteId||!/^https:\/\//.test(uploaded.remoteUrl||''))continue;
-      local.memoPhotos[rk]=uploaded;save();
-    }catch{/* Keep the local photo pending for the next online/poll/manual retry. */}
+      MemoCards.patch(local,m.id,{photo:uploaded});save();
+    }catch{/* Keep each card's pending photo for online/poll/manual retry. */}
   }
 }
 window.familyMemoPhotoUpload=async(rk,photo)=>uploadMemoPhoto(rk,photo);
@@ -123,7 +129,7 @@ window.familyMemoPhotoDelete=photo=>queuePhotoDelete(photo);
 function syncErrorText(e){if(e?.data?.error==='max_devices')return `가족 공유는 최대 ${e.data.maxDevices||MAX_FAMILY_DEVICES}대의 휴대폰까지 참여할 수 있습니다.`;if(e?.status===401||e?.status===403)return '공유방 인증정보가 맞지 않습니다.';if(e?.status===404)return '공유방을 찾지 못했습니다.';if(e?.status===409)return '가족의 최신 변경사항과 합치는 중 충돌이 발생했습니다.';if(e?.name==='TimeoutError')return '동기화 서버 응답이 늦습니다.';if(navigator.onLine===false)return '현재 오프라인입니다.';return '가족 동기화 서버에 연결하지 못했습니다.';}
 function updateDeviceCounts(d){if(!d)return;cfg.deviceCount=Number(d.deviceCount??cfg.deviceCount??0);cfg.maxDevices=Number(d.maxDevices||cfg.maxDevices||MAX_FAMILY_DEVICES);saveCfg();}
 async function pullRemote(){
-  const d=await api('/sync/pull',{...roomPayload(),revision:cfg.revision});updateDeviceCounts(d);if(d.notModified)return null;validateRemoteState(d.state);cfg.revision=Number(d.revision||0);saveCfg();return d;
+  const d=await api('/sync/pull',{...roomPayload(),revision:cfg.revision});updateDeviceCounts(d);if(d.notModified)return null;const before=stable(d.state.memoCards||{});validateRemoteState(d.state);if(before!==stable(d.state.memoCards||{}))cfg.dirty=true;cfg.revision=Number(d.revision||0);saveCfg();return d;
 }
 async function pushState(state,baseRevision=cfg.revision){
   let current=clone(state),base=Number(baseRevision||0),last=null;
@@ -137,7 +143,7 @@ async function syncNow(mode='manual'){
   if(!hasCreds()||syncBusy||navigator.onLine===false)return false;syncBusy=true;cfg.lastError=null;saveCfg();renderSyncBits();let remoteChanged=false;
   try{
     // Send text and other shared changes before waiting for photo storage.
-    const remote=await pullRemote();if(remote?.state){const merged=mergeShared(sharedState(),remote.state);if(stable(merged)!==stable(sharedState())){applyShared(merged,{renderNow:false});remoteChanged=true;}}
+    const remote=await pullRemote();if(remote?.state){const merged=mergeShared(sharedState(),remote.state);if(stable(merged.memoCards)!==stable(remote.state.memoCards))cfg.dirty=true;if(stable(merged)!==stable(sharedState())){applyShared(merged,{renderNow:false});remoteChanged=true;}}
     if(cfg.dirty||mode==='push'){
       const d=await pushState(sharedState(),cfg.revision);cfg.revision=Number(d.revision||cfg.revision);// Only acknowledge the snapshot actually accepted by the server.
       cfg.dirty=stable(sharedState())!==stable(d.sentState);
@@ -147,7 +153,7 @@ async function syncNow(mode='manual'){
   }catch(e){cfg.lastError=syncErrorText(e);saveCfg();if(mode==='manual')toast(cfg.lastError);renderSyncBits();return false;}
   finally{syncBusy=false;if(cfg.dirty&&hasCreds()&&navigator.onLine!==false)armPush(cfg.lastError?15000:900);renderSyncBits();}
 }
-function previewStats(state){return {days:Object.keys(state.routes||{}).length,notes:new Set([...Object.keys(state.notes||{}),...Object.keys(state.memoPhotos||{})]).size,saved:(state.saved||[]).length,custom:(state.custom||[]).length,today:Object.keys(state.todayProgress||{}).length,checks:Object.keys(state.checklists||{}).length};}
+function previewStats(state){return {days:Object.keys(state.routes||{}).length,notes:MemoCards.list(state).length,saved:(state.saved||[]).length,custom:(state.custom||[]).length,today:Object.keys(state.todayProgress||{}).length,checks:Object.keys(state.checklists||{}).length};}
 function statsHtml(s){return `<div class="sync-preview"><span><small>편집 일정</small><b>${s.days}일</b></span><span><small>메모</small><b>${s.notes}개</b></span><span><small>저장 장소</small><b>${s.saved}곳</b></span><span><small>추가 장소</small><b>${s.custom}곳</b></span><span><small>Today 진행</small><b>${s.today}일</b></span><span><small>체크리스트</small><b>${s.checks}일</b></span></div>`;}
 function normalizeEndpoint(v){v=String(v||'').trim().replace(/\/$/,'');if(!v)return '';const u=new URL(v);if(u.protocol!=='https:')throw Error();return v;}
 function endpointReady(){if(cfg.endpoint)return true;openSyncServerSheet();return false;}
