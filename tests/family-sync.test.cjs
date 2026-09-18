@@ -1,10 +1,10 @@
 'use strict';
 const {test}=require('node:test');
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
-const model=fs.readFileSync('v11-preview/memo-cards.js','utf8');
-const app=fs.readFileSync('v11-preview/app.js','utf8').replace(/\ninit\(\);\s*$/,'');
-const sync=fs.readFileSync('v11-preview/family-sync.js','utf8').replace('waitForApp();','globalThis.syncTest={syncNow,sharedState,mergeShared,get cfg(){return cfg;},startPolling};');
-const db=Object.fromEntries(['trip','cities','places','itineraries','safety'].map(n=>[n,JSON.parse(fs.readFileSync(`v11-preview/data/${n}.json`,'utf8'))]));
+const model=fs.readFileSync('memo-cards.js','utf8');
+const app=fs.readFileSync('app.js','utf8').replace(/\ninit\(\);\s*$/,'');
+const sync=fs.readFileSync('family-sync.js','utf8').replace('waitForApp();','globalThis.syncTest={syncNow,sharedState,mergeShared,get cfg(){return cfg;},startPolling};');
+const db=Object.fromEntries(['trip','cities','places','itineraries','safety'].map(n=>[n,JSON.parse(fs.readFileSync(`data/${n}.json`,'utf8'))]));
 const rk='da_nang:2027-01-12',pk='da_nang:hotel',clone=x=>JSON.parse(JSON.stringify(x));
 const blank=()=>({routes:{},notes:{},notePositions:{},memoPhotos:{},saved:[],custom:[],todayProgress:{},checklists:{},aiUndo:{},meta:{}});
 let clock=Date.now();class Clock extends Date{constructor(...a){super(...(a.length?a:[++clock]));}static now(){return ++clock;}}

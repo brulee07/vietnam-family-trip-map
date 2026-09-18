@@ -1,7 +1,7 @@
 'use strict';
 const {test}=require('node:test');
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
-const db=Object.fromEntries(['trip','cities','places','itineraries','safety'].map(n=>[n,JSON.parse(fs.readFileSync(`v11-preview/data/${n}.json`,'utf8'))]));
+const db=Object.fromEntries(['trip','cities','places','itineraries','safety'].map(n=>[n,JSON.parse(fs.readFileSync(`data/${n}.json`,'utf8'))]));
 const clone=x=>JSON.parse(JSON.stringify(x));
 const blank=()=>({routes:{},notes:{},saved:[],custom:[],memoCards:{},todayProgress:{},checklists:{},aiUndo:{},meta:{}});
 const retired=['quy_nhon:gold','tuy_hoa:giatuituyhoa','tuy_hoa:giatsayphuyen','nha_trang:laundry2h','nha_trang:washgo'];
@@ -13,10 +13,10 @@ function client({state=blank(),remote=blank(),config={},hash='',storage=new Map(
  c.fetch=async(url,options)=>{const p=JSON.parse(options.body);calls.push({path:new URL(url).pathname,p});if(fail)throw Error('offline');if(max)return {ok:false,status:403,json:async()=>({error:'max_devices',maxDevices:9})};return {ok:true,status:200,json:async()=>({state:clone(remote),revision:2,deviceCount:2,maxDevices:9,devices:[]})};};
  c.sheet=(title,body,footer)=>{html=title+body+footer;screens.push(html);for(const k of Object.keys(nodes))delete nodes[k];for(const match of html.matchAll(/id="([^"]+)"/g))nodes['#'+match[1]]={value:'',disabled:false};};
  vm.createContext(c);
- vm.runInContext(fs.readFileSync('v11-preview/memo-cards.js','utf8'),c);
- vm.runInContext(fs.readFileSync('v11-preview/app.js','utf8').replace(/\ninit\(\);\s*$/,''),c);
+ vm.runInContext(fs.readFileSync('memo-cards.js','utf8'),c);
+ vm.runInContext(fs.readFileSync('app.js','utf8').replace(/\ninit\(\);\s*$/,''),c);
  vm.runInContext(`db=fixtureDb;render=()=>{};toast=s=>globalThis.message=s;openSheet=sheet;closeSheet=()=>{};globalThis.appTest={state:()=>local,clean:cleanRetiredPlaces,validate:validateBackup,route,backup:backupPackage};`,c);
- vm.runInContext(fs.readFileSync('v11-preview/family-sync.js','utf8').replace('waitForApp();','globalThis.syncTest={parseInvite,pendingInvite,openJoinSheet,previewJoin,commitJoin,waitForApp,copyInvite,openInviteSheet,sharedState,get cfg(){return cfg;}};'),c);
+ vm.runInContext(fs.readFileSync('family-sync.js','utf8').replace('waitForApp();','globalThis.syncTest={parseInvite,pendingInvite,openJoinSheet,previewJoin,commitJoin,waitForApp,copyInvite,openInviteSheet,sharedState,get cfg(){return cfg;}};'),c);
  return {c,nodes,calls,storage,timers,screens,html:()=>html};
 }
 test('exactly 100 non-laundry places and all itinerary references resolve',()=>{
@@ -67,7 +67,7 @@ test('unrelated invalid backup IDs are still rejected',()=>{
  const f=client(),s=blank();s.routes['da_nang:2027-01-12']=['da_nang:unknown'];assert.throws(()=>f.c.appTest.validate({version:11,data:s}));
 });
 test('actual Worker admits existing device at nine but rejects a tenth',async()=>{
- const c={TextEncoder,Date};vm.createContext(c);const source=fs.readFileSync('v11-preview/sync-worker/worker.js','utf8');vm.runInContext(source.slice(0,source.indexOf('export default'))+';globalThis.touch=touchDevice;',c);
+ const c={TextEncoder,Date};vm.createContext(c);const source=fs.readFileSync('sync-worker/worker.js','utf8');vm.runInContext(source.slice(0,source.indexOf('export default'))+';globalThis.touch=touchDevice;',c);
  const env={DB:{prepare(sql){return {bind(...args){return {async first(){return sql.includes('COUNT')?{n:9}:args[1]==='existing'?{device_id:'existing'}:null;},async run(){if(sql.startsWith('INSERT'))throw Error('max_devices');return {};}};}};}}};
  assert.equal((await c.touch(env,'TEST',{deviceId:'existing'})).count,9);
  await assert.rejects(c.touch(env,'TEST',{deviceId:'new'},{preview:true}),e=>e.code==='max_devices');

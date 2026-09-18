@@ -3,7 +3,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
 const http=require('node:http');
-const root=path.resolve(__dirname,'../v11-preview');
+const root=path.resolve(__dirname,'..');
 test('Da Nang frozen 16 photos are served intact over HTTP',async()=>{
  const places=JSON.parse(fs.readFileSync(path.join(root,'data/places.json'))).filter(p=>p.city==='da_nang');
  assert.equal(places.length,16);

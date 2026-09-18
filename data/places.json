@@ -21,7 +21,8 @@
       "hours": "not_specified",
       "price": "not_specified",
       "note": ""
-    }
+    },
+    "photoFile": "photos/da_nang/airport.jpg"
   },
   {
     "id": "hotel",
@@ -45,7 +46,8 @@
       "hours": "not_specified",
       "price": "not_specified",
       "note": ""
-    }
+    },
+    "photoFile": "photos/da_nang/hotel.jpg"
   },
   {
     "id": "station",
@@ -69,7 +71,8 @@
       "hours": "not_specified",
       "price": "not_specified",
       "note": ""
-    }
+    },
+    "photoFile": "photos/da_nang/station.jpg"
   },
   {
     "id": "museum",
@@ -93,7 +96,8 @@
       "hours": "not_specified",
       "price": "not_specified",
       "note": ""
-    }
+    },
+    "photoFile": "photos/da_nang/museum.jpg"
   },
   {
     "id": "con",
@@ -117,7 +121,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": ""
-    }
+    },
+    "photoFile": "photos/da_nang/conmarket.jpg"
   },
   {
     "id": "aeon",
@@ -141,7 +146,8 @@
       "hours": "not_specified",
       "price": "not_specified",
       "note": ""
-    }
+    },
+    "photoFile": "photos/da_nang/aeon.jpg"
   },
   {
     "id": "night",
@@ -165,7 +171,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": ""
-    }
+    },
+    "photoFile": "photos/da_nang/night.jpg"
   },
   {
     "id": "mikazuki",
@@ -189,7 +196,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": ""
-    }
+    },
+    "photoFile": "photos/da_nang/mikazuki.jpg"
   },
   {
     "id": "vincom",
@@ -213,7 +221,8 @@
       "hours": "not_specified",
       "price": "not_specified",
       "note": ""
-    }
+    },
+    "photoFile": "photos/da_nang/vincom.jpg"
   },
   {
     "id": "go",
@@ -237,7 +246,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": ""
-    }
+    },
+    "photoFile": "photos/da_nang/go.jpg"
   },
   {
     "id": "cham",
@@ -261,7 +271,15 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": ""
-    }
+    },
+    "photo": {
+      "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Museum%20of%20Cham%20Sculpture.jpg?width=1200",
+      "source": "https://commons.wikimedia.org/wiki/File:Museum_of_Cham_Sculpture.jpg",
+      "credit": "Phó Nháy",
+      "license": "Public domain",
+      "provider": "Wikimedia Commons"
+    },
+    "photoFile": "photos/da_nang/cham.jpg"
   },
   {
     "id": "dragon",
@@ -285,7 +303,15 @@
       "hours": "not_specified",
       "price": "not_specified",
       "note": ""
-    }
+    },
+    "photo": {
+      "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Da%20nang%20dragon%20bridge.jpg?width=1200",
+      "source": "https://commons.wikimedia.org/wiki/File:Da_nang_dragon_bridge.jpg",
+      "credit": "Thangphan",
+      "license": "CC0 1.0",
+      "provider": "Wikimedia Commons"
+    },
+    "photoFile": "photos/da_nang/dragon.jpg"
   },
   {
     "id": "xom",
@@ -309,7 +335,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": ""
-    }
+    },
+    "photoFile": "photos/da_nang/xom.jpg"
   },
   {
     "id": "miquang",
@@ -333,7 +360,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": ""
-    }
+    },
+    "photoFile": "photos/da_nang/miquang.jpg"
   },
   {
     "id": "banhxeo",
@@ -357,7 +385,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": ""
-    }
+    },
+    "photoFile": "photos/da_nang/banhxeo.jpg"
   },
   {
     "id": "moc",
@@ -381,7 +410,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": ""
-    }
+    },
+    "photoFile": "photos/da_nang/moc.jpg"
   },
   {
     "id": "dieutri",
@@ -406,7 +436,8 @@
       "hours": "not_specified",
       "price": "not_specified",
       "note": "v4.2 명칭·표시 보정"
-    }
+    },
+    "photoFile": "photos/quy_nhon/dieutri.jpg"
   },
   {
     "id": "hotel",
@@ -432,7 +463,8 @@
       "hours": "not_specified",
       "price": "not_specified",
       "note": "v4.2 명칭·표시 보정"
-    }
+    },
+    "photoFile": "photos/quy_nhon/hotel.jpg"
   },
   {
     "id": "eogio",
@@ -458,7 +490,15 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "v4.2 명칭·표시 보정"
-    }
+    },
+    "photo": {
+      "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Eo%20Gi%C3%B3%20-%20Nh%C6%A1n%20L%C3%BD.jpg?width=1200",
+      "source": "https://commons.wikimedia.org/wiki/File:Eo_Gi%C3%B3_-_Nh%C6%A1n_L%C3%BD.jpg",
+      "credit": "Hưng Hồ Bá",
+      "license": "CC BY 2.0",
+      "provider": "Wikimedia Commons"
+    },
+    "photoFile": "photos/quy_nhon/eogio.jpg"
   },
   {
     "id": "kyco",
@@ -484,7 +524,15 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "v4.2 명칭·표시 보정"
-    }
+    },
+    "photo": {
+      "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Ky-co-eo-gio-1-1048.jpg?width=1200",
+      "source": "https://commons.wikimedia.org/wiki/File:Ky-co-eo-gio-1-1048.jpg",
+      "credit": "Bennguyennnnn",
+      "license": "CC0 1.0",
+      "provider": "Wikimedia Commons"
+    },
+    "photoFile": "photos/quy_nhon/kyco.jpg"
   },
   {
     "id": "explora",
@@ -510,7 +558,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "v4.2 명칭·표시 보정"
-    }
+    },
+    "photoFile": "photos/quy_nhon/explora.jpg"
   },
   {
     "id": "ghenhrang",
@@ -536,7 +585,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "v4.2 명칭·표시 보정"
-    }
+    },
+    "photoFile": "photos/quy_nhon/ghenhrang.jpg"
   },
   {
     "id": "thapdoi",
@@ -562,7 +612,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "v4.2 명칭·표시 보정"
-    }
+    },
+    "photoFile": "photos/quy_nhon/thapdoi.jpg"
   },
   {
     "id": "banhit",
@@ -588,7 +639,15 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "v4.2 명칭·표시 보정"
-    }
+    },
+    "photo": {
+      "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Banh%20It.jpg?width=1200",
+      "source": "https://commons.wikimedia.org/wiki/File:Banh_It.jpg",
+      "credit": "BertholdD",
+      "license": "CC BY-SA 3.0",
+      "provider": "Wikimedia Commons"
+    },
+    "photoFile": "photos/quy_nhon/banhit.jpg"
   },
   {
     "id": "honko",
@@ -614,7 +673,8 @@
       "hours": "not_specified",
       "price": "not_specified",
       "note": "v4.2 명칭·표시 보정"
-    }
+    },
+    "photoFile": "photos/quy_nhon/honko.jpg"
   },
   {
     "id": "phuongmai",
@@ -640,7 +700,8 @@
       "hours": "not_specified",
       "price": "not_specified",
       "note": "v4.2 명칭·표시 보정"
-    }
+    },
+    "photoFile": "photos/quy_nhon/phuongmai.jpg"
   },
   {
     "id": "baixep",
@@ -666,7 +727,8 @@
       "hours": "not_specified",
       "price": "not_specified",
       "note": "v4.2 명칭·표시 보정"
-    }
+    },
+    "photoFile": "photos/quy_nhon/baixep.jpg"
   },
   {
     "id": "ganhdadia",
@@ -692,7 +754,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "v4.2 명칭·표시 보정"
-    }
+    },
+    "photoFile": "photos/quy_nhon/ganhdadia.jpg"
   },
   {
     "id": "oloan",
@@ -718,7 +781,8 @@
       "hours": "not_specified",
       "price": "not_specified",
       "note": "v4.2 명칭·표시 보정"
-    }
+    },
+    "photoFile": "photos/quy_nhon/oloan.jpg"
   },
   {
     "id": "giavy",
@@ -744,7 +808,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "v4.2 명칭·표시 보정"
-    }
+    },
+    "photoFile": "photos/quy_nhon/giavy.jpg"
   },
   {
     "id": "phuongteo",
@@ -770,7 +835,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "v4.2 명칭·표시 보정"
-    }
+    },
+    "photoFile": "photos/quy_nhon/phuongteo.jpg"
   },
   {
     "id": "cakhoi",
@@ -796,7 +862,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "v4.2 명칭·표시 보정"
-    }
+    },
+    "photoFile": "photos/quy_nhon/cakhoi.jpg"
   },
   {
     "id": "mrmoc",
@@ -822,7 +889,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "v4.2 명칭·표시 보정"
-    }
+    },
+    "photoFile": "photos/quy_nhon/mrmoc.jpg"
   },
   {
     "id": "foodstreet",
@@ -848,7 +916,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "v4.2 명칭·표시 보정"
-    }
+    },
+    "photoFile": "photos/quy_nhon/foodstreet.jpg"
   },
   {
     "id": "surf",
@@ -874,7 +943,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "v4.2 명칭·표시 보정"
-    }
+    },
+    "photoFile": "photos/quy_nhon/surf.jpg"
   },
   {
     "id": "katinat",
@@ -900,7 +970,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "v4.2 명칭·표시 보정"
-    }
+    },
+    "photoFile": "photos/quy_nhon/katinat.jpg"
   },
   {
     "id": "adiuvat",
@@ -926,7 +997,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "v4.2 명칭·표시 보정"
-    }
+    },
+    "photoFile": "photos/quy_nhon/adiuvat.jpg"
   },
   {
     "id": "treehugger",
@@ -952,7 +1024,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "v4.2 명칭·표시 보정"
-    }
+    },
+    "photoFile": "photos/quy_nhon/treehugger.jpg"
   },
   {
     "id": "huongvi",
@@ -978,7 +1051,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "v4.2 명칭·표시 보정"
-    }
+    },
+    "photoFile": "photos/quy_nhon/huongvi.jpg"
   },
   {
     "id": "hyhalona",
@@ -1004,7 +1078,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "v4.2 명칭·표시 보정"
-    }
+    },
+    "photoFile": "photos/quy_nhon/hyhalona.jpg"
   },
   {
     "id": "chamspa",
@@ -1030,7 +1105,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "v4.2 명칭·표시 보정"
-    }
+    },
+    "photoFile": "photos/quy_nhon/chamspa.jpg"
   },
   {
     "id": "zenn",
@@ -1055,7 +1131,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "v4.2 명칭·표시 보정"
-    }
+    },
+    "photoFile": "photos/quy_nhon/zenn.jpg"
   },
   {
     "id": "coop",
@@ -1081,7 +1158,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "v4.2 명칭·표시 보정"
-    }
+    },
+    "photoFile": "photos/quy_nhon/coop.jpg"
   },
   {
     "id": "market2",
@@ -1107,7 +1185,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "v4.2 명칭·표시 보정"
-    }
+    },
+    "photoFile": "photos/quy_nhon/market2.jpg"
   },
   {
     "id": "chodam",
@@ -1133,7 +1212,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "v4.2 명칭·표시 보정"
-    }
+    },
+    "photoFile": "photos/quy_nhon/chodam.jpg"
   },
   {
     "id": "mmmega",
@@ -1158,33 +1238,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "v4.2 명칭·표시 보정"
-    }
-  },
-  {
-    "id": "gold",
-    "name": "Gold Laundry",
-    "en": "Gold Laundry Quy Nhon",
-    "cat": "세탁",
-    "plan": "생활",
-    "lat": 13.7609,
-    "lng": 109.2166,
-    "address": "282 Diên Hồng, Quy Nhơn",
-    "role": "가족 빨래 · 세탁+건조 · 픽업/배달 문의",
-    "hours": "07:00~21:00 안내 · 이용 전 재확인",
-    "stay": "최단 약 2시간 안내",
-    "rating": "핵심",
-    "tip": "🧺 세탁+건조 요금은 자료별 차이가 있어 이용 직전 공식 가격표/업체에 재확인하세요. 가족 빨래는 숙소에서 전화/Zalo로 호텔 픽업·배달 가능 여부를 먼저 문의하는 방식이 가장 편합니다.",
-    "desc": "픽업·배달 안내가 있는 세탁소. 본점 282 Diên Hồng · 공식 운영 07:00~21:00 · 빠른 서비스 약 2시간부터 안내.",
-    "badge": "세탁 핵심 POI",
-    "verified": "v4.2 명칭·표시 보정",
-    "city": "quy_nhon",
-    "sourceHtml": "quy_nhon.html",
-    "verificationStatus": {
-      "location": "confirmed_or_address_anchor",
-      "hours": "recheck_before_trip",
-      "price": "recheck_before_trip",
-      "note": "v4.2 명칭·표시 보정"
-    }
+    },
+    "photoFile": "photos/quy_nhon/mmmega.jpg"
   },
   {
     "id": "apec",
@@ -1210,7 +1265,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "v4.3 일정 프리셋용 추가 · 뚜이호아 지도에서 재확인"
-    }
+    },
+    "photoFile": "photos/quy_nhon/apec.jpg"
   },
   {
     "id": "apec",
@@ -1236,7 +1292,8 @@
       "hours": "not_specified",
       "price": "not_specified",
       "note": "v3 기본 앵커 · 상세 재검증 예정"
-    }
+    },
+    "photoFile": "photos/tuy_hoa/apec.jpg"
   },
   {
     "id": "rosa",
@@ -1262,7 +1319,8 @@
       "hours": "not_specified",
       "price": "not_specified",
       "note": "v3 기본 앵커 · 상세 재검증 예정"
-    }
+    },
+    "photoFile": "photos/tuy_hoa/rosa.jpg"
   },
   {
     "id": "nghinhphong",
@@ -1288,7 +1346,8 @@
       "hours": "not_specified",
       "price": "not_specified",
       "note": "Mapcarta/OSM 좌표 확인"
-    }
+    },
+    "photoFile": "photos/tuy_hoa/nghinhphong.jpg"
   },
   {
     "id": "thapnhan",
@@ -1314,7 +1373,15 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "Travelfish GPS 좌표 확인"
-    }
+    },
+    "photo": {
+      "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Thap%20Nhan%20Hindu%20temple%2C%20Tuy%20Hoa%2C%20Phu%20Yen%20province%2C%20Vietnam%2015.jpg?width=1200",
+      "source": "https://commons.wikimedia.org/wiki/File:Thap_Nhan_Hindu_temple,_Tuy_Hoa,_Phu_Yen_province,_Vietnam_15.jpg",
+      "credit": "Ms Sarah Welch",
+      "license": "CC0 1.0",
+      "provider": "Wikimedia Commons"
+    },
+    "photoFile": "photos/tuy_hoa/thapnhan.jpg"
   },
   {
     "id": "ganhdadia",
@@ -1340,7 +1407,15 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "꾸이년 v4.3 검증값 승계"
-    }
+    },
+    "photo": {
+      "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Ganh%20Da%20Dia%20in%202008.jpg?width=1200",
+      "source": "https://commons.wikimedia.org/wiki/File:Ganh_Da_Dia_in_2008.jpg",
+      "credit": "Pathfinderpy88",
+      "license": "CC BY-SA 3.0",
+      "provider": "Wikimedia Commons"
+    },
+    "photoFile": "photos/tuy_hoa/ganhdadia.jpg"
   },
   {
     "id": "oloan",
@@ -1366,7 +1441,8 @@
       "hours": "not_specified",
       "price": "not_specified",
       "note": "꾸이년 v4.3 검증값 승계"
-    }
+    },
+    "photoFile": "photos/tuy_hoa/oloan.jpg"
   },
   {
     "id": "muidien",
@@ -1392,7 +1468,8 @@
       "hours": "not_specified",
       "price": "not_specified",
       "note": "Tanitour 지도 좌표 확인"
-    }
+    },
+    "photoFile": "photos/tuy_hoa/muidien.jpg"
   },
   {
     "id": "vungro",
@@ -1418,7 +1495,15 @@
       "hours": "not_specified",
       "price": "not_specified",
       "note": "Mapcarta/OSM 자연지형 좌표 확인"
-    }
+    },
+    "photo": {
+      "url": "https://commons.wikimedia.org/wiki/Special:FilePath/V%C5%A9ng%20R%C3%B4%201.jpg?width=1200",
+      "source": "https://commons.wikimedia.org/wiki/File:V%C5%A9ng_R%C3%B4_1.jpg",
+      "credit": "Chánh",
+      "license": "CC BY 3.0",
+      "provider": "Wikimedia Commons"
+    },
+    "photoFile": "photos/tuy_hoa/vungro.jpg"
   },
   {
     "id": "tuyhoabeach",
@@ -1444,7 +1529,8 @@
       "hours": "not_specified",
       "price": "not_specified",
       "note": "v3 보조 앵커 · 세부 좌표 보정 예정"
-    }
+    },
+    "photoFile": "photos/tuy_hoa/tuyhoabeach.jpg"
   },
   {
     "id": "vincom",
@@ -1470,7 +1556,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "Vincom 공식 지점 정보와 중심권 위치 확인. 세부 매장·영업시간은 여행 전 재확인"
-    }
+    },
+    "photoFile": "photos/tuy_hoa/vincom.jpg"
   },
   {
     "id": "coopmarttuyhoa",
@@ -1496,7 +1583,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "공식 Co.opmart 지점 정보에서 8 Duy Tân 확인. 좌표는 주소 기준 앵커로 최종 길찾기 전 재확인"
-    }
+    },
+    "photoFile": "photos/tuy_hoa/coopmarttuyhoa.jpg"
   },
   {
     "id": "tuyhoamarket",
@@ -1522,7 +1610,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "Chợ Tuy Hòa 시장권 확인. 좌표는 중심권 기준 앵커로 실제 입구는 현장 동선에 맞춰 조정"
-    }
+    },
+    "photoFile": "photos/tuy_hoa/tuyhoamarket.jpg"
   },
   {
     "id": "winmarttuyhoa",
@@ -1548,7 +1637,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "WinMart Tuy Hòa 존재 확인. 정확한 지점 좌표는 다음 검증에서 확정 필요"
-    }
+    },
+    "photoFile": "photos/tuy_hoa/winmarttuyhoa.jpg"
   },
   {
     "id": "thaovy",
@@ -1574,7 +1664,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "주소·영업시간·리뷰 확인. 좌표는 v3.6에서 도로/해안선 기준으로 보정한 임시 앵커로 현지/Google Maps에서 최종 재확인"
-    }
+    },
+    "photoFile": "photos/tuy_hoa/thaovy.jpg"
   },
   {
     "id": "thanhtam",
@@ -1600,7 +1691,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "53 Điện Biên Phủ 자료 우세, Foody에는 30 Điện Biên Phủ 표기. 좌표는 Mapcarta 주변 POI 기반 임시 앵커"
-    }
+    },
+    "photoFile": "photos/tuy_hoa/thanhtam.jpg"
   },
   {
     "id": "cobadiep",
@@ -1626,7 +1718,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "주소·리뷰·메뉴 구성 확인. 좌표는 v3.6에서 도로/해안선 기준으로 보정한 임시 앵커로 최종 재확인"
-    }
+    },
+    "photoFile": "photos/tuy_hoa/cobadiep.jpg"
   },
   {
     "id": "tuyetnhung",
@@ -1652,7 +1745,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "베트남 관광 DB·Foody 등에서 189 Lê Thánh Tôn 주소 확인. 좌표는 v3.6에서 도로/해안선 기준으로 보정한 임시 앵커"
-    }
+    },
+    "photoFile": "photos/tuy_hoa/tuyetnhung.jpg"
   },
   {
     "id": "oloanseafood",
@@ -1678,7 +1772,8 @@
       "hours": "not_specified",
       "price": "not_specified",
       "note": "Mapcarta O Loan 인근 Quốc lộ 1 접근 POI 좌표 확인"
-    }
+    },
+    "photoFile": "photos/tuy_hoa/oloanseafood.jpg"
   },
   {
     "id": "hiepyen",
@@ -1704,7 +1799,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "Foody·Mytour 등에서 262–266 Hùng Vương 표기 반복 확인. 좌표는 주소축 기준 v3 임시 앵커"
-    }
+    },
+    "photoFile": "photos/tuy_hoa/hiepyen.jpg"
   },
   {
     "id": "sandyvibes",
@@ -1730,7 +1826,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "최근 카페 자료에서 Nguyễn Huệ 해변권·4.2/189 정보 확인. 좌표는 v3.6에서 해안도로 안쪽으로 보정한 임시 앵커"
-    }
+    },
+    "photoFile": "photos/tuy_hoa/sandyvibes.jpg"
   },
   {
     "id": "urabeach",
@@ -1756,7 +1853,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "21 Độc Lập 주소 확인. 좌표는 v3.6에서 도로/해안선 기준으로 보정한 임시 앵커"
-    }
+    },
+    "photoFile": "photos/tuy_hoa/urabeach.jpg"
   },
   {
     "id": "phdcoffee",
@@ -1782,59 +1880,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "PHD Book & Coffee / PHD Photo & Coffee 명칭과 An Dương Vương권 주소 확인. 좌표는 Plus Code 기준 v3 임시 앵커"
-    }
-  },
-  {
-    "id": "giatuituyhoa",
-    "name": "Giặt Ủi Tuy Hòa Laundry",
-    "en": "Tuy Hòa Laundry Service",
-    "cat": "세탁",
-    "plan": "APEC 세탁 핵심",
-    "lat": 13.0961,
-    "lng": 109.3199,
-    "address": "121 Điện Biên Phủ, Tuy Hòa",
-    "role": "APEC 숙박 중 세탁·건조 후보 · 핵심 세탁 POI",
-    "hours": "영업시간 여행 전 재확인",
-    "stay": "맡김/수령 일정 별도 확인",
-    "rating": "핵심 후보",
-    "tip": "APEC 2박 중 세탁이 필요할 때 우선 확인할 세탁소입니다. kg당 요금, 당일 가능 여부, 수거·배송 가능 여부는 맡기기 전에 직접 확인하세요.",
-    "desc": "🧺 APEC 숙박 중 세탁 후보 · ☎ 0914 102 857 · 💰 15,000~25,000 VND 수준 언급 · 이용 전 재확인",
-    "badge": "세탁 핵심 후보",
-    "verified": "121 Điện Biên Phủ 및 전화번호 0914 102 857 확인. 좌표는 주소 기준 v3.3 임시 앵커로 최종 길찾기 전 재확인",
-    "city": "tuy_hoa",
-    "sourceHtml": "tuy_hoa.html",
-    "verificationStatus": {
-      "location": "confirmed_or_address_anchor",
-      "hours": "recheck_before_trip",
-      "price": "recheck_before_trip",
-      "note": "121 Điện Biên Phủ 및 전화번호 0914 102 857 확인. 좌표는 주소 기준 v3.3 임시 앵커로 최종 길찾기 전 재확인"
-    }
-  },
-  {
-    "id": "giatsayphuyen",
-    "name": "Giặt Sấy Phú Yên",
-    "en": "Giặt Sấy Phú Yên Laundry",
-    "cat": "세탁",
-    "plan": "세탁 보조 후보",
-    "lat": 13.1018,
-    "lng": 109.3138,
-    "address": "2/74 Nguyễn Văn Cừ, Tuy Hòa",
-    "role": "Nguyễn Văn Cừ권 세탁소 · APEC 접근성 보조 후보",
-    "hours": "영업시간 여행 전 재확인",
-    "stay": "맡김/수령 일정 별도 확인",
-    "rating": "보조 후보",
-    "tip": "Giặt Ủi Tuy Hòa Laundry 이용이 어렵거나 동선상 Nguyễn Văn Cừ권이 더 편할 때 확인할 보조 세탁 후보입니다.",
-    "desc": "🧺 Nguyễn Văn Cừ권 세탁소 · ⚠️ 영업시간·kg당 요금·수거배송 여부 재확인",
-    "badge": "세탁 보조 후보",
-    "verified": "2/74 Nguyễn Văn Cừ 주소 확인. 좌표는 주소 기준 v3.3 임시 앵커로 실제 POI 최종 재확인 필요",
-    "city": "tuy_hoa",
-    "sourceHtml": "tuy_hoa.html",
-    "verificationStatus": {
-      "location": "confirmed_or_address_anchor",
-      "hours": "recheck_before_trip",
-      "price": "not_specified",
-      "note": "2/74 Nguyễn Văn Cừ 주소 확인. 좌표는 주소 기준 v3.3 임시 앵커로 실제 POI 최종 재확인 필요"
-    }
+    },
+    "photoFile": "photos/tuy_hoa/phdcoffee.jpg"
   },
   {
     "id": "roselispa",
@@ -1860,7 +1907,8 @@
       "hours": "recheck_before_trip",
       "price": "recheck_before_trip",
       "note": "Rosa Alba 공식 사이트에서 Roseli Spa 운영 및 88 Lê Duẩn 주소 확인. 좌표는 Rosa Alba 숙소 앵커와 동일하게 사용 · v3.6에서 해안선 안쪽으로 보정"
-    }
+    },
+    "photoFile": "photos/tuy_hoa/roselispa.jpg"
   },
   {
     "id": "apecspa",
@@ -1886,7 +1934,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "Tripadvisor에서 APEC Spa Tuy Hoà 항목과 09:00~22:00 운영 확인. 주소는 관련 호텔/주변 자료의 23 Điện Biên Phủ 표기를 기준으로 한 임시 앵커"
-    }
+    },
+    "photoFile": "photos/tuy_hoa/apecspa.jpg"
   },
   {
     "id": "anspa",
@@ -1912,7 +1961,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "Tripadvisor 다수 지역 페이지에서 271 Lê Duẩn, Phường 7 주소 확인. 좌표는 주소 기준 임시 앵커"
-    }
+    },
+    "photoFile": "photos/tuy_hoa/anspa.jpg"
   },
   {
     "id": "tuibluewellness",
@@ -1938,7 +1988,8 @@
       "hours": "recheck_before_trip",
       "price": "recheck_before_trip",
       "note": "TUI BLUE 공식·호텔 자료에서 Lumiere Wellness & Healing Club 및 스파 시설 확인. 좌표는 호텔 위치 기준 임시 앵커 · v3.6에서 해안선 안쪽으로 보정"
-    }
+    },
+    "photoFile": "photos/tuy_hoa/tuibluewellness.jpg"
   },
   {
     "id": "tuyhoaroute",
@@ -1964,7 +2015,8 @@
       "hours": "not_specified",
       "price": "not_specified",
       "note": "경로 안내용 보조 앵커 · 정확한 정차점 아님"
-    }
+    },
+    "photoFile": "photos/nha_trang/tuyhoaroute.jpg"
   },
   {
     "id": "costa",
@@ -1990,7 +2042,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "공식·예약 페이지에서 32–34 Trần Phú 주소 확인. 좌표는 주소 기준 v1 앵커로 최종 재확인"
-    }
+    },
+    "photoFile": "photos/nha_trang/costa.jpg"
   },
   {
     "id": "camranh",
@@ -2016,7 +2069,8 @@
       "hours": "not_specified",
       "price": "not_specified",
       "note": "공항 위치는 Cam Ranh 권역 기준 좌표 사용"
-    }
+    },
+    "photoFile": "photos/nha_trang/camranh.jpg"
   },
   {
     "id": "iresort",
@@ -2042,7 +2096,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "공식 I-Resort 운영 확인. 일부 워터파크 구역 운영 여부는 2027년 여행 전 재확인"
-    }
+    },
+    "photoFile": "photos/nha_trang/iresort.jpg"
   },
   {
     "id": "vinwonders",
@@ -2068,7 +2123,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "공식 Hon Tre 위치와 케이블카 접근 정보 확인. 좌표는 본토 케이블카역 접근점 기준"
-    }
+    },
+    "photoFile": "photos/nha_trang/vinwonders.jpg"
   },
   {
     "id": "nhatrangbeach",
@@ -2094,7 +2150,15 @@
       "hours": "not_specified",
       "price": "not_specified",
       "note": "시내 해변권 대표 앵커 · 세부 정차점은 숙소 확정 후 조정"
-    }
+    },
+    "photo": {
+      "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Nha%20trang%20beach.jpg?width=1200",
+      "source": "https://commons.wikimedia.org/wiki/File:Nha_trang_beach.jpg",
+      "credit": "Jeong seolah",
+      "license": "CC0 1.0",
+      "provider": "Wikimedia Commons"
+    },
+    "photoFile": "photos/nha_trang/nhatrangbeach.jpg"
   },
   {
     "id": "ponagar",
@@ -2120,7 +2184,15 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "GPS 12.265761, 109.195155 기준으로 보정. 입장시간은 2027년 여행 전 재확인"
-    }
+    },
+    "photo": {
+      "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Po%20Nagar%201.jpg?width=1200",
+      "source": "https://commons.wikimedia.org/wiki/File:Po_Nagar_1.jpg",
+      "credit": "Ken Marshall",
+      "license": "CC BY 2.0",
+      "provider": "Wikimedia Commons"
+    },
+    "photoFile": "photos/nha_trang/ponagar.jpg"
   },
   {
     "id": "oceanography",
@@ -2146,7 +2218,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "공식 기관 주소 01 Cầu Đá 확인. 운영시간은 2027년 여행 전 재확인"
-    }
+    },
+    "photoFile": "photos/nha_trang/oceanography.jpg"
   },
   {
     "id": "longson",
@@ -2172,7 +2245,15 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "GPS 12.250189, 109.180174 및 22–23 Tháng 10 Street 기준으로 보정"
-    }
+    },
+    "photo": {
+      "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Nha%20Trang%2C%20Long%20Son%20pagoda.jpg?width=1200",
+      "source": "https://commons.wikimedia.org/wiki/File:Nha_Trang,_Long_Son_pagoda.jpg",
+      "credit": "Jame Healy",
+      "license": "CC BY-SA 2.0",
+      "provider": "Wikimedia Commons"
+    },
+    "photoFile": "photos/nha_trang/longson.jpg"
   },
   {
     "id": "honchong",
@@ -2198,7 +2279,15 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "v1 해안권 후보 앵커 · 세부 입구/좌표 재확인"
-    }
+    },
+    "photo": {
+      "url": "https://commons.wikimedia.org/wiki/Special:FilePath/2001-06-03%20Hon-Chong%20Nha-Trang.jpg?width=1200",
+      "source": "https://commons.wikimedia.org/wiki/File:2001-06-03_Hon-Chong_Nha-Trang.jpg",
+      "credit": "Udo Braunschweiger",
+      "license": "Public domain",
+      "provider": "Wikimedia Commons"
+    },
+    "photoFile": "photos/nha_trang/honchong.jpg"
   },
   {
     "id": "lottegoldcoast",
@@ -2224,7 +2313,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "공식 Lotte Mart 지점과 Gold Coast Mall 01 Trần Hưng Đạo 주소 확인. 좌표는 쇼핑몰 권역 도로 안쪽 기준 앵커"
-    }
+    },
+    "photoFile": "photos/nha_trang/lottegoldcoast.jpg"
   },
   {
     "id": "dammarket",
@@ -2250,7 +2340,15 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "주소 표기는 자료별로 다르지만 같은 Chợ Đầm 시장 권역을 가리킴. 좌표는 시장 건물권 앵커"
-    }
+    },
+    "photo": {
+      "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Dam%20Market%20Nha%20Trang%201.jpg?width=1200",
+      "source": "https://commons.wikimedia.org/wiki/File:Dam_Market_Nha_Trang_1.jpg",
+      "credit": "Christophe95",
+      "license": "CC BY-SA 4.0",
+      "provider": "Wikimedia Commons"
+    },
+    "photoFile": "photos/nha_trang/dammarket.jpg"
   },
   {
     "id": "nhatrangcenter",
@@ -2276,7 +2374,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "20 Trần Phú 주소 기준. 좌표는 쇼핑몰 건물권 도로 안쪽 앵커"
-    }
+    },
+    "photoFile": "photos/nha_trang/nhatrangcenter.jpg"
   },
   {
     "id": "winmarttranphu",
@@ -2302,7 +2401,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "Vincom Plaza Trần Phú 78–80 Trần Phú 입점 정보 기준. 좌표는 쇼핑몰 권역 앵커"
-    }
+    },
+    "photoFile": "photos/nha_trang/winmarttranphu.jpg"
   },
   {
     "id": "nemdangvanquyen",
@@ -2328,7 +2428,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "공식 사이트·여러 자료에서 16A Lãn Ông 반복 확인. 좌표는 주소 기준 앵커로 2027년 여행 전 최종 재확인"
-    }
+    },
+    "photoFile": "photos/nha_trang/nemdangvanquyen.jpg"
   },
   {
     "id": "buncatuyetha",
@@ -2354,7 +2455,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "156 Nguyễn Thị Minh Khai 주소 확인. 좌표는 주소 기준 앵커로 최종 재확인"
-    }
+    },
+    "photoFile": "photos/nha_trang/buncatuyetha.jpg"
   },
   {
     "id": "nemonhatrang",
@@ -2380,7 +2482,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "가족 운영 베트남식 식당 성격 확인. 26B Hùng Vương 자료 기준, 여행 전 주소/운영시간 재확인"
-    }
+    },
+    "photoFile": "photos/nha_trang/nemonhatrang.jpg"
   },
   {
     "id": "mocseafood",
@@ -2406,7 +2509,8 @@
       "hours": "recheck_before_trip",
       "price": "recheck_before_trip",
       "note": "공식 사이트에서 74–76 Hồng Bàng 지점 확인. 좌표는 주소 기준 앵커로 최종 재확인"
-    }
+    },
+    "photoFile": "photos/nha_trang/mocseafood.jpg"
   },
   {
     "id": "nomnom",
@@ -2432,7 +2536,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "공식 사이트·리뷰 자료에서 73/16 Trần Quang Khải 주소 일치. 좌표는 주소 기준 앵커"
-    }
+    },
+    "photoFile": "photos/nha_trang/nomnom.jpg"
   },
   {
     "id": "phela",
@@ -2458,7 +2563,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "24 Trần Phú 주소 확인. 좌표는 주소 기준 앵커로 여행 전 최종 재확인"
-    }
+    },
+    "photoFile": "photos/nha_trang/phela.jpg"
   },
   {
     "id": "coffeehouseab",
@@ -2484,7 +2590,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "44 Trần Phú / AB Central Square 지점 확인. 좌표는 주소 기준 앵커로 최종 재확인"
-    }
+    },
+    "photoFile": "photos/nha_trang/coffeehouseab.jpg"
   },
   {
     "id": "honchongviewcafe",
@@ -2510,7 +2617,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "6 Phạm Văn Đồng 주소 확인. 좌표는 주소 기준 앵커로 최종 재확인"
-    }
+    },
+    "photoFile": "photos/nha_trang/honchongviewcafe.jpg"
   },
   {
     "id": "metrangtranphu",
@@ -2536,59 +2644,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "98B Trần Phú 주소 확인. 좌표는 주소 기준 앵커로 최종 재확인"
-    }
-  },
-  {
-    "id": "laundry2h",
-    "name": "2H Laundry Nha Trang",
-    "en": "2H Laundry Nha Trang",
-    "cat": "세탁",
-    "plan": "세탁 1순위",
-    "lat": 12.2419,
-    "lng": 109.1952,
-    "address": "8 Nguyễn Thị Minh Khai, Nha Trang",
-    "role": "The Costa 숙박 중 세탁 1순위 후보 · 호텔 픽업/배달 문의 가능",
-    "hours": "07:00~22:00 안내 · 여행 전 재확인",
-    "stay": "세탁",
-    "rating": "핵심 후보",
-    "tip": "9명 4박 일정에서 가장 실용적인 세탁 후보입니다. 공식 자료에 호텔 픽업·배달과 2~4시간 세탁 안내가 있으나, 실제 소요시간과 배달비는 맡길 때 확인하세요.",
-    "desc": "🧺 The Costa 숙박 중 세탁 1순위 · 호텔 픽업/배달 가능 · 빠른 세탁 후보",
-    "badge": "세탁 1순위",
-    "verified": "공식 자료 기준 8 Nguyễn Thị Minh Khai, 07:00~22:00, 3kg 60k / 5kg 90k / 7kg 120k / 7kg 초과 18k/kg 안내. 좌표는 주소 기준 앵커로 최종 재확인",
-    "city": "nha_trang",
-    "sourceHtml": "nha_trang.html",
-    "verificationStatus": {
-      "location": "confirmed_or_address_anchor",
-      "hours": "recheck_before_trip",
-      "price": "not_specified",
-      "note": "공식 자료 기준 8 Nguyễn Thị Minh Khai, 07:00~22:00, 3kg 60k / 5kg 90k / 7kg 120k / 7kg 초과 18k/kg 안내. 좌표는 주소 기준 앵커로 최종 재확인"
-    }
-  },
-  {
-    "id": "washgo",
-    "name": "Wash & Go Nha Trang",
-    "en": "Wash & Go Nha Trang / Wash & Clean branch",
-    "cat": "세탁",
-    "plan": "보조 세탁",
-    "lat": 12.2406,
-    "lng": 109.1916,
-    "address": "113 Hồng Bàng, Nha Trang 지점 우선 확인",
-    "role": "빠른 세탁 보조 후보 · 지점별 운영시간과 서비스 확인 필요",
-    "hours": "지점별 상이 · 여행 전 재확인",
-    "stay": "세탁",
-    "rating": "보조 후보",
-    "tip": "2H Laundry가 맞지 않거나 수거·배송 일정이 안 맞을 때 쓸 보조 후보입니다. 지점이 여러 개라 실제 이용 전 가장 가까운 영업 지점을 다시 확인하세요.",
-    "desc": "🧺 빠른 세탁 보조 후보 · 1~4kg 39k~40k 언급 · 지점별 재확인",
-    "badge": "보조 세탁",
-    "verified": "Wash & Go/Wash & Clean 계열 113 Hồng Bàng 지점 정보 기준. 1~4kg 39k~40k 및 2~3시간 수령 언급은 이용 전 재확인",
-    "city": "nha_trang",
-    "sourceHtml": "nha_trang.html",
-    "verificationStatus": {
-      "location": "confirmed_or_address_anchor",
-      "hours": "recheck_before_trip",
-      "price": "not_specified",
-      "note": "Wash & Go/Wash & Clean 계열 113 Hồng Bàng 지점 정보 기준. 1~4kg 39k~40k 및 2~3시간 수령 언급은 이용 전 재확인"
-    }
+    },
+    "photoFile": "photos/nha_trang/metrangtranphu.jpg"
   },
   {
     "id": "coconutmassage",
@@ -2614,7 +2671,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "20 Trần Phú, Nha Trang Center 2층 주소 확인. 좌표는 쇼핑몰 건물권 앵커로 여행 전 최종 재확인"
-    }
+    },
+    "photoFile": "photos/nha_trang/coconutmassage.jpg"
   },
   {
     "id": "shinespasheraton",
@@ -2640,7 +2698,8 @@
       "hours": "recheck_before_trip",
       "price": "recheck_before_trip",
       "note": "Sheraton 26–28 Trần Phú / Level 7 정보 확인. 좌표는 호텔 건물권 앵커"
-    }
+    },
+    "photoFile": "photos/nha_trang/shinespasheraton.jpg"
   },
   {
     "id": "wellspa",
@@ -2666,7 +2725,8 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "여러 자료에서 63 Tô Hiến Thành 주소 반복 확인. 좌표는 주소 기준 앵커로 최종 재확인"
-    }
+    },
+    "photoFile": "photos/nha_trang/wellspa.jpg"
   },
   {
     "id": "spaonthebeach",
@@ -2692,6 +2752,7 @@
       "hours": "recheck_before_trip",
       "price": "not_specified",
       "note": "100 Trần Phú 주소 확인. 좌표는 주소 기준 앵커로 최종 재확인"
-    }
+    },
+    "photoFile": "photos/nha_trang/spaonthebeach.jpg"
   }
 ]

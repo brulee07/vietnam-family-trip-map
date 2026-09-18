@@ -1,62 +1,33 @@
-# 2027 베트남 가족여행 지도 v9.3
+# Vietnam Family Trip v13 — 루트 앱
 
-## 핵심 변경
+검증된 v13 앱을 저장소 루트로 승격하는 후보입니다. **main 반영과 GitHub Pages 운영 배포는 사용자 승인 전까지 금지**합니다.
 
-v9.3는 v8-beta에서 검증한 JSON 연동 지도를 공식 도시 지도 파일로 승격한 버전입니다.
+- 앱 진입점: `index.html`
+- 데이터: `data/` (100곳, 세탁소 제외)
+- 대표사진: `photos/` (81곳 보유; 사진 감사 결과 유지)
+- 동기화: 기존 `sync-config.js`와 `sync-worker/`; 서버 재배포 불필요
+- 이전 도시 HTML 및 `v11-preview/index.html`: 새 루트로 이동하는 호환 페이지
+- 사진 감사와 당시 검증 기록: `v11-preview/*.md`, `*.csv` 원문 보존
+- 구버전 설명서: `docs/legacy/`
 
-- `da_nang.html`, `quy_nhon.html`, `tuy_hoa.html`, `nha_trang.html`이 `data/places.json`과 `data/itineraries.json`을 읽습니다.
-- 기존 테스트용 `*_json_beta.html` 파일은 정리했습니다.
-- 기존 기능은 유지합니다.
-  - 날짜별 전체 일정표 허브
-  - 도시별 홈 버튼
-  - 마커 이름 ON/OFF
-  - 응급·약국·숙소 주소 카드
-  - PWA 홈 화면 추가 구조
+승인 대상 변경, 삭제 목록, PWA 전환 및 복구 절차는 [V13_ROOT_PROMOTION.md](V13_ROOT_PROMOTION.md)를 확인합니다. 과거 문서의 `v11-preview/photos/`, `v11-preview/data/`, `v11-preview/sync-worker/` 경로는 당시 기록이며 현재 파일은 루트 아래 동일한 하위 경로로 이동했습니다.
 
-## GitHub 반영 방법
+## 로컬 검증
 
-1. ZIP 압축을 풉니다.
-2. 이 폴더 안의 파일 전체를 기존 `vietnam-family-trip-map` 저장소 폴더에 덮어씁니다.
-3. GitHub Desktop에서 다음 메시지로 커밋합니다.
+Node.js로 다음을 실행합니다.
 
 ```text
-Promote JSON maps to official v9.3
+node --test tests/family-sync.test.cjs tests/v13-assets.test.cjs tests/v13-usability.test.cjs tests/root-promotion.test.cjs
 ```
 
-4. `Commit to main` 후 `Push origin`을 클릭합니다.
-5. GitHub Pages 반영 후 스마트폰에서 각 도시 지도에 `JSON 데이터: 공식 연동 성공` 표시가 뜨는지 확인합니다.
+정적 서버에서 저장소 루트를 제공하면 앱이 실행됩니다. GitHub Pages 프로젝트 경로 검증과 이전 worker 전환 재현은 `tests/promotion-ui-server.cjs`를 사용합니다. Git이 PATH에 없으면 `TEST_GIT`에 실행 파일 경로를 설정합니다. 다른 포트는 `PORT`로 지정합니다. `http://127.0.0.1:8137/__qa.html`에서 합성 데이터 준비 → 로컬 서버 전환 → 새 앱 열기 순서로 검사합니다. 이 서버는 실제 가족방 가입을 수행하지 않습니다.
 
-## 앞으로의 관리 방식
+## 승인 후 운영 반영
 
-- 장소 수정: `data/places.json`
-- 일정 프리셋 수정: `data/itineraries.json`
-- 응급·숙소·병원·약국 정보 수정: `data/safety.json`
-- 여행 전체 정보 수정: `data/trip.json`
+1. 원격 main과 작업 브랜치의 최신 상태를 다시 확인하고 승인된 변경만 반영합니다.
+2. GitHub Pages의 실제 배포 source가 `main` / root인지 읽어서 확인합니다. 현재 설정이 다르면 임의 변경하지 않습니다.
+3. main push가 자동 운영 배포를 시작할 수 있으므로 merge와 push 모두 승인 뒤 수행합니다.
+4. 운영 URL에서 HTTP, 100개 장소, 사진 81개, 기존 URL 전환, 가족 초대, PWA 갱신을 확인합니다.
+5. 기존 Cloudflare Preview와 업로드 폴더를 유지합니다. 원격 데이터나 가족방을 초기화하지 않습니다.
 
-지도 HTML은 가능한 한 자주 수정하지 않고, 데이터 파일 중심으로 관리하는 것을 권장합니다.
-
-
-## v9.3 hotfix
-- 다낭 공식 지도 파일을 다낭 v16 기반으로 복구하고 JSON 연동 상태 표시를 추가했습니다.
-- 나머지 3개 도시의 JSON 공식 지도 구조는 유지했습니다.
-
-
-## v9.4 AI Travel Assistant Foundation
-- AI chat panel on hub and all four city maps
-- Travel Context Engine reads trip/cities/places/safety JSON and live map itinerary
-- No API key is stored in browser code
-- Optional secure backend endpoint can be set with localStorage key `travelAiEndpoint`
-
-
-## v9.4.1 AI Route Context Hotfix
-
-- Fix AI assistant access to city-map itinerary state isolated inside ES modules.
-- Add `window.getTravelAiRoute()` bridge on all four city maps.
-- Refresh AI context when the assistant opens and whenever a question is asked.
-- Bump service-worker cache to `vietnam-family-trip-v9-4-1`.
-
-## v9.5 AI Travel Assistant
-- 실제 AI 연결을 위한 Cloudflare Worker 패키지 추가
-- OpenAI API key는 GitHub Pages에 저장하지 않음
-- AI 비서 ⚙️에서 Worker `/chat` 주소를 저장하거나 `ai-config.js`에 공용 endpoint 설정
-- 상세 절차: `README_V9_5_AI_SETUP.md`
+운영 반영을 자동 실행하는 workflow는 이번 준비 단계에서 추가하지 않았습니다.
