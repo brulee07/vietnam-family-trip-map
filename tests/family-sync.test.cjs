@@ -3,7 +3,7 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const model=fs.readFileSync('v11-preview/memo-cards.js','utf8');
 const app=fs.readFileSync('v11-preview/app.js','utf8').replace(/\ninit\(\);\s*$/,'');
-const sync=fs.readFileSync('v11-preview/family-sync.js','utf8').replace('waitForApp();','globalThis.syncTest={syncNow,sharedState,mergeShared,cfg,startPolling};');
+const sync=fs.readFileSync('v11-preview/family-sync.js','utf8').replace('waitForApp();','globalThis.syncTest={syncNow,sharedState,mergeShared,get cfg(){return cfg;},startPolling};');
 const db=Object.fromEntries(['trip','cities','places','itineraries','safety'].map(n=>[n,JSON.parse(fs.readFileSync(`v11-preview/data/${n}.json`,'utf8'))]));
 const rk='da_nang:2027-01-12',pk='da_nang:hotel',clone=x=>JSON.parse(JSON.stringify(x));
 const blank=()=>({routes:{},notes:{},notePositions:{},memoPhotos:{},saved:[],custom:[],todayProgress:{},checklists:{},aiUndo:{},meta:{}});
@@ -14,6 +14,7 @@ function fixture(initial=blank()){
   const timers=new Map(),storage=new Map(),nodes={};let seq=0;
   storage.set('familyTravelV11',JSON.stringify(state));storage.set('familyTravelFamilySyncV12',JSON.stringify({enabled:true,endpoint:'https://mock.invalid',roomCode:'TEST',token:'TEST',revision:0,deviceId:id}));
   const c={fixtureDb:clone(db),window:{},crypto:require('node:crypto').webcrypto,Date:Clock,AbortSignal,URL,URLSearchParams,navigator:{onLine:true},console,document:{querySelector:s=>nodes[s]||null,querySelectorAll:()=>[],body:{dataset:{}}},setInterval:()=>0,clearInterval(){},setTimeout(f,ms){if(ms<400){queueMicrotask(f);return 0;}timers.set(++seq,f);return seq;},clearTimeout:id=>timers.delete(id),localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)}};
+  c.location={hash:'',pathname:'/',search:''};c.history={replaceState(){}};
   c.fetch=async(url,options)=>{
    const path=new URL(url).pathname,p=JSON.parse(options.body);server.calls.push({id,path,p});if(server.hook)await server.hook(id,path,p);if(server.fail)throw Error('network');let d,status=200;
    if(path==='/sync/pull')d=p.revision===server.revision?{notModified:true,revision:server.revision}:{state:clone(server.state),revision:server.revision};

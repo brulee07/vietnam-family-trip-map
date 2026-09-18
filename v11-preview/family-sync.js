@@ -19,8 +19,12 @@ function loadConfig(){
   return {enabled:!!v.enabled,endpoint:String(v.endpoint||endpointDefault()),roomCode:String(v.roomCode||''),token:String(v.token||''),revision:Number(v.revision||0),deviceId:String(v.deviceId||makeId()),deviceName:cleanDeviceName(v.deviceName||'가족 휴대폰'),lastSyncAt:v.lastSyncAt||null,lastError:v.lastError||null,dirty:!!v.dirty,deviceCount:Number(v.deviceCount||0),maxDevices:Number(v.maxDevices||MAX_FAMILY_DEVICES),pendingPhotoDeletes:Array.isArray(v.pendingPhotoDeletes)?v.pendingPhotoDeletes.filter(x=>typeof x==='string').slice(-100):[]};
 }
 let cfg=loadConfig();
+// Persist identity even before the first successful network connection.
+saveCfg();
+let joinBusy=false;
+const PENDING_INVITE_KEY='familyTravelPendingInviteV13';
 if(typeof memoMigrationPending!=='undefined'&&memoMigrationPending&&hasCreds()){cfg.dirty=true;saveCfg();}
-function saveCfg(){try{localStorage.setItem(CONFIG_KEY,JSON.stringify(cfg));}catch{}}
+function saveCfg(){try{localStorage.setItem(CONFIG_KEY,JSON.stringify(cfg));return true;}catch{return false;}}
 function ensureMeta(){
   if(!local.syncMeta||typeof local.syncMeta!=='object'||Array.isArray(local.syncMeta))local.syncMeta={};
   for(const k of ['memoCards','routes','notes','notePositions','memoPhotos','todayProgress','checklists'])if(!local.syncMeta[k]||typeof local.syncMeta[k]!=='object'||Array.isArray(local.syncMeta[k]))local.syncMeta[k]={};
@@ -28,7 +32,7 @@ function ensureMeta(){
   if(typeof local.syncMeta.custom!=='string')local.syncMeta.custom='';
 }
 function sharedMemoPhotos(src=local){const out={};for(const [rk,p] of Object.entries(src.memoPhotos||{})){const remoteUrl=String(p?.remoteUrl||p?.url||'');if(p&&typeof p.remoteId==='string'&&/^https:\/\//.test(remoteUrl)){out[rk]={remoteId:p.remoteId,remoteUrl,width:Number(p.width||0),height:Number(p.height||0),size:Number(p.size||0),name:String(p.name||'memo-photo.jpg').slice(0,120),updatedAt:p.updatedAt||null};}}return out;}
-function sharedState(src=local){MemoCards.migrate(src);ensureMeta();return {memoCards:MemoCards.shared(src),routes:clone(src.routes||{}),notes:clone(src.notes||{}),notePositions:clone(src.notePositions||{}),memoPhotos:sharedMemoPhotos(src),saved:clone(src.saved||[]),custom:clone(src.custom||[]),todayProgress:clone(src.todayProgress||{}),checklists:clone(src.checklists||{}),syncMeta:clone(src.syncMeta||{})};}
+function sharedState(src=local){cleanRetiredPlaces(src);MemoCards.migrate(src);ensureMeta();return {memoCards:MemoCards.shared(src),routes:clone(src.routes||{}),notes:clone(src.notes||{}),notePositions:clone(src.notePositions||{}),memoPhotos:sharedMemoPhotos(src),saved:clone(src.saved||[]),custom:clone(src.custom||[]),todayProgress:clone(src.todayProgress||{}),checklists:clone(src.checklists||{}),syncMeta:clone(src.syncMeta||{})};}
 function stable(v){return JSON.stringify(v);}
 // Preserve ordering for rapid edits within the same millisecond.
 function nextStamp(previous,current){return new Date(Math.max(Date.parse(current),stamp(previous)+1)).toISOString();}
@@ -79,6 +83,7 @@ function seedMeta(state){
 }
 function validateRemoteState(state){
   if(!state||typeof state!=='object')throw Error('sync_data');
+  cleanRetiredPlaces(state);
   MemoCards.migrate(state);
   const candidate={...local,...state,aiUndo:{},meta:local.meta||{}};
   validateBackup({version:11,data:candidate});
@@ -129,7 +134,7 @@ window.familyMemoPhotoDelete=photo=>queuePhotoDelete(photo);
 function syncErrorText(e){if(e?.data?.error==='max_devices')return `가족 공유는 최대 ${e.data.maxDevices||MAX_FAMILY_DEVICES}대의 휴대폰까지 참여할 수 있습니다.`;if(e?.status===401||e?.status===403)return '공유방 인증정보가 맞지 않습니다.';if(e?.status===404)return '공유방을 찾지 못했습니다.';if(e?.status===409)return '가족의 최신 변경사항과 합치는 중 충돌이 발생했습니다.';if(e?.name==='TimeoutError')return '동기화 서버 응답이 늦습니다.';if(navigator.onLine===false)return '현재 오프라인입니다.';return '가족 동기화 서버에 연결하지 못했습니다.';}
 function updateDeviceCounts(d){if(!d)return;cfg.deviceCount=Number(d.deviceCount??cfg.deviceCount??0);cfg.maxDevices=Number(d.maxDevices||cfg.maxDevices||MAX_FAMILY_DEVICES);saveCfg();}
 async function pullRemote(){
-  const d=await api('/sync/pull',{...roomPayload(),revision:cfg.revision});updateDeviceCounts(d);if(d.notModified)return null;const before=stable(d.state.memoCards||{});validateRemoteState(d.state);if(before!==stable(d.state.memoCards||{}))cfg.dirty=true;cfg.revision=Number(d.revision||0);saveCfg();return d;
+  const d=await api('/sync/pull',{...roomPayload(),revision:cfg.revision});updateDeviceCounts(d);if(d.notModified)return null;const before=stable(d.state);validateRemoteState(d.state);if(before!==stable(d.state))cfg.dirty=true;cfg.revision=Number(d.revision||0);saveCfg();return d;
 }
 async function pushState(state,baseRevision=cfg.revision){
   let current=clone(state),base=Number(baseRevision||0),last=null;
@@ -140,7 +145,7 @@ async function pushState(state,baseRevision=cfg.revision){
   throw last||Error('sync_conflict');
 }
 async function syncNow(mode='manual'){
-  if(!hasCreds()||syncBusy||navigator.onLine===false)return false;syncBusy=true;cfg.lastError=null;saveCfg();renderSyncBits();let remoteChanged=false;
+  if(!hasCreds()||syncBusy||joinBusy||navigator.onLine===false)return false;syncBusy=true;cfg.lastError=null;saveCfg();renderSyncBits();let remoteChanged=false;
   try{
     // Send text and other shared changes before waiting for photo storage.
     const remote=await pullRemote();if(remote?.state){const merged=mergeShared(sharedState(),remote.state);if(stable(merged.memoCards)!==stable(remote.state.memoCards))cfg.dirty=true;if(stable(merged)!==stable(sharedState())){applyShared(merged,{renderNow:false});remoteChanged=true;}}
@@ -168,15 +173,60 @@ async function createRoom(){
 }
 function inviteUrl(){const u=new URL(location.href);u.search='';u.hash='family='+encodeURIComponent(cfg.roomCode)+'&key='+encodeURIComponent(cfg.token);return u.toString();}
 async function copyInvite(){try{await navigator.clipboard.writeText(inviteUrl());toast('가족 초대 링크를 복사했습니다.');}catch{openInviteSheet();}}
-function openInviteSheet(){openSheet('가족 초대 링크',`<p>가족 휴대폰에서 아래 링크를 열면 같은 여행 일정에 참여할 수 있습니다.</p><label class="field"><span>공유방 코드</span><input readonly value="${esc(cfg.roomCode)}" class="sync-code"></label><label class="field"><span>초대 링크</span><textarea id="sync-invite" readonly>${esc(inviteUrl())}</textarea></label><p class="notice">초대 링크에는 공유방 접근키가 포함되어 있으므로 가족에게만 전달해 주세요.</p>`,`<button class="btn" id="sync-invite-close">닫기</button><button class="btn primary" id="sync-invite-copy">링크 복사</button>`);$('#sync-invite-close').onclick=closeSheet;$('#sync-invite-copy').onclick=async()=>{try{await navigator.clipboard.writeText($('#sync-invite').value);toast('초대 링크를 복사했습니다.');}catch{toast('링크를 길게 눌러 복사해 주세요.');}};}
-function openJoinSheet(prefill={}){if(!endpointReady())return;openSheet('가족 공유 참여',`<p>가족에게 받은 공유방 코드와 공유키를 입력하세요.</p><label class="field"><span>공유방 코드</span><input id="sync-code" maxlength="8" autocomplete="off" value="${esc(prefill.code||'')}"></label><label class="field"><span>공유키</span><input id="sync-token" autocomplete="off" value="${esc(prefill.token||'')}"></label><label class="field"><span>이 기기 이름</span><input id="sync-join-device" maxlength="${DEVICE_NAME_MAX}" value="${esc(cfg.deviceName)}"></label>`,`<button class="btn" id="sync-join-cancel">취소</button><button class="btn primary" id="sync-join-check">가족 일정 확인</button>`);$('#sync-join-cancel').onclick=closeSheet;$('#sync-join-check').onclick=()=>previewJoin($('#sync-code').value,$('#sync-token').value,$('#sync-join-device').value);}
-async function previewJoin(code,token,deviceName){
-  code=String(code||'').trim().toUpperCase();token=String(token||'').trim();if(!code||!token){toast('공유방 코드와 공유키를 입력해 주세요.');return;}
-  const old={roomCode:cfg.roomCode,token:cfg.token,revision:cfg.revision};cfg.roomCode=code;cfg.token=token;cfg.revision=0;
-  try{cfg.deviceName=cleanDeviceName(deviceName||cfg.deviceName);const d=await api('/sync/pull',{...roomPayload(),code,token,revision:0,preview:true},15000);validateRemoteState(d.state);updateDeviceCounts(d);const s=previewStats(d.state),localStats=previewStats(sharedState());openSheet('가족 일정 연결 확인',`<p><b>${esc(code)}</b> 공유방의 일정입니다.</p>${statsHtml(s)}<p class="notice">현재 이 기기: 편집 일정 ${localStats.days}일 · 메모 ${localStats.notes}개 · 저장 장소 ${localStats.saved}곳<br><b>가족 일정으로 맞추기</b>는 이 기기의 공유 대상 데이터를 교체합니다. <b>병합</b>은 양쪽의 최신 변경을 항목별로 합칩니다.</p>`,`<button class="btn" id="sync-join-back">뒤로</button><button class="btn" id="sync-join-merge">병합</button><button class="btn primary" id="sync-join-replace">가족 일정으로 맞추기</button>`);$('#sync-join-back').onclick=()=>openJoinSheet({code,token});$('#sync-join-replace').onclick=()=>finishJoin(d,'replace');$('#sync-join-merge').onclick=()=>finishJoin(d,'merge');}
-  catch(e){cfg.roomCode=old.roomCode;cfg.token=old.token;cfg.revision=old.revision;toast(syncErrorText(e));}
+function openInviteSheet(){
+  openSheet('가족 초대 링크',`<p>초대 링크를 복사해 카카오톡이나 문자로 보내 주세요. 가족은 기기 이름만 정하면 참여할 수 있습니다.</p><p class="notice">링크를 받은 사람은 가족 일정에 접근할 수 있습니다. 가족에게만 전달해 주세요.</p><details class="sync-advanced"><summary>복사가 안 될 때 링크 직접 선택</summary><label class="field"><span>초대 링크</span><textarea id="sync-invite" readonly>${esc(inviteUrl())}</textarea></label></details>`,`<button class="btn" id="sync-invite-close">닫기</button><button class="btn primary" id="sync-invite-copy">초대 링크 복사</button>`);
+  $('#sync-invite-close').onclick=closeSheet;$('#sync-invite-copy').onclick=async()=>{try{await navigator.clipboard.writeText(inviteUrl());toast('가족 초대 링크를 복사했습니다.');}catch{toast('아래 보조 항목을 열고 링크를 길게 눌러 복사해 주세요.');}};
 }
-function finishJoin(d,mode){const state=mode==='merge'?mergeShared(sharedState(),d.state):d.state;applyShared(state);cfg.enabled=true;cfg.revision=Number(d.revision||0);cfg.dirty=mode==='merge';cfg.lastSyncAt=nowIso();cfg.lastError=null;updateDeviceCounts(d);saveCfg();closeSheet();history.replaceState(null,'',location.pathname+location.search);startPolling();render();toast('가족 공유방에 연결했습니다.');syncNow(cfg.dirty?'push':'manual').then(()=>refreshDevices(true));}
+function clearPendingInvite(){try{localStorage.removeItem(PENDING_INVITE_KEY);}catch{}}
+function openJoinSheet(prefill={}){
+  if(!endpointReady())return;
+  const invited=!!(prefill.code&&prefill.token);
+  openSheet(invited?'가족 여행에 참여하시겠습니까?':'직접 참여 코드 입력',`<p>${invited?'기기 이름을 확인하고 참여해 주세요. 일정과 메모가 자동으로 연결됩니다.':'초대 링크를 사용할 수 없을 때만 가족에게 받은 코드와 공유키를 입력하세요.'}</p>${hasCreds()?'<p class="notice">참여를 완료하면 이 기기는 새 가족방으로 연결됩니다. 기존 가족방은 삭제하지 않습니다.</p>':''}${invited?'':`<label class="field"><span>공유방 코드</span><input id="sync-code" maxlength="8" autocomplete="off"></label><label class="field"><span>공유키</span><input id="sync-token" type="password" autocomplete="off"></label>`}<label class="field"><span>이 기기 이름</span><input id="sync-join-device" maxlength="${DEVICE_NAME_MAX}" value="${esc(cfg.deviceName)}" autocomplete="off"></label>`,`<button class="btn" id="sync-join-cancel">취소</button><button class="btn primary" id="sync-join-check">가족 여행 참여</button>`);
+  $('#sync-join-cancel').onclick=()=>{clearPendingInvite();closeSheet();};
+  $('#sync-join-check').onclick=()=>previewJoin(invited?prefill.code:$('#sync-code').value,invited?prefill.token:$('#sync-token').value,$('#sync-join-device').value);
+}
+function hasLocalChanges(state){
+  return Object.values(previewStats(state)).some(n=>n>0)||Object.keys(state.memoCards||{}).length>0||Object.keys(state.memoPhotos||{}).length>0;
+}
+async function previewJoin(code,token,deviceName){
+  if(joinBusy||syncBusy){toast('동기화가 끝난 뒤 다시 참여해 주세요.');return;}
+  code=String(code||'').trim().toUpperCase();token=String(token||'').trim();
+  if(!code||!token){toast('공유방 코드와 공유키를 입력해 주세요.');return;}
+  if(!String(deviceName||'').trim()){toast('기기 이름을 입력해 주세요.');return;}
+  const candidate={code,token,deviceId:cfg.deviceId,deviceName:cleanDeviceName(deviceName)};
+  joinBusy=true;const button=$('#sync-join-check');if(button)button.disabled=true;
+  try{
+    const d=await api('/sync/pull',{...candidate,revision:0,preview:true},15000);validateRemoteState(d.state);
+    if(!hasLocalChanges(sharedState())){await finishJoin(candidate,'replace');return;}
+    if(!hasLocalChanges(d.state)){await finishJoin(candidate,'merge');return;}
+    openSheet('이 기기의 기록도 있습니다',`<p>가족 일정에 참여하기 전에 이 기기의 기록을 어떻게 사용할지 선택해 주세요.</p>${statsHtml(previewStats(sharedState()))}<p class="notice">어느 쪽을 선택해도 이 기기의 참여 전 기록을 별도로 보관합니다. 여행 도구의 ‘복원 전 상태로 되돌리기’에서 복구할 수 있습니다.<br>함께 합치기는 같은 날짜 일정·같은 메모의 최신 변경을 사용합니다. 가족 일정 사용은 이 기기의 공유 데이터를 가족 일정으로 교체합니다.</p>`,`<button class="btn" id="sync-join-back">취소</button><button class="btn" id="sync-join-merge">내 기록도 함께 합치기</button><button class="btn primary" id="sync-join-replace">가족 일정 사용</button>`);
+    $('#sync-join-back').onclick=()=>{clearPendingInvite();closeSheet();};
+    $('#sync-join-merge').onclick=()=>commitJoin(candidate,'merge');$('#sync-join-replace').onclick=()=>commitJoin(candidate,'replace');
+  }catch(e){toast(syncErrorText(e));}finally{joinBusy=false;if(button)button.disabled=false;}
+}
+async function commitJoin(candidate,mode){
+  if(joinBusy||syncBusy)return;joinBusy=true;
+  try{await finishJoin(candidate,mode);}catch(e){toast(syncErrorText(e));}finally{joinBusy=false;}
+}
+async function finishJoin(candidate,mode){
+  // A non-preview pull registers this device and checks the server's nine-device limit.
+  // Do not change the active credentials until registration and local persistence succeed.
+  const joinSnapshot=stable(sharedState());
+  const d=await api('/sync/pull',{...candidate,revision:0},15000);validateRemoteState(d.state);
+  if(joinSnapshot!==stable(sharedState())){toast('참여 준비 중 이 기기의 기록이 바뀌었습니다. 기록을 보호하기 위해 다시 참여해 주세요.');return;}
+  if(hasLocalChanges(sharedState())){
+    try{localStorage.setItem(PRE_RESTORE_KEY,JSON.stringify({savedAt:nowIso(),data:local}));}
+    catch{toast('참여 전 기록을 저장할 공간이 없습니다. 먼저 파일로 백업해 주세요.');return;}
+  }
+  const before=clone(local),oldCfg={...cfg},state=mode==='merge'?mergeShared(sharedState(),d.state):d.state;
+  if(!applyShared(state,{renderNow:false})){local=before;syncShadow=sharedState();return;}
+  cfg={...cfg,enabled:true,roomCode:candidate.code,token:candidate.token,deviceName:candidate.deviceName,revision:Number(d.revision||0),dirty:mode==='merge',lastSyncAt:nowIso(),lastError:null,pendingPhotoDeletes:[]};
+  cfg.deviceCount=Number(d.deviceCount||0);cfg.maxDevices=Number(d.maxDevices||MAX_FAMILY_DEVICES);
+  if(!saveCfg()){cfg=oldCfg;local=before;baseSave();syncShadow=sharedState();toast('연결 정보를 저장하지 못했습니다. 저장 공간을 확인하고 다시 참여해 주세요.');return;}
+  clearPendingInvite();syncDevices=[];devicesFetchedAt=0;
+  closeSheet();history.replaceState(null,'',location.pathname+location.search);startPolling();render();toast('가족 공유방에 연결했습니다.');
+  armPush(900);refreshDevices(true);
+}
 async function disconnect(skipConfirm=false){if(!skipConfirm&&!confirm('이 기기만 가족 동기화에서 연결 해제할까요? 기기에 저장된 일정은 그대로 남습니다.'))return;if(hasCreds()){try{await api('/sync/device/leave',roomPayload(),8000);}catch{}}cfg={...cfg,enabled:false,roomCode:'',token:'',revision:0,dirty:false,lastError:null,lastSyncAt:null,deviceCount:0,pendingPhotoDeletes:[]};syncDevices=[];devicesFetchedAt=0;saveCfg();clearInterval(syncPollTimer);render();toast('이 기기의 가족 동기화를 해제했습니다.');}
 async function deleteRoom(){if(!hasCreds())return;if(!confirm('가족 공유방을 서버에서 삭제할까요? 다른 가족 기기도 더 이상 동기화할 수 없습니다.'))return;try{await api('/sync/delete',roomPayload());await disconnect(true);}catch(e){toast(syncErrorText(e));}}
 function fmt(v){if(!v)return '아직 없음';try{return new Date(v).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});}catch{return String(v);}}
@@ -213,7 +263,7 @@ function renderSyncPanel(){
   const connected=hasCreds(),status=syncBusy?['busy','동기화 중']:cfg.lastError?['error','확인 필요']:connected?['connected','공유 중']:['','꺼짐'];
   const count=cfg.deviceCount||syncDevices.length||(connected?1:0),max=cfg.maxDevices||MAX_FAMILY_DEVICES;
   const dupCount=connected?duplicateNameCount(cfg.deviceName):0;
-  const html=`<section class="family-sync-card"><div class="family-sync-head"><div><span class="eyebrow">가족 공유</span><b>가족 일정 동기화</b><small>${connected?`최대 ${max}대의 휴대폰이 같은 일정·메모·체크리스트를 함께 사용합니다.`:'공유방을 만들거나 가족 초대 링크로 참여할 수 있습니다.'}</small></div><span class="sync-status ${status[0]}">${status[1]}</span></div>${connected?`<div class="family-sync-room"><span><small>공유방</small><b class="sync-code">${esc(cfg.roomCode)}</b></span><span><small>참여 기기</small><b>${count}/${max}대</b></span><span class="sync-device-name-cell"><small>이 기기</small><b>${esc(cfg.deviceName)}</b><button id="sync-rename" class="sync-rename-mini">이름 변경</button></span><span><small>마지막 동기화</small><b>${esc(fmt(cfg.lastSyncAt))}</b></span></div>${dupCount?`<p class="sync-name-warning">같은 이름의 기기가 ${dupCount+1}대 있습니다. 여행 전에 각 휴대폰 이름을 구분해 주세요.</p>`:''}${cfg.lastError?`<p class="family-sync-note">${esc(cfg.lastError)}</p>`:''}<div class="family-sync-actions"><button class="btn primary" id="sync-now">지금 동기화</button><button class="btn" id="sync-copy" ${count>=max?'disabled':''}>${count>=max?'9대 참여 중':'초대 링크 복사'}</button><button class="btn" id="sync-disconnect">이 기기 연결 해제</button></div>${devicesHtml()}`:`<div class="family-sync-actions"><button class="btn primary" id="sync-create">가족 공유 시작</button><button class="btn" id="sync-join">가족 공유 참여</button></div>`}<details class="sync-advanced"><summary>동기화 설정</summary><p class="family-sync-note">서버: ${esc(cfg.endpoint||'설정 안 됨')}<br>기기 이름: ${esc(cfg.deviceName)}</p><div class="family-sync-actions"><button class="btn" id="sync-server">서버·기기 설정</button>${connected?'<button class="btn danger" id="sync-delete-room">공유방 삭제</button>':''}</div></details><p class="family-sync-note">공유 대상: 일정 순서 · 하루 메모·사진·표시 위치 · 저장/추가 장소 · Today 진행 · 체크리스트<br>AI 대화와 AI 복원 기록, 백업 기록, 기기별 설정은 공유하지 않습니다.</p></section>`;
+  const html=`<section class="family-sync-card"><div class="family-sync-head"><div><span class="eyebrow">가족 공유</span><b>가족 일정 동기화</b><small>${connected?`최대 ${max}대의 휴대폰이 같은 일정·메모·체크리스트를 함께 사용합니다.`:'공유방을 만들거나 가족 초대 링크로 참여할 수 있습니다.'}</small></div><span class="sync-status ${status[0]}">${status[1]}</span></div>${connected?`<div class="family-sync-room"><span><small>공유방</small><b class="sync-code">${esc(cfg.roomCode)}</b></span><span><small>참여 기기</small><b>${count}/${max}대</b></span><span class="sync-device-name-cell"><small>이 기기</small><b>${esc(cfg.deviceName)}</b><button id="sync-rename" class="sync-rename-mini">이름 변경</button></span><span><small>마지막 동기화</small><b>${esc(fmt(cfg.lastSyncAt))}</b></span></div>${dupCount?`<p class="sync-name-warning">같은 이름의 기기가 ${dupCount+1}대 있습니다. 여행 전에 각 휴대폰 이름을 구분해 주세요.</p>`:''}${cfg.lastError?`<p class="family-sync-note">${esc(cfg.lastError)}</p>`:''}<div class="family-sync-actions"><button class="btn primary" id="sync-now">지금 동기화</button><button class="btn" id="sync-copy">초대 링크 복사</button><button class="btn" id="sync-disconnect">이 기기 연결 해제</button></div>${devicesHtml()}`:`<div class="family-sync-actions"><button class="btn primary" id="sync-create">가족 공유 시작</button></div>`}<details class="sync-advanced"><summary>고급 설정 · 직접 참여 코드 입력</summary><p class="family-sync-note">서버: ${esc(cfg.endpoint||'설정 안 됨')}<br>기기 이름: ${esc(cfg.deviceName)}</p><div class="family-sync-actions"><button class="btn" id="sync-join">직접 참여 코드 입력</button><button class="btn" id="sync-server">서버·기기 설정</button>${connected?'<button class="btn danger" id="sync-delete-room">공유방 삭제</button>':''}</div></details><p class="family-sync-note">공유 대상: 일정 순서 · 하루 메모·사진·표시 위치 · 저장/추가 장소 · Today 진행 · 체크리스트<br>AI 대화와 AI 복원 기록, 백업 기록, 기기별 설정은 공유하지 않습니다.</p></section>`;
   anchor.insertAdjacentHTML('afterend',html);
   if($('#sync-create'))$('#sync-create').onclick=createRoom;if($('#sync-rename'))$('#sync-rename').onclick=openRenameDeviceSheet;if($('#sync-join'))$('#sync-join').onclick=()=>openJoinSheet();if($('#sync-now'))$('#sync-now').onclick=()=>syncNow('manual').then(()=>refreshDevices(true));if($('#sync-copy'))$('#sync-copy').onclick=copyInvite;if($('#sync-disconnect'))$('#sync-disconnect').onclick=disconnect;if($('#sync-server'))$('#sync-server').onclick=openSyncServerSheet;if($('#sync-delete-room'))$('#sync-delete-room').onclick=deleteRoom;if($('#sync-device-refresh'))$('#sync-device-refresh').onclick=()=>refreshDevices(false);document.querySelectorAll('.device-remove').forEach(b=>b.onclick=()=>removeDevice(b.dataset.device,b.dataset.name));document.querySelectorAll('.device-rename-inline').forEach(b=>b.onclick=openRenameDeviceSheet);
   if(connected&&Date.now()-devicesFetchedAt>30000&&!deviceFetchBusy)setTimeout(()=>refreshDevices(true),0);
@@ -222,7 +272,13 @@ function renderSyncBits(){if(tab==='tools')renderSyncPanel();const s=document.qu
 toolsView=function(){baseToolsView();renderSyncPanel();};
 todayView=function(){baseTodayView();if(!hasCreds())return;const heading=document.querySelector('.today-picker');if(heading&&!document.querySelector('.family-sync-mini'))heading.insertAdjacentHTML('afterend',`<div class="family-sync-mini"><span>${syncBusy?'가족 일정 동기화 중…':cfg.lastError?'가족 동기화 확인 필요':`가족 ${cfg.deviceCount||1}/${cfg.maxDevices||MAX_FAMILY_DEVICES} · ${esc(fmt(cfg.lastSyncAt))}`}</span><button id="sync-mini-open">설정</button></div>`);if($('#sync-mini-open'))$('#sync-mini-open').onclick=()=>go('tools');};
 function startPolling(){clearInterval(syncPollTimer);if(!hasCreds())return;syncPollTimer=setInterval(()=>{if(document.visibilityState==='visible')syncNow('poll');},15000);}
-function parseInvite(){const h=new URLSearchParams(location.hash.replace(/^#/,''));const code=h.get('family'),token=h.get('key');return code&&token?{code,token}:null;}
-async function waitForApp(){for(let i=0;i<80&&!db;i++)await new Promise(r=>setTimeout(r,100));if(!db)return;startPolling();window.addEventListener('focus',()=>{if(hasCreds())syncNow('poll');});window.addEventListener('online',()=>{if(hasCreds())syncNow('poll');});document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&hasCreds())syncNow('poll');});const invite=parseInvite();if(invite)setTimeout(()=>openJoinSheet(invite),250);else if(hasCreds())setTimeout(()=>syncNow('poll').then(()=>refreshDevices(true)),500);}
+function parseInvite(){const h=new URLSearchParams(location.hash.replace(/^#/,''));const code=h.get('family'),token=h.get('key');return code&&token?{code:code.trim().toUpperCase(),token:token.trim()}:null;}
+function captureInvite(){
+  const incoming=parseInvite();
+  if(incoming){try{localStorage.setItem(PENDING_INVITE_KEY,JSON.stringify(incoming));history.replaceState(null,'',location.pathname+location.search);}catch{/* Keep the URL usable if storage is unavailable. */}return incoming;}
+  try{const p=JSON.parse(localStorage.getItem(PENDING_INVITE_KEY)||'null');return p&&typeof p.code==='string'&&typeof p.token==='string'?p:null;}catch{return null;}
+}
+const pendingInvite=captureInvite();
+async function waitForApp(){for(let i=0;i<80&&!db;i++)await new Promise(r=>setTimeout(r,100));if(!db)return;startPolling();window.addEventListener('focus',()=>{if(hasCreds())syncNow('poll');});window.addEventListener('online',()=>{if(hasCreds())syncNow('poll');});document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&hasCreds())syncNow('poll');});const invite=pendingInvite;if(invite&&!(hasCreds()&&invite.code===cfg.roomCode&&invite.token===cfg.token))setTimeout(()=>openJoinSheet(invite),250);else if(hasCreds()){clearPendingInvite();setTimeout(()=>syncNow('poll').then(()=>refreshDevices(true)),500);}}
 waitForApp();
 })();

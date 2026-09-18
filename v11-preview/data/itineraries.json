@@ -171,14 +171,13 @@
       "apec",
       "thaovy",
       "coopmarttuyhoa",
-      "giatuituyhoa",
       "tuyetnhung",
       "rosa",
       "roselispa",
       "tuyhoabeach",
       "urabeach"
     ],
-    "note": "APEC 아침 → Co.opmart 장보기 → 세탁 회수 확인 → 닭고기밥 후보 → Rosa Alba 체크인 → 리조트 휴식 → Roseli Spa 또는 해변 카페 선택",
+    "note": "APEC 아침 → Co.opmart 장보기 → 닭고기밥 후보 → Rosa Alba 체크인 → 리조트 휴식 → Roseli Spa 또는 해변 카페 선택",
     "sourceHtml": "tuy_hoa.html"
   },
   {
@@ -231,13 +230,12 @@
       "costa",
       "phela",
       "buncatuyetha",
-      "laundry2h",
       "iresort",
       "honchongviewcafe",
       "mocseafood",
       "costa"
     ],
-    "note": "숙소 근처 커피 또는 국수 아침 → 필요 시 2H Laundry 세탁 맡김 → I-Resort 온천·머드스파·물놀이 → Hòn Chồng View 카페 선택 → 해산물 저녁",
+    "note": "숙소 근처 커피 또는 국수 아침 → I-Resort 온천·머드스파·물놀이 → Hòn Chồng View 카페 선택 → 해산물 저녁",
     "sourceHtml": "nha_trang.html"
   },
   {
@@ -252,13 +250,12 @@
       "dammarket",
       "nemdangvanquyen",
       "lottegoldcoast",
-      "laundry2h",
       "metrangtranphu",
       "nhatrangbeach",
       "nomnom",
       "costa"
     ],
-    "note": "가족 카페 → 해양박물관 → Đầm Market → Nem nướng 지역특색음식 → Lotte Mart 장보기 → 필요 시 세탁 회수 → 로컬 커피/해변 산책 → Nom Nom 가족식사 대안",
+    "note": "가족 카페 → 해양박물관 → Đầm Market → Nem nướng 지역특색음식 → Lotte Mart 장보기 → 로컬 커피/해변 산책 → Nom Nom 가족식사 대안",
     "sourceHtml": "nha_trang.html"
   },
   {
