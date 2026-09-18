@@ -1,6 +1,6 @@
-const CACHE='family-travel-v12-9-preview-1';
+const CACHE='family-travel-v13-preview-1';
 const PREFIX='family-travel-';
-const FILES=['./','./index.html','./memo-cards.js?v=12.9','./app.css?v=12.9','./map-improvements.css?v=12.9','./home-improvements.css?v=12.9','./family-sync.css?v=12.9','./app.js?v=12.9','./ai-config.js?v=12.9','./sync-config.js?v=12.9','./family-sync.js?v=12.9','./manifest.json','./data/trip.json','./data/cities.json','./data/places.json','./data/itineraries.json','./data/safety.json','./icons/icon-192.png','./icons/icon-512.png'];
+const FILES=['./','./index.html','./memo-cards.js?v=13.0','./app.css?v=13.0','./map-improvements.css?v=13.0','./home-improvements.css?v=13.0','./family-sync.css?v=13.0','./app.js?v=13.0','./ai-config.js?v=13.0','./sync-config.js?v=13.0','./family-sync.js?v=13.0','./manifest.json','./data/trip.json','./data/cities.json','./data/places.json','./data/itineraries.json','./data/safety.json','./icons/icon-192.png','./icons/icon-512.png'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(Promise.all([caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith(PREFIX)&&k!==CACHE).map(k=>caches.delete(k)))),self.clients.claim()])));
 self.addEventListener('fetch',e=>{if(e.request.method!=='GET'||new URL(e.request.url).origin!==self.location.origin)return;e.respondWith(fetch(new Request(e.request,{cache:'no-store'})).then(r=>{if(r.ok){const copy=r.clone();caches.open(CACHE).then(c=>c.put(e.request,copy));}return r;}).catch(()=>caches.open(CACHE).then(c=>c.match(e.request,{ignoreSearch:true})).then(r=>r||Response.error())));});
