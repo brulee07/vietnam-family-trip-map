@@ -11,7 +11,13 @@ test('approved photos, audit records, data and sync implementation survive promo
  const baseline=JSON.parse(read('tests/promotion-baseline.json'));
  for(const [file,hash] of Object.entries(baseline.files)){
   const bytes=fs.readFileSync(path.join(root,file));
-  const canonical=/\.(jpg|png)$/.test(file)?bytes:Buffer.from(bytes.toString('utf8').replaceAll('\r\n','\n'));
+  let text=bytes.toString('utf8').replaceAll('\r\n','\n');
+  for(const link of baseline.archiveLinkRewrites?.[file]||[]){
+   assert.ok(text.includes(']('+link.to+')'),file+' relocated link');
+   assert.ok(fs.existsSync(path.resolve(root,path.dirname(file),link.to)),link.to);
+   text=text.replaceAll(']('+link.to+')',']('+link.from+')');
+  }
+  const canonical=/\.(jpg|png)$/.test(file)?bytes:Buffer.from(text);
   assert.equal(crypto.createHash('sha256').update(canonical).digest('hex'),hash,file);
  }
 });

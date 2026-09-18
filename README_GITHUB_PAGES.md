@@ -7,8 +7,11 @@
 - 대표사진: `photos/` (81곳 보유; 사진 감사 결과 유지)
 - 동기화: 기존 `sync-config.js`와 `sync-worker/`; 서버 재배포 불필요
 - 이전 도시 HTML 및 `v11-preview/index.html`: 새 루트로 이동하는 호환 페이지
-- 사진 감사와 당시 검증 기록: `v11-preview/*.md`, `*.csv` 원문 보존
-- 구버전 설명서: `docs/legacy/`
+- 사진 감사·최종 사용성 보고서: `v11-preview/` 원문 보존
+- 개발·검증 보고서 및 체크리스트: [docs/archive/](docs/archive/README.md)
+- 운영 배포 결과와 검증 근거: `docs/releases/`
+- 정리 내역: [docs/V13_CLEANUP.md](docs/V13_CLEANUP.md)
+- 구버전 설명서: `docs/archive/legacy/`
 
 승인 대상 변경, 삭제 목록, PWA 전환 및 복구 절차는 [V13_ROOT_PROMOTION.md](V13_ROOT_PROMOTION.md)를 확인합니다. 과거 문서의 `v11-preview/photos/`, `v11-preview/data/`, `v11-preview/sync-worker/` 경로는 당시 기록이며 현재 파일은 루트 아래 동일한 하위 경로로 이동했습니다.
 

@@ -4,11 +4,9 @@
   "files": {
     "v11-preview/ALL_CITIES_PHOTO_AUDIT_FINAL_2026-09-18.md": "afc4a87b67f764abf293d238c16dec6f423246e45260a271c9148e7355775fb6",
     "v11-preview/DA_NANG_PHOTO_AUDIT_2026-09-17.md": "dba794413ae292705b8e0f09252d75d5d8ef43c1739beca19c499a68c30666eb",
-    "v11-preview/HANDOFF_HOME_2026-09-18.md": "089ebd940d9e4f960f75f4cdc1d8daecabb24393287523b11962ba1ed277e20f",
     "v11-preview/MISSING_PHOTOS_33_NO_LAUNDRY.csv": "659a940cc1df8a9fa3fa7794028cafb6abad5fbea38071668b57b24b0d69ad9c",
     "v11-preview/MISSING_PHOTOS_53.csv": "89ea10419c5b215896642d4bf53652c92c222b60343dd1b4389e9c5678aea91c",
     "v11-preview/MISSING_PHOTOS_FULL.csv": "02a20a7b47e7c22740574c83567abe7addf2bb44f45a81e37bad834d3834ecd1",
-    "v11-preview/MULTI_MEMO_CARDS.md": "3b5897157562a33ba172d0846890ac2eb25cdf4f1947afabc1cfc93830cf4f3b",
     "v11-preview/NHA_TRANG_PHOTO_AUDIT_FINAL_2026-09-18.md": "883aa0bef9e9a63d53b633228923f4e4944fcf6dbd1b2390d10e81c2028a670e",
     "v11-preview/NHA_TRANG_PHOTO_AUDIT_PHASE1_2026-09-18.md": "6458c9e3a228ddb48c7a67d83458ea3b7e394e7a60a4577d87cb341fd8d82d4f",
     "v11-preview/NHA_TRANG_PHOTO_AUDIT_PHASE2_2026-09-18.md": "d62196738d25ea5062290177d01fb8a1d020121b1d57e5e2fc993c8546e057c3",
@@ -19,18 +17,10 @@
     "v11-preview/QUY_NHON_PHOTO_AUDIT_FINAL_2026-09-18.md": "60305b89464067799c3b69686fb0f3d7102ac47eebdbd62bef565e16e3986978",
     "v11-preview/QUY_NHON_PHOTO_AUDIT_PHASE1_2026-09-18.md": "70f1112287476c8dd2fd65c98a9f2a4ea3d040a4a568834556bad8645649aa56",
     "v11-preview/QUY_NHON_PHOTO_AUDIT_PHASE2_2026-09-18.md": "ba822c5a4ac5abd41c922dbee4c5bc56201c6c9ad357a6e9caf162df40537ffe",
-    "v11-preview/README.md": "9f40c9406aab5ea652961f5949b1096cc03dc66483f9bf494c2123f17192739b",
     "v11-preview/TUY_HOA_PHOTO_AUDIT_FINAL_2026-09-18.md": "47bd06519996076eecb8c24215333a72dbb056519eff36ab524e3b8c60f50628",
     "v11-preview/TUY_HOA_PHOTO_AUDIT_PHASE1_2026-09-18.md": "3ae5966344f26e3383c92c705745b6ca3e98354f7b8d175e6c5c7d96e1ed8d3c",
     "v11-preview/TUY_HOA_PHOTO_AUDIT_PHASE2_2026-09-18.md": "130477a3c7de1f34817516e0f22e2b9c09c2ce25c537d28ab163c13b26860f90",
-    "v11-preview/V12_4_TEST_CHECKLIST.md": "c53c2721cd976017861f41c857ef0d66d3472ebdacb9608e6cd1ab924454bf9b",
-    "v11-preview/V12_5_TEST_CHECKLIST.md": "81ea35f36856bbfae5d7d2a3f4116d6f865c253826f0f0408dbebaba7642cea6",
-    "v11-preview/V12_7_TEST_CHECKLIST.md": "1a9f6c66befa941a8484b08c1a64069c668bf6cedc8848c39322e540b77824b4",
-    "v11-preview/V12_8_CLOUDFLARE_SETUP.md": "0858c57f26e24c805f407d3a5ed516cb5879f85c4725f4609922b512ce2e1bc9",
-    "v11-preview/V12_8_SUPABASE_SETUP.md": "e1710b7be7b3faffa2793c3b550eb1d1899a5b5aef9840ce9cd00a1241d011d5",
-    "v11-preview/V12_8_TEST_CHECKLIST.md": "a6b53350a3416e5232527dc88b519d3f4354368da693de3e30a9e9c2665b1ada",
     "v11-preview/V13_FINAL_USABILITY.md": "806319fdaa28f0441dfe66dc41a97e12e278f373a9377a24b879fac0fe7753fd",
-    "v11-preview/V13_INTEGRATION.md": "97056fbd302c4a5839050bc6d6ee2c0de9c72efa7040757cb28fc3a6804ee6b4",
     "ai-config.js": "ef72da6fc245c07a969c0d8893499cf1739cb56529b89046b02625a67fcfedd7",
     "app.css": "209eb543c860184e4c9c79377db0aa9602c1d9efb93c5ebefca9d33a384357e3",
     "data/cities.json": "c5fbab63a9b868cecebc0ab3dd4119c6ee5dbed6b250082ea8fc71737e83b651",
@@ -136,6 +126,36 @@
     "sync-worker/migration-v12.1.sql": "bd93d5a5ec34d1d20670147d5c59a9b7426f6cb2197de26a5946adcec4ff5b27",
     "sync-worker/schema.sql": "830f707bd676a083911ee30c644d5fa844f5c36595e9e874262b27031b49cfee",
     "sync-worker/worker.js": "d7ff127d384afdf4d3bc97ab7c19b3c0dc7d196277ae91f0679984cd53dfeda1",
-    "sync-worker/wrangler.toml.example": "923ad1e6288b20a028f23cdc09b6c1f4f84d576647b0d523a839c77e8a6463b3"
+    "sync-worker/wrangler.toml.example": "923ad1e6288b20a028f23cdc09b6c1f4f84d576647b0d523a839c77e8a6463b3",
+    "docs/archive/v11-preview/HANDOFF_HOME_2026-09-18.md": "089ebd940d9e4f960f75f4cdc1d8daecabb24393287523b11962ba1ed277e20f",
+    "docs/archive/v11-preview/MULTI_MEMO_CARDS.md": "3b5897157562a33ba172d0846890ac2eb25cdf4f1947afabc1cfc93830cf4f3b",
+    "docs/archive/v11-preview/README.md": "9f40c9406aab5ea652961f5949b1096cc03dc66483f9bf494c2123f17192739b",
+    "docs/archive/v11-preview/V12_4_TEST_CHECKLIST.md": "c53c2721cd976017861f41c857ef0d66d3472ebdacb9608e6cd1ab924454bf9b",
+    "docs/archive/v11-preview/V12_5_TEST_CHECKLIST.md": "81ea35f36856bbfae5d7d2a3f4116d6f865c253826f0f0408dbebaba7642cea6",
+    "docs/archive/v11-preview/V12_7_TEST_CHECKLIST.md": "1a9f6c66befa941a8484b08c1a64069c668bf6cedc8848c39322e540b77824b4",
+    "docs/archive/v11-preview/V12_8_CLOUDFLARE_SETUP.md": "0858c57f26e24c805f407d3a5ed516cb5879f85c4725f4609922b512ce2e1bc9",
+    "docs/archive/v11-preview/V12_8_SUPABASE_SETUP.md": "e1710b7be7b3faffa2793c3b550eb1d1899a5b5aef9840ce9cd00a1241d011d5",
+    "docs/archive/v11-preview/V12_8_TEST_CHECKLIST.md": "a6b53350a3416e5232527dc88b519d3f4354368da693de3e30a9e9c2665b1ada",
+    "docs/archive/v11-preview/V13_INTEGRATION.md": "97056fbd302c4a5839050bc6d6ee2c0de9c72efa7040757cb28fc3a6804ee6b4"
+  },
+  "archiveLinkRewrites": {
+    "docs/archive/v11-preview/HANDOFF_HOME_2026-09-18.md": [
+      {
+        "from": "DA_NANG_PHOTO_AUDIT_2026-09-17.md",
+        "to": "../../../v11-preview/DA_NANG_PHOTO_AUDIT_2026-09-17.md"
+      },
+      {
+        "from": "QUY_NHON_PHOTO_AUDIT_FINAL_2026-09-18.md",
+        "to": "../../../v11-preview/QUY_NHON_PHOTO_AUDIT_FINAL_2026-09-18.md"
+      },
+      {
+        "from": "TUY_HOA_PHOTO_AUDIT_PHASE1_2026-09-18.md",
+        "to": "../../../v11-preview/TUY_HOA_PHOTO_AUDIT_PHASE1_2026-09-18.md"
+      },
+      {
+        "from": "TUY_HOA_PHOTO_AUDIT_PHASE2_2026-09-18.md",
+        "to": "../../../v11-preview/TUY_HOA_PHOTO_AUDIT_PHASE2_2026-09-18.md"
+      }
+    ]
   }
 }

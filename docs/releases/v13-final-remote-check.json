@@ -1,0 +1,13 @@
+{
+  "home": {
+    "status": 200,
+    "htmlMatch": true,
+    "csp": "default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: blob: https://*.tile.openstreetmap.org https://unpkg.com https://commons.wikimedia.org https://upload.wikimedia.org https://*.supabase.co; connect-src 'self' https://vietnam-family-trip-ai.brulee07.workers.dev https://vietnam-family-trip-sync.brulee07.workers.dev https://nominatim.openstreetmap.org https://api.open-meteo.com; font-src 'self' data:; worker-src 'self'; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'",
+    "robots": "noindex, nofollow, noarchive",
+    "referrer": "no-referrer"
+  },
+  "assets": 105,
+  "photos": 86,
+  "errors": [],
+  "places": 100
+}

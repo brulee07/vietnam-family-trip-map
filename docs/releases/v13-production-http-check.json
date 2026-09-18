@@ -1,0 +1,664 @@
+{
+  "commit": "12f9d5cc4b13d3d91fa4b425c3ad6d4506ecad9b",
+  "buildStatus": "built",
+  "url": "https://brulee07.github.io/vietnam-family-trip-map/",
+  "places": 100,
+  "photos": 81,
+  "assetCount": 109,
+  "checks": [
+    {
+      "path": "/",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 1569
+    },
+    {
+      "path": "./index.html",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 1569
+    },
+    {
+      "path": "ai-config.js",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 360
+    },
+    {
+      "path": "app.css",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 29745
+    },
+    {
+      "path": "app.js",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 97047
+    },
+    {
+      "path": "da_nang.html",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 704
+    },
+    {
+      "path": "data/cities.json",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 1326
+    },
+    {
+      "path": "data/itineraries.json",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 7561
+    },
+    {
+      "path": "data/places.json",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 116810
+    },
+    {
+      "path": "data/safety.json",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 2801
+    },
+    {
+      "path": "data/trip.json",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 1648
+    },
+    {
+      "path": "family-sync.css",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 4201
+    },
+    {
+      "path": "family-sync.js",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 36753
+    },
+    {
+      "path": "home-improvements.css",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 2385
+    },
+    {
+      "path": "icons/icon-192.png",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 3654
+    },
+    {
+      "path": "icons/icon-512.png",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 10475
+    },
+    {
+      "path": "index.html",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 1569
+    },
+    {
+      "path": "manifest.json",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 456
+    },
+    {
+      "path": "map-improvements.css",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 537
+    },
+    {
+      "path": "memo-cards.js",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 4093
+    },
+    {
+      "path": "nha_trang.html",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 708
+    },
+    {
+      "path": "photos/da_nang/aeon.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 472837
+    },
+    {
+      "path": "photos/da_nang/airport.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 562086
+    },
+    {
+      "path": "photos/da_nang/banhxeo.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 97761
+    },
+    {
+      "path": "photos/da_nang/cham.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 193030
+    },
+    {
+      "path": "photos/da_nang/conmarket.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 337650
+    },
+    {
+      "path": "photos/da_nang/dragon.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 165552
+    },
+    {
+      "path": "photos/da_nang/go.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 191700
+    },
+    {
+      "path": "photos/da_nang/hotel.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 477656
+    },
+    {
+      "path": "photos/da_nang/mikazuki.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 394758
+    },
+    {
+      "path": "photos/da_nang/miquang.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 228954
+    },
+    {
+      "path": "photos/da_nang/moc.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 431724
+    },
+    {
+      "path": "photos/da_nang/museum.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 569668
+    },
+    {
+      "path": "photos/da_nang/night.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 488214
+    },
+    {
+      "path": "photos/da_nang/station.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 331427
+    },
+    {
+      "path": "photos/da_nang/vincom.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 506688
+    },
+    {
+      "path": "photos/da_nang/xom.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 739490
+    },
+    {
+      "path": "photos/nha_trang/buncatuyetha.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 542134
+    },
+    {
+      "path": "photos/nha_trang/camranh.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 90337
+    },
+    {
+      "path": "photos/nha_trang/coconutmassage.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 304054
+    },
+    {
+      "path": "photos/nha_trang/coffeehouseab.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 222333
+    },
+    {
+      "path": "photos/nha_trang/costa.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 797687
+    },
+    {
+      "path": "photos/nha_trang/honchong.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 392823
+    },
+    {
+      "path": "photos/nha_trang/honchongviewcafe.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 139133
+    },
+    {
+      "path": "photos/nha_trang/iresort.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 1003855
+    },
+    {
+      "path": "photos/nha_trang/longson.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 293385
+    },
+    {
+      "path": "photos/nha_trang/lottegoldcoast.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 591948
+    },
+    {
+      "path": "photos/nha_trang/mocseafood.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 1001167
+    },
+    {
+      "path": "photos/nha_trang/nemdangvanquyen.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 679369
+    },
+    {
+      "path": "photos/nha_trang/nemonhatrang.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 499358
+    },
+    {
+      "path": "photos/nha_trang/nhatrangbeach.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 269795
+    },
+    {
+      "path": "photos/nha_trang/nhatrangcenter.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 859352
+    },
+    {
+      "path": "photos/nha_trang/nomnom.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 290318
+    },
+    {
+      "path": "photos/nha_trang/oceanography.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 302199
+    },
+    {
+      "path": "photos/nha_trang/phela.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 378333
+    },
+    {
+      "path": "photos/nha_trang/ponagar.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 991962
+    },
+    {
+      "path": "photos/nha_trang/vinwonders.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 187796
+    },
+    {
+      "path": "photos/nha_trang/wellspa.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 311169
+    },
+    {
+      "path": "photos/quy_nhon/adiuvat.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 379515
+    },
+    {
+      "path": "photos/quy_nhon/banhit.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 115870
+    },
+    {
+      "path": "photos/quy_nhon/chamspa.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 446686
+    },
+    {
+      "path": "photos/quy_nhon/chodam.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 161213
+    },
+    {
+      "path": "photos/quy_nhon/coop.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 441329
+    },
+    {
+      "path": "photos/quy_nhon/dieutri.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 123567
+    },
+    {
+      "path": "photos/quy_nhon/eogio.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 181293
+    },
+    {
+      "path": "photos/quy_nhon/explora.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 412235
+    },
+    {
+      "path": "photos/quy_nhon/foodstreet.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 104208
+    },
+    {
+      "path": "photos/quy_nhon/ganhdadia.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 185107
+    },
+    {
+      "path": "photos/quy_nhon/giavy.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 481928
+    },
+    {
+      "path": "photos/quy_nhon/hotel.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 317706
+    },
+    {
+      "path": "photos/quy_nhon/huongvi.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 420158
+    },
+    {
+      "path": "photos/quy_nhon/hyhalona.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 480679
+    },
+    {
+      "path": "photos/quy_nhon/katinat.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 433396
+    },
+    {
+      "path": "photos/quy_nhon/kyco.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 149323
+    },
+    {
+      "path": "photos/quy_nhon/mmmega.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 245259
+    },
+    {
+      "path": "photos/quy_nhon/mrmoc.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 527581
+    },
+    {
+      "path": "photos/quy_nhon/oloan.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 140108
+    },
+    {
+      "path": "photos/quy_nhon/phuongmai.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 478050
+    },
+    {
+      "path": "photos/quy_nhon/phuongteo.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 384287
+    },
+    {
+      "path": "photos/quy_nhon/surf.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 506739
+    },
+    {
+      "path": "photos/quy_nhon/thapdoi.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 258682
+    },
+    {
+      "path": "photos/quy_nhon/treehugger.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 72978
+    },
+    {
+      "path": "photos/quy_nhon/zenn.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 633985
+    },
+    {
+      "path": "photos/tuy_hoa/apec.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 482224
+    },
+    {
+      "path": "photos/tuy_hoa/apecspa.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 666932
+    },
+    {
+      "path": "photos/tuy_hoa/coopmarttuyhoa.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 570134
+    },
+    {
+      "path": "photos/tuy_hoa/ganhdadia.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 185107
+    },
+    {
+      "path": "photos/tuy_hoa/hiepyen.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 1280885
+    },
+    {
+      "path": "photos/tuy_hoa/muidien.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 478979
+    },
+    {
+      "path": "photos/tuy_hoa/nghinhphong.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 131727
+    },
+    {
+      "path": "photos/tuy_hoa/oloan.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 140108
+    },
+    {
+      "path": "photos/tuy_hoa/phdcoffee.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 813733
+    },
+    {
+      "path": "photos/tuy_hoa/rosa.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 606299
+    },
+    {
+      "path": "photos/tuy_hoa/sandyvibes.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 941096
+    },
+    {
+      "path": "photos/tuy_hoa/thaovy.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 738106
+    },
+    {
+      "path": "photos/tuy_hoa/thapnhan.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 166620
+    },
+    {
+      "path": "photos/tuy_hoa/tuibluewellness.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 534350
+    },
+    {
+      "path": "photos/tuy_hoa/tuyetnhung.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 709232
+    },
+    {
+      "path": "photos/tuy_hoa/tuyhoabeach.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 129860
+    },
+    {
+      "path": "photos/tuy_hoa/urabeach.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 516043
+    },
+    {
+      "path": "photos/tuy_hoa/vincom.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 629937
+    },
+    {
+      "path": "photos/tuy_hoa/vungro.jpg",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 52661
+    },
+    {
+      "path": "quy_nhon.html",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 706
+    },
+    {
+      "path": "service-worker.js",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 2642
+    },
+    {
+      "path": "sync-config.js",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 350
+    },
+    {
+      "path": "tuy_hoa.html",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 704
+    },
+    {
+      "path": "v11-preview/index.html",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 652
+    },
+    {
+      "path": "v11-preview/manifest.json",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 463
+    },
+    {
+      "path": "v11-preview/service-worker.js",
+      "status": 200,
+      "matchesLocal": true,
+      "bytes": 365
+    }
+  ]
+}

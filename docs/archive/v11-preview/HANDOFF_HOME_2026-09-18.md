@@ -32,16 +32,16 @@
 
 ### 다낭 Freeze
 
-16/16 검증 완료, 기존 15장 유지, dragon.jpg 1장 추가, 교체·경로 수정 0. 기존 파일은 보존했다. [다낭 보고서](DA_NANG_PHOTO_AUDIT_2026-09-17.md).
+16/16 검증 완료, 기존 15장 유지, dragon.jpg 1장 추가, 교체·경로 수정 0. 기존 파일은 보존했다. [다낭 보고서](../../../v11-preview/DA_NANG_PHOTO_AUDIT_2026-09-17.md).
 
 ### 꾸이년 Freeze
 
-Phase 1 `0a318d5`, Phase 2 `acf136b`, 최종 보완 `07a8d40`. 최종 보완에서 Ô Loan 사진 1장을 추가하고 ZENN·MM Mega Market의 판정을 보완했다. 최종 31곳/22 완료/3 불충분/6 미확보/25 보유. **이 결과·사진·데이터는 앞으로 재조사하거나 임의 수정하지 않는다.** 잔여 불확실성이 있어도 Freeze 상태를 유지한다. [최종 보고서](QUY_NHON_PHOTO_AUDIT_FINAL_2026-09-18.md).
+Phase 1 `0a318d5`, Phase 2 `acf136b`, 최종 보완 `07a8d40`. 최종 보완에서 Ô Loan 사진 1장을 추가하고 ZENN·MM Mega Market의 판정을 보완했다. 최종 31곳/22 완료/3 불충분/6 미확보/25 보유. **이 결과·사진·데이터는 앞으로 재조사하거나 임의 수정하지 않는다.** 잔여 불확실성이 있어도 Freeze 상태를 유지한다. [최종 보고서](../../../v11-preview/QUY_NHON_PHOTO_AUDIT_FINAL_2026-09-18.md).
 
 ### 뚜이호아 Phase 1·2
 
-- Phase 1 `e6ba17d`: 기존 7장 유지, 신규 4장(thapnhan, oloan, vungro, tuyhoabeach), 교체 0. [Phase 1 보고서](TUY_HOA_PHOTO_AUDIT_PHASE1_2026-09-18.md).
-- Phase 2 `4b1516d`: 기존 8장 유지, 신규·교체 0, 잘못된 사진 제거 1. [Phase 2 보고서](TUY_HOA_PHOTO_AUDIT_PHASE2_2026-09-18.md).
+- Phase 1 `e6ba17d`: 기존 7장 유지, 신규 4장(thapnhan, oloan, vungro, tuyhoabeach), 교체 0. [Phase 1 보고서](../../../v11-preview/TUY_HOA_PHOTO_AUDIT_PHASE1_2026-09-18.md).
+- Phase 2 `4b1516d`: 기존 8장 유지, 신규·교체 0, 잘못된 사진 제거 1. [Phase 2 보고서](../../../v11-preview/TUY_HOA_PHOTO_AUDIT_PHASE2_2026-09-18.md).
 - `photos/tuy_hoa/oloanseafood.jpg`에는 **AN LAGOON Seafood Master** 간판과 지도 표제가 있었다. 업체 공식 주소는 **Đầm Lập An, Lăng Cô, Huế**로 Ô Loan/Phú Yên과 다른 지역이다. [공식 근거](https://www.anlagoon.com/). 오연결을 확정해 파일을 제거했다. 임의의 식당이나 Phase 1 석호 사진으로 대체하지 않았다.
 - `oloanseafood`는 특정 식당이 아닌 QL1 접근 점심권역 POI이다. `oloan` 석호 관광 POI와 구분한다. 제거한 원본은 이전 Git commit에 남아 있으나 다시 활성화하지 않는다.
 - Phase 2에서는 places.json·앱 코드·Freeze 자료를 변경하지 않았다. 최종 8개 보유 경로 HTTP 200/JPEG 정상, 미확보 5개는 404. 제거 후 카드·간편보기·상세화면에서 잘못된 사진과 깨진 아이콘이 표시되지 않음을 확인했다.

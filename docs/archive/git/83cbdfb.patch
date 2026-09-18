@@ -1,0 +1,18 @@
+From 83cbdfb34fa6d99cc033b21d60512525ffd36fd0 Mon Sep 17 00:00:00 2001
+From: brulee07 <brulee07@gwangdeok.net>
+Date: Thu, 17 Sep 2026 13:55:57 +0900
+Subject: [PATCH] test: verify ChatGPT Work push
+
+---
+ WORK_PUSH_TEST.md | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 100644 WORK_PUSH_TEST.md
+
+diff --git a/WORK_PUSH_TEST.md b/WORK_PUSH_TEST.md
+new file mode 100644
+index 0000000..fef3c2e
+--- /dev/null
++++ b/WORK_PUSH_TEST.md
+@@ -0,0 +1 @@
++ChatGPT Work GitHub push test - 2026-09-17
+\ No newline at end of file
